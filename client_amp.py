@@ -99,35 +99,34 @@ class Client():
            opts, args = getopt.getopt(argv,"hu:p:s:",["username=","password=","serialport="])
         except getopt.GetoptError:
             log.msg('Incorrect script usage')
-            print 'client_amp.py -u <username> -p <password> -s <serialport>'
+            self.usage()
             sys.exit(2)
         for opt, arg in opts:
             if opt == '-h':
-                print 'client_amp.py -u <username> -p <password> -s <serialport>'
+                self.usage()
                 sys.exit()
             elif opt in ("-u", "--username"):
                 USERNAME = arg
-                log.msg('Username:', USERNAME)
             elif opt in ("-p", "--password"):
                 PASSWORD = arg
-                log.msg('Password:', PASSWORD)                
             elif opt in ("-s", "--serialport"):
                 SERIALPORT = arg
-                log.msg('Serial port:', SERIALPORT)
 
         if USERNAME is None:
             log.msg('Enter SATNET username: ')
             USERNAME = raw_input()
         if PASSWORD is None:
-            log.msg('Enter', self.USERNAME,' password: ')
+            log.msg('Enter', USERNAME,' password: ')
             PASSWORD = getpass.getpass()
         if SERIALPORT is None:
             log.msg('Select serial port: (e.g. /dev/ttyS1)')
             SERIALPORT = raw_input()
 
+        #Load certificate to initialize a SSL connection
         cert = ssl.Certificate.loadPEM(open('key/public.pem').read())
         options = ssl.optionsForClientTLS(u'humsat.org', cert)
 
+        # Create a protocol instance to connect with the server 
         factory = protocol.Factory.forProtocol(ClientProtocol)
         endpoint = endpoints.SSL4ClientEndpoint(reactor, 'localhost', 1234,
                                                 options)
@@ -145,6 +144,13 @@ class Client():
         d.addErrback(connectionError)            
         reactor.run()
 
+    def usage(self):
+        print "USAGE of client_amp.py"
+        print "Usage: python [-h] client_amp.py #Shows script help"
+        print "Usage: python [-u <username>] client_amp.py #Set SATNET username to login"
+        print "Usage: python [-p <password>] client_amp.py #Set SATNET user password to login"
+        print "Usage: python [-s <serialport>] client_amp.py #Set serial port to read data from"        
+        print "Example: python -u crespo -p cre.spo -s /dev/ttyS1"        
 
 if __name__ == '__main__':
     c = Client(sys.argv[1:])

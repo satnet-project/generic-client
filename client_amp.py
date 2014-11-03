@@ -28,11 +28,13 @@ from twisted.internet.protocol import ClientCreator
 from twisted.internet.error import ReactorNotRunning
 from twisted.protocols.amp import AMP
 from twisted.cred.credentials import UsernamePassword
+from twisted.protocols.basic import LineReceiver
+from twisted.internet.serialport import SerialPort
 
 from ampauth.client import login
 from commands import *
 
-import serial, getpass, sys, getopt
+import getpass, sys, getopt, pytz, datetime
 
 
 class ClientProtocol(AMP):
@@ -52,8 +54,7 @@ class ClientProtocol(AMP):
             reactor.stop()
         d.addErrback(notConnected)
         def open_serial(self, proto):
-            proto.ser = serial.Serial(proto.SERIALPORT, 19200, timeout=1)
-            print proto.ser.name
+            proto.ser = SerialPort(SerialHandler(proto), proto.SERIALPORT, reactor, baudrate=19200)
         d.addCallback(open_serial, self)
         def serial_unavailable(failure):
             log.err("Serial port not available")
@@ -86,6 +87,23 @@ class ClientProtocol(AMP):
         return {}
     NotifyEvent.responder(vNotifyEvent)
 
+class SerialHandler(LineReceiver):
+    ampProto = None
+
+    def __init__(self, ampProto):
+        self.ampProto = ampProto
+
+    def processData(self, data):
+        log.msg("--------- Notify Message ---------")        
+        self.ampProto.callRemote(SendMsg,sMsg=data, iDopplerShift=0, sTimestamp=str(pytz.utc.localize(datetime.datetime.utcnow())))
+
+    def lineReceived(self, line):
+        try:
+            data = line.rstrip()
+            self.processData(data)
+        except ValueError:
+            logging.error('Unable to parse data %s' % line)
+            return
 
 class Client():    
     def __init__(self, argv):

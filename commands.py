@@ -33,7 +33,7 @@ class StartRemote(amp.Command):
     arguments = [('iSlotId', amp.Integer())]
     response = [('iResult', amp.Integer())]
     errors = {
-        SlotErrorNotification: 'SLOT_ERROR_NOTIFICATION'}    
+        SlotErrorNotification: 'SLOT_ERROR_NOTIFICATION'}
     """
     Invoked when a client wants to connect to an N-server. This shall be called
     right after invoking login method.
@@ -42,7 +42,7 @@ class StartRemote(amp.Command):
         ID number of the slot which should have been previously reserved through
         the web interface.
     :type iSlotId:
-        int
+        L{int}
 
     :returns iResult:
         Raises an error if the slot is not available yet or if it isn't assigned to 
@@ -56,12 +56,13 @@ class StartRemote(amp.Command):
     :rtype:
         int or L{SlotNotAvailable}
     """
-    #Remote client ready
+    # Remote client ready
     REMOTE_READY = 0
-    #Both MCC and GSS belong to the same client
+    # Both MCC and GSS belong to the same client
     CLIENTS_COINCIDE = -1
-    #Remote user not connected yet
+    # Remote user not connected yet
     REMOTE_NOT_CONNECTED = -2
+
 
 class EndRemote(amp.Command):
     arguments = []
@@ -72,16 +73,25 @@ class EndRemote(amp.Command):
 
 
 class SendMsg(amp.Command):
-    arguments = [('sMsg', amp.String())]
+    arguments = [('sMsg', amp.String()),
+                 ('iDopplerShift', amp.Integer()), ('sTimestamp', amp.String())]
     requiresAnswer = False
     """
     Invoked when a client wants to send a message to a remote entity. To use it, the 
     command StartRemote shall be invoked first.
     
-    :param bMsg:
-        Array containing the message
-    :type bMsg:
-        bytearray
+    :param sMsg:
+        String containing the message
+    :type sMsg:
+        L{String}
+    :param iDopplerShift:
+        Integer indicating the Doppler shift in kHz
+    :type iDopplerShift:
+        L{int}
+    :param sTimestamp:
+        String indicating the UTC timestamp at reception
+    :type sTimestamp:
+        L{String}    
     """
 
 """
@@ -92,7 +102,7 @@ by a N-server.
 
 class NotifyEvent(amp.Command):
     arguments = [('iEvent', amp.Integer()),
-    ('sDetails', amp.String(optional=True))]
+                 ('sDetails', amp.String(optional=True))]
     requiresAnswer = False
     """
     Used to inform a client about an event in the network. 
@@ -113,15 +123,15 @@ class NotifyEvent(amp.Command):
         the username of the remote client. Otherwise the parameter is None
 
     :type sDetails:
-        String or None        
+        L{String} or None        
     """
-    #Remote user not connected
+    # Remote user not connected
     REMOTE_DISCONNECTED = -1
-    #Both MCC and GSS belong to the same client
+    # Both MCC and GSS belong to the same client
     SLOT_END = -2
-    #Remote client finished connection
+    # Remote client finished connection
     END_REMOTE = -3
-    #Remote client finished connection
+    # Remote client finished connection
     REMOTE_CONNECTED = -4
 
 
@@ -131,8 +141,8 @@ class NotifyMsg(amp.Command):
     """
     Used to send a message to a remote client.
     
-    :param bMsg:
+    :param sMsg:
         Remote client identification number
-    :type bMsg:
-        bytearray
+    :type sMsg:
+        L{String}
     """

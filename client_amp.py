@@ -31,8 +31,9 @@ from twisted.cred.credentials import UsernamePassword
 from twisted.protocols.basic import LineReceiver
 from twisted.internet.serialport import SerialPort
 
-from ampauth.client import login
-from commands import *
+from protocol.ampauth.client import login
+from protocol.commands import *
+from protocol.errors import *
 
 import getpass, sys, getopt, pytz, datetime
 
@@ -47,19 +48,22 @@ class ClientProtocol(AMP):
 
         d = login(self, UsernamePassword(self.USERNAME, self.PASSWORD))
         def connected(self, proto):
-            proto.callRemote(StartRemote, iSlotId=1)
+            return proto.callRemote(StartRemote, iSlotId=1)
         d.addCallback(connected, self)
         def notConnected(failure):
-            log.err("Error during connection")
-            reactor.stop()
+            return failure
         d.addErrback(notConnected)
         def open_serial(self, proto):
             proto.ser = SerialPort(SerialHandler(proto), proto.SERIALPORT, reactor, baudrate=19200)
         d.addCallback(open_serial, self)
-        def serial_unavailable(failure):
-            log.err("Serial port not available")
+        def error_handlers(failure):
+            if failure.type == SlotErrorNotification:
+                log.err("Error during connection")
+            else:
+                log.err("Serial port not available")
+            log.err(failure)
             reactor.stop()
-        d.addErrback(serial_unavailable)
+        d.addErrback(error_handlers)
         return d
 
     def connectionLost(self, reason):
@@ -141,8 +145,8 @@ class Client():
             SERIALPORT = raw_input()
 
         #Load certificate to initialize a SSL connection
-        cert = ssl.Certificate.loadPEM(open('key/public.pem').read())
-        options = ssl.optionsForClientTLS(u'humsat.org', cert)
+        cert = ssl.Certificate.loadPEM(open('../protocol/key/public.pem').read())
+        options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
 
         # Create a protocol instance to connect with the server 
         factory = protocol.Factory.forProtocol(ClientProtocol)

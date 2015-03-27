@@ -28,7 +28,6 @@ from twisted.internet.protocol import ClientCreator
 from twisted.internet.error import ReactorNotRunning
 from twisted.protocols.amp import AMP
 from twisted.cred.credentials import UsernamePassword
-from twisted.protocols.basic import LineReceiver
 
 from protocol.ampauth.client import login
 from protocol.commands import *
@@ -42,6 +41,7 @@ class ClientProtocol(AMP):
     PASSWORD = None
     SERIALPORT = None
     BAUDRATE = None
+    SLOT_ID = None
     ser = None
     kissTNC = None
 
@@ -49,7 +49,7 @@ class ClientProtocol(AMP):
 
         d = login(self, UsernamePassword(self.USERNAME, self.PASSWORD))
         def connected(self, proto):
-            return proto.callRemote(StartRemote, iSlotId=1)
+            return proto.callRemote(StartRemote, iSlotId=proto.SLOT_ID)
         d.addCallback(connected, self)
         def notConnected(failure):
             return failure
@@ -81,7 +81,8 @@ class ClientProtocol(AMP):
     NotifyMsg.responder(vNotifyMsg)
 
     def msgFromTNC(self, frame):
-        log.msg("--------- Message from TNC ---------")        
+        log.msg("--------- Message from TNC ---------")     
+        log.msg("New frame: " + frame)   
         proto.callRemote(SendMsg,sMsg=frame, iDopplerShift=0, sTimestamp=str(pytz.utc.localize(datetime.datetime.utcnow())))
 
     def vNotifyEvent(self, iEvent, sDetails):
@@ -106,9 +107,10 @@ class Client():
         PASSWORD = None
         SERIALPORT = None
         BAUDRATE = None
+        SLOT_ID = None
 
         try:
-           opts, args = getopt.getopt(argv,"hu:p:s:b:",["username=","password=","serialport=","baudrate="])
+           opts, args = getopt.getopt(argv,"hu:p:s:b:i:",["username=","password=","serialport=","baudrate=","slot="])
         except getopt.GetoptError:
             log.msg('Incorrect script usage')
             self.usage()
@@ -125,6 +127,8 @@ class Client():
                 SERIALPORT = arg
             elif opt in ("-b", "--baudrate"):
                 BAUDRATE = arg
+            elif opt in ("-i", "--slot"):
+                SLOT_ID = arg
 
         if USERNAME is None:
             log.msg('Enter SATNET username: ')
@@ -135,6 +139,12 @@ class Client():
         if SERIALPORT is None:
             log.msg('Select serial port: (e.g. /dev/ttyS1)')
             SERIALPORT = raw_input()
+        if BAUDRATE is None:
+            log.msg('Select serial port baudrate: ')
+            BAUDRATE = raw_input()
+        if SLOT_ID is None:
+            log.msg('Select the slot id of the next pass: ')
+            SLOT_ID = raw_input()
 
         #Load certificate to initialize a SSL connection
         cert = ssl.Certificate.loadPEM(open('../protocol/key/public.pem').read())
@@ -142,20 +152,21 @@ class Client():
 
         # Create a protocol instance to connect with the server 
         factory = protocol.Factory.forProtocol(ClientProtocol)
-        endpoint = endpoints.SSL4ClientEndpoint(reactor, 'localhost', 1234,
-                                                options)
+        endpoint = endpoints.SSL4ClientEndpoint(reactor, 'localhost', 1234, options)
         d = endpoint.connect(factory)
-        def connectionSuccessful(clientAMP, USERNAME, PASSWORD, SERIALPORT, BAUDRATE):
+        def connectionSuccessful(clientAMP, USERNAME, PASSWORD, SERIALPORT, BAUDRATE, SLOT_ID):
             self.proto = clientAMP
             clientAMP.USERNAME = USERNAME
             clientAMP.PASSWORD = PASSWORD
             clientAMP.SERIALPORT = SERIALPORT
             clientAMP.BAUDRATE = BAUDRATE
+            clientAMP.SLOT_ID = SLOT_ID
             clientAMP.user_login()
             return clientAMP            
-        d.addCallback(connectionSuccessful, USERNAME, PASSWORD, SERIALPORT)        
-        def connectionError():
+        d.addCallback(connectionSuccessful, USERNAME, PASSWORD, SERIALPORT, BAUDRATE, SLOT_ID)        
+        def connectionError(error):
             log.err('Connection could not be established')
+            log.err(error)
         d.addErrback(connectionError)            
         reactor.run()
 
@@ -166,7 +177,8 @@ class Client():
         print "Usage: python client_amp.py [-p <password>] # Set SATNET user password to login"
         print "Usage: python client_amp.py [-s <serialport>] # Set serial port to read data from"
         print "Usage: python client_amp.py [-b <baudrate>] # Set serial port baudrate"
-        print "Example: python client_amp.py -u crespo -p cre.spo -s /dev/ttyS1 -b 115200"        
+        print "Usage: python client_amp.py [-b <baudrate>] # Select the slot id corresponding to the next satellite pass"        
+        print "Example: python client_amp.py -u crespo -p cre.spo -s /dev/ttyS1 -b 115200 -i 2"
 
 if __name__ == '__main__':
     c = Client(sys.argv[1:])

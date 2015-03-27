@@ -29,20 +29,21 @@ from twisted.internet.error import ReactorNotRunning
 from twisted.protocols.amp import AMP
 from twisted.cred.credentials import UsernamePassword
 from twisted.protocols.basic import LineReceiver
-from twisted.internet.serialport import SerialPort
 
 from protocol.ampauth.client import login
 from protocol.commands import *
 from protocol.errors import *
 
 import getpass, sys, getopt, pytz, datetime
-
+import kiss
 
 class ClientProtocol(AMP):
     USERNAME = None
     PASSWORD = None
     SERIALPORT = None
+    BAUDRATE = None
     ser = None
+    kissTNC = None
 
     def user_login(self):
 
@@ -54,7 +55,9 @@ class ClientProtocol(AMP):
             return failure
         d.addErrback(notConnected)
         def open_serial(self, proto):
-            proto.ser = SerialPort(SerialHandler(proto), proto.SERIALPORT, reactor, baudrate=19200)
+            proto.kissTNC = kiss.KISS(proto.SERIALPORT, proto.BAUDRATE)
+            proto.kissTNC.start()  # inits the TNC, optionally passes KISS config flags.
+            proto.kissTNC.read(callback=proto.msgFromTNC)
         d.addCallback(open_serial, self)
         def error_handlers(failure):
             if failure.type == SlotErrorNotification:
@@ -73,9 +76,13 @@ class ClientProtocol(AMP):
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.USERNAME + ") --------- Notify Message ---------")
         log.msg(sMsg)
-        self.callRemote(EndRemote)                
+        kissTNC.write(sMsg)
         return {}
     NotifyMsg.responder(vNotifyMsg)
+
+    def msgFromTNC(self, frame):
+        log.msg("--------- Message from TNC ---------")        
+        proto.callRemote(SendMsg,sMsg=frame, iDopplerShift=0, sTimestamp=str(pytz.utc.localize(datetime.datetime.utcnow())))
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.USERNAME + ") --------- Notify Event ---------")
@@ -91,24 +98,6 @@ class ClientProtocol(AMP):
         return {}
     NotifyEvent.responder(vNotifyEvent)
 
-class SerialHandler(LineReceiver):
-    ampProto = None
-
-    def __init__(self, ampProto):
-        self.ampProto = ampProto
-
-    def processData(self, data):
-        log.msg("--------- Notify Message ---------")        
-        self.ampProto.callRemote(SendMsg,sMsg=data, iDopplerShift=0, sTimestamp=str(pytz.utc.localize(datetime.datetime.utcnow())))
-
-    def lineReceived(self, line):
-        try:
-            data = line.rstrip()
-            self.processData(data)
-        except ValueError:
-            logging.error('Unable to parse data %s' % line)
-            return
-
 class Client():    
     def __init__(self, argv):
         log.startLogging(sys.stdout)
@@ -116,9 +105,10 @@ class Client():
         USERNAME = None
         PASSWORD = None
         SERIALPORT = None
+        BAUDRATE = None
 
         try:
-           opts, args = getopt.getopt(argv,"hu:p:s:",["username=","password=","serialport="])
+           opts, args = getopt.getopt(argv,"hu:p:s:b:",["username=","password=","serialport=","baudrate="])
         except getopt.GetoptError:
             log.msg('Incorrect script usage')
             self.usage()
@@ -133,6 +123,8 @@ class Client():
                 PASSWORD = arg
             elif opt in ("-s", "--serialport"):
                 SERIALPORT = arg
+            elif opt in ("-b", "--baudrate"):
+                BAUDRATE = arg
 
         if USERNAME is None:
             log.msg('Enter SATNET username: ')
@@ -153,11 +145,12 @@ class Client():
         endpoint = endpoints.SSL4ClientEndpoint(reactor, 'localhost', 1234,
                                                 options)
         d = endpoint.connect(factory)
-        def connectionSuccessful(clientAMP, USERNAME, PASSWORD, SERIALPORT):
+        def connectionSuccessful(clientAMP, USERNAME, PASSWORD, SERIALPORT, BAUDRATE):
             self.proto = clientAMP
             clientAMP.USERNAME = USERNAME
             clientAMP.PASSWORD = PASSWORD
             clientAMP.SERIALPORT = SERIALPORT
+            clientAMP.BAUDRATE = BAUDRATE
             clientAMP.user_login()
             return clientAMP            
         d.addCallback(connectionSuccessful, USERNAME, PASSWORD, SERIALPORT)        
@@ -168,11 +161,12 @@ class Client():
 
     def usage(self):
         print "USAGE of client_amp.py"
-        print "Usage: python [-h] client_amp.py #Shows script help"
-        print "Usage: python [-u <username>] client_amp.py #Set SATNET username to login"
-        print "Usage: python [-p <password>] client_amp.py #Set SATNET user password to login"
-        print "Usage: python [-s <serialport>] client_amp.py #Set serial port to read data from"        
-        print "Example: python -u crespo -p cre.spo -s /dev/ttyS1"        
+        print "Usage: python client_amp.py [-h] # Shows script help"
+        print "Usage: python client_amp.py [-u <username>] # Set SATNET username to login"
+        print "Usage: python client_amp.py [-p <password>] # Set SATNET user password to login"
+        print "Usage: python client_amp.py [-s <serialport>] # Set serial port to read data from"
+        print "Usage: python client_amp.py [-b <baudrate>] # Set serial port baudrate"
+        print "Example: python client_amp.py -u crespo -p cre.spo -s /dev/ttyS1 -b 115200"        
 
 if __name__ == '__main__':
     c = Client(sys.argv[1:])

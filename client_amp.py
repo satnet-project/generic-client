@@ -33,8 +33,8 @@ from protocol.ampauth.client import login
 from protocol.commands import *
 from protocol.errors import *
 
-import getpass, sys, getopt, pytz, datetime
-import kiss
+import getpass, getopt, kiss, threading
+import misc
 
 class ClientProtocol(AMP):
     USERNAME = None
@@ -57,14 +57,11 @@ class ClientProtocol(AMP):
         def open_serial(self, proto):
             proto.kissTNC = kiss.KISS(proto.SERIALPORT, proto.BAUDRATE)
             proto.kissTNC.start()  # inits the TNC, optionally passes KISS config flags.
-            proto.kissTNC.read(callback=proto.msgFromTNC)
+            thread = threading.Thread(target=proto.kissTNC.read, args=(proto.msgFromTNC,))
+            thread.start()
         d.addCallback(open_serial, self)
         def error_handlers(failure):
-            if failure.type == SlotErrorNotification:
-                log.err("Error during connection")
-            else:
-                log.err("Serial port not available")
-            log.err(failure)
+            log.err(failure.type)
             reactor.stop()
         d.addErrback(error_handlers)
         return d
@@ -76,14 +73,14 @@ class ClientProtocol(AMP):
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.USERNAME + ") --------- Notify Message ---------")
         log.msg(sMsg)
-        kissTNC.write(sMsg)
+        #kissTNC.write(sMsg)
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
     def msgFromTNC(self, frame):
         log.msg("--------- Message from TNC ---------")     
-        log.msg("New frame: " + frame)   
-        proto.callRemote(SendMsg,sMsg=frame, iDopplerShift=0, sTimestamp=str(pytz.utc.localize(datetime.datetime.utcnow())))
+        res = self.callRemote(SendMsg, sMsg=frame, iTimestamp=misc.get_utc_timestamp())
+        log.msg(res)
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.USERNAME + ") --------- Notify Event ---------")
@@ -177,7 +174,7 @@ class Client():
         print "Usage: python client_amp.py [-p <password>] # Set SATNET user password to login"
         print "Usage: python client_amp.py [-s <serialport>] # Set serial port to read data from"
         print "Usage: python client_amp.py [-b <baudrate>] # Set serial port baudrate"
-        print "Usage: python client_amp.py [-b <baudrate>] # Select the slot id corresponding to the next satellite pass"        
+        print "Usage: python client_amp.py [-i <slot_ID>] # Select the slot id corresponding to the next satellite pass"        
         print "Example: python client_amp.py -u crespo -p cre.spo -s /dev/ttyS1 -b 115200 -i 2"
 
 if __name__ == '__main__':

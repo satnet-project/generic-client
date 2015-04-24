@@ -37,28 +37,25 @@ import getpass, getopt, kiss, threading
 import misc
 
 class ClientProtocol(AMP):
-    USERNAME = None
-    PASSWORD = None
-    SERIALPORT = None
-    BAUDRATE = None
-    SLOT_ID = None
-    ser = None
+
+    CONNECTION_INFO = {}
     kissTNC = None
+    thread = None
 
     def user_login(self):
-
-        d = login(self, UsernamePassword(self.USERNAME, self.PASSWORD))
+        d = login(self, UsernamePassword(self.CONNECTION_INFO['username'], self.CONNECTION_INFO['password']))
         def connected(self, proto):
-            return proto.callRemote(StartRemote, iSlotId=proto.SLOT_ID)
+            return proto.callRemote(StartRemote, iSlotId=proto.CONNECTION_INFO['slot_id'])
         d.addCallback(connected, self)
         def notConnected(failure):
             return failure
         d.addErrback(notConnected)
         def open_serial(self, proto):
-            proto.kissTNC = kiss.KISS(proto.SERIALPORT, proto.BAUDRATE)
+            proto.kissTNC = kiss.KISS(proto.CONNECTION_INFO['serialport'], proto.CONNECTION_INFO['baudrate'])
             proto.kissTNC.start()  # inits the TNC, optionally passes KISS config flags.
-            thread = threading.Thread(target=proto.kissTNC.read, args=(proto.msgFromTNC,))
-            thread.start()
+            proto.thread = threading.Thread(target=proto.kissTNC.read, args=(proto.msgFromTNC,))
+            proto.thread.daemon = True #This thread will be close if the reactor stops
+            proto.thread.start()
         d.addCallback(open_serial, self)
         def error_handlers(failure):
             log.err(failure.type)
@@ -71,7 +68,7 @@ class ClientProtocol(AMP):
         super(ClientProtocol, self).connectionLost(reason)
 
     def vNotifyMsg(self, sMsg):
-        log.msg("(" + self.USERNAME + ") --------- Notify Message ---------")
+        log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Message ---------")
         log.msg(sMsg)
         #kissTNC.write(sMsg)
         return {}
@@ -83,13 +80,13 @@ class ClientProtocol(AMP):
         log.msg(res)
 
     def vNotifyEvent(self, iEvent, sDetails):
-        log.msg("(" + self.USERNAME + ") --------- Notify Event ---------")
+        log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
             log.msg("Disconnection because the slot has ended")
         elif iEvent == NotifyEvent.REMOTE_DISCONNECTED:
             log.msg("Remote client has lost the connection")
         elif iEvent == NotifyEvent.END_REMOTE:
-            log.msg("Disconnection because the remote client has been disconnected")
+            log.msg("The remote client has closed the connection")
         elif iEvent == NotifyEvent.REMOTE_CONNECTED:
             log.msg("The remote client has just connected")
 
@@ -100,11 +97,7 @@ class Client():
     def __init__(self, argv):
         log.startLogging(sys.stdout)
 
-        USERNAME = None
-        PASSWORD = None
-        SERIALPORT = None
-        BAUDRATE = None
-        SLOT_ID = None
+        CONNECTION_INFO = {} # username, password, serialport, baudrate, slot_id
 
         try:
            opts, args = getopt.getopt(argv,"hu:p:s:b:i:",["username=","password=","serialport=","baudrate=","slot="])
@@ -117,31 +110,31 @@ class Client():
                 self.usage()
                 sys.exit()
             elif opt in ("-u", "--username"):
-                USERNAME = arg
+                CONNECTION_INFO['username']  = arg
             elif opt in ("-p", "--password"):
-                PASSWORD = arg
+                CONNECTION_INFO['password']  = arg
             elif opt in ("-s", "--serialport"):
-                SERIALPORT = arg
+                CONNECTION_INFO['serialport']  = arg
             elif opt in ("-b", "--baudrate"):
-                BAUDRATE = arg
+                CONNECTION_INFO['baudrate']  = arg
             elif opt in ("-i", "--slot"):
-                SLOT_ID = arg
+                CONNECTION_INFO['slot_id']  = arg
 
-        if USERNAME is None:
+        if 'username' not in CONNECTION_INFO:
             log.msg('Enter SATNET username: ')
-            USERNAME = raw_input()
-        if PASSWORD is None:
-            log.msg('Enter', USERNAME,' password: ')
-            PASSWORD = getpass.getpass()
-        if SERIALPORT is None:
+            CONNECTION_INFO['username']  = raw_input()
+        if 'password' not in CONNECTION_INFO:
+            log.msg('Enter', CONNECTION_INFO['username'],' password: ')
+            CONNECTION_INFO['password']  = getpass.getpass()
+        if 'serialport' not in CONNECTION_INFO:
             log.msg('Select serial port: (e.g. /dev/ttyS1)')
-            SERIALPORT = raw_input()
-        if BAUDRATE is None:
+            CONNECTION_INFO['serialport']  = raw_input()
+        if 'baudrate' not in CONNECTION_INFO:
             log.msg('Select serial port baudrate: ')
-            BAUDRATE = raw_input()
-        if SLOT_ID is None:
+            CONNECTION_INFO['baudrate']  = raw_input()
+        if 'slot_id' not in CONNECTION_INFO:
             log.msg('Select the slot id of the next pass: ')
-            SLOT_ID = raw_input()
+            CONNECTION_INFO['slot_id']  = raw_input()
 
         #Load certificate to initialize a SSL connection
         cert = ssl.Certificate.loadPEM(open('../protocol/key/public.pem').read())
@@ -151,20 +144,16 @@ class Client():
         factory = protocol.Factory.forProtocol(ClientProtocol)
         endpoint = endpoints.SSL4ClientEndpoint(reactor, 'localhost', 1234, options)
         d = endpoint.connect(factory)
-        def connectionSuccessful(clientAMP, USERNAME, PASSWORD, SERIALPORT, BAUDRATE, SLOT_ID):
+        def connectionSuccessful(clientAMP):
             self.proto = clientAMP
-            clientAMP.USERNAME = USERNAME
-            clientAMP.PASSWORD = PASSWORD
-            clientAMP.SERIALPORT = SERIALPORT
-            clientAMP.BAUDRATE = BAUDRATE
-            clientAMP.SLOT_ID = SLOT_ID
+            clientAMP.CONNECTION_INFO = CONNECTION_INFO
             clientAMP.user_login()
-            return clientAMP            
-        d.addCallback(connectionSuccessful, USERNAME, PASSWORD, SERIALPORT, BAUDRATE, SLOT_ID)        
+            return clientAMP
+        d.addCallback(connectionSuccessful)        
         def connectionError(error):
             log.err('Connection could not be established')
             log.err(error)
-        d.addErrback(connectionError)            
+        d.addErrback(connectionError)
         reactor.run()
 
     def usage(self):

@@ -41,6 +41,7 @@ class ClientProtocol(AMP):
 
     CONNECTION_INFO = {}
     kissTNC = None
+    UDPSocket = None
     thread = None
 
     def user_login(self):
@@ -54,12 +55,23 @@ class ClientProtocol(AMP):
         def open_serial(result):
             self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'], self.CONNECTION_INFO['baudrate'])
             self.kissTNC.start()  # inits the TNC, optionally passes KISS config flags.
-            self.thread = threading.Thread(target=self.kissTNC.read, args=(self.msgFromTNC,))
+            self.thread = threading.Thread(target=self.kissTNC.read, args=(self.frameFromSerialport,))
             self.thread.daemon = True # This thread will be close if the reactor stops
             self.thread.start()
+        def open_socket(result):
+            self.UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+            self.UDPSocket.bind((self.CONNECTION_INFO['ip'], self.CONNECTION_INFO['udpport']))
+            self.thread = threading.Thread(target=self.frameFromUDPSocket)
+            self.thread.daemon = True # This thread will be close if the reactor stops
+            self.thread.start()
+
         if self.CONNECTION_INFO['connection'] == 'serial':
             import kiss
             d.addCallback(open_serial)
+        elif self.CONNECTION_INFO['connection'] == 'udp':
+            import socket
+            d.addCallback(open_socket)            
+
         def error_handlers(failure):
             if failure.type == OSError:
                 log.err("Is the TNC connected or the serial port correct?")
@@ -75,14 +87,27 @@ class ClientProtocol(AMP):
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Message ---------")
         log.msg(sMsg)
-        #kissTNC.write(sMsg)
+        if self.CONNECTION_INFO['connection'] == 'serial':        
+            self.kissTNC.write(sMsg)
+        elif self.CONNECTION_INFO['connection'] == 'udp':
+            self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'], self.CONNECTION_INFO['udpport']))
+
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
-    def msgFromTNC(self, frame):
-        log.msg("--------- Message from TNC ---------")     
+    def frameFromSerialport(self, frame):
+        log.msg("--------- Message from Serial port ---------")
         res = self.callRemote(SendMsg, sMsg=frame, iTimestamp=misc.get_utc_timestamp())
         log.msg(res)
+
+    def frameFromUDPSocket(self):
+        log.msg("--------- Message from UDP socket ---------")        
+        while True:
+            frame, addr = self.UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
+            log.msg(frame)
+            res = self.callRemote(SendMsg, sMsg=frame, iTimestamp=misc.get_utc_timestamp())
+            log.msg(res)
+
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Event ---------")
@@ -98,17 +123,18 @@ class ClientProtocol(AMP):
         return {}
     NotifyEvent.responder(vNotifyEvent)
 
-class Client():    
+class Client():
+
+    ###
+    # CONNECTION_INFO contains the following data:
+    #   -  username, password, slot_id, connection
+    #   -  (serial connection) serialport, baudrate
+    #   -  (udp connection) ip, port
+    ###
+    CONNECTION_INFO = {}
+
     def __init__(self, argv):
         log.startLogging(sys.stdout)
-
-        ###
-        # CONNECTION_INFO contains the following data:
-        #   -  username, password, slot_id, connection
-        #   -  (serial connection) serialport, baudrate
-        #   -  (udp connection) ip, port
-        ###
-        self.CONNECTION_INFO = {}
 
         try:
            opts, args = getopt.getopt(argv,"hfu:p:t:c:s:b:i:u:",
@@ -161,7 +187,7 @@ class Client():
             elif opt in ("-i", "--ip"):
                 self.CONNECTION_INFO['ip']  = arg
             elif opt in ("-u", "--udpport"):
-                self.CONNECTION_INFO['udpport']  = arg
+                self.CONNECTION_INFO['udpport']  = int(arg)
 
         if 'username' not in self.CONNECTION_INFO:
             log.msg('Enter SATNET username: ')
@@ -194,7 +220,7 @@ class Client():
             self.CONNECTION_INFO['baudrate'] = config.get('Serial', 'baudrate')
         if self.CONNECTION_INFO['connection'] == 'udp':
             self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
-            self.CONNECTION_INFO['udpport'] = config.get('UDP', 'udpport')
+            self.CONNECTION_INFO['udpport'] = int(config.get('UDP', 'udpport'))
 
     def usage(self):
         print ("USAGE of client_amp.py\n"
@@ -223,7 +249,7 @@ class Client():
                 "baudrate: 9600\n"
                 "[UDP]\n"
                 "ip: 127.0.0.1\n"
-                "port: 5001")
+                "udpport: 5005")
 
 if __name__ == '__main__':
     c = Client(sys.argv[1:])

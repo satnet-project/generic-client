@@ -35,7 +35,6 @@ from protocol.errors import *
 
 import getpass, getopt, threading
 import misc
-import socket
 
 class ClientProtocol(AMP):
 

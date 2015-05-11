@@ -1,3 +1,21 @@
+/**
+ * Copyright 2014 Xabier Crespo Álvarez
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author Xabier Crespo Álvarez (xabicrespog@gmail.com)
+ */
+
 package org.satnet;
 
 import java.io.FileInputStream;
@@ -23,44 +41,40 @@ public class ClientAMP extends AMP {
 		_reactor = reactor;
 
 		/** Define a local method that might be called remotely. */
-		localCommand("NotifyEvent", new Prototipes.NotifyEventCommand());
-		localCommand("NotifyMsg", new Prototipes.NotifyMsgCommand());
+		localCommand("NotifyEvent", new Prototypes.NotifyEventCommand());
+		localCommand("NotifyMsg", new Prototypes.NotifyMsgCommand());
 	}
 
 	/** Methods that might be called remotely must be public */
-	public Prototipes.NotifyEventResp substraction(int a, int b) {
+	public Prototypes.NotifyEventResp substraction(int a, int b) {
 		int res = a - b;
 		System.out.println("I did a substraction: " + a + " - " + b + " = "
 				+ res);
 
-		Prototipes.NotifyEventResp sr = new Prototipes.NotifyEventResp();
-		//sr.total = res;
+		Prototypes.NotifyEventResp sr = new Prototypes.NotifyEventResp();
+		// sr.total = res;
 
 		return sr;
 	}
 
+	// TODO Command response/error handlers	
 	/**
-	 * Class that handles the results of a command invoked remotely. The
-	 * callback method is called with a populated response class. Returned
-	 * object is handed to chained callback if it exists.
+	 * Handler for Log in response
 	 */
-	class LoginRes implements Deferred.Callback<Prototipes.LoginResp> {
-		public Object callback(Prototipes.LoginResp retval) {
+	class LoginRes implements Deferred.Callback<Prototypes.LoginResp> {
+		public Object callback(Prototypes.LoginResp retval) {
 
-			System.out.println("Remote did a Login: 5 + 3 = "
-					+ retval.getResponse());
+			System.out.println("Log in result" + retval.getResponse());
 			return null;
 		}
 	}
 
 	/**
-	 * Class that handles the problem if a remote command goes awry. The
-	 * callback method is called with a populated Failure class. Returned object
-	 * is handed to chained errback if it exists.
+	 * Handler for Log in error
 	 */
 	class LoginErr implements Deferred.Callback<Deferred.Failure> {
 		public Object callback(Deferred.Failure err) {
-
+			System.out.println("Error during client log in");
 			// Class tc = err.trap(Exception.class);
 			// System.out.println("error: " + err.get());
 			err.get().printStackTrace();
@@ -79,12 +93,13 @@ public class ClientAMP extends AMP {
 		System.out.println("connected");
 		String sUsername = "crespo";
 		String sPassword = "cre.spo";
-		
-		Prototipes.LoginParams rp = new Prototipes.LoginParams(sUsername, sPassword);
-		Prototipes.LoginResp cr = new Prototipes.LoginResp();
+
+		Prototypes.LoginParams rp = new Prototypes.LoginParams(sUsername,
+				sPassword);
+		Prototypes.LoginResp cr = new Prototypes.LoginResp();
 
 		System.out.println("Trying to log in: " + sUsername);
-		AMP.RemoteCommand<Prototipes.LoginResp> remote = new RemoteCommand<Prototipes.LoginResp>(
+		AMP.RemoteCommand<Prototypes.LoginResp> remote = new RemoteCommand<Prototypes.LoginResp>(
 				"PasswordLogin", rp, cr);
 		Deferred dfd = remote.callRemote();
 		dfd.addCallback(new LoginRes());
@@ -106,12 +121,14 @@ public class ClientAMP extends AMP {
 			// You could get a resource as a stream instead.
 
 			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			X509Certificate caCert = (X509Certificate)cf.generateCertificate(is);
+			X509Certificate caCert = (X509Certificate) cf
+					.generateCertificate(is);
 
 			TrustManagerFactory tmf = TrustManagerFactory
-			    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+					.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-			ks.load(null); // You don't need the KeyStore instance to come from a file.
+			ks.load(null); // You don't need the KeyStore instance to come from
+							// a file.
 			ks.setCertificateEntry("caCert", caCert);
 
 			tmf.init(ks);

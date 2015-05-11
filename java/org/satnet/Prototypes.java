@@ -1,19 +1,30 @@
+/**
+ * Copyright 2014 Xabier Crespo Álvarez
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author Xabier Crespo Álvarez (xabicrespog@gmail.com)
+ */
+
 package org.satnet;
 
 import com.twistedmatrix.amp.LocalCommand;
 
 /**
- * This class contains all the prototipes of the commands that can be executed
- * either on the server or on the client side. Each command is divided into two
- * public (and static for readability) classes containing the params and the
- * response that generate those params.
- * 	 
- * All command classes and all its variables must be public.
- * 
- * @author xabicrespog@gmail.com
- *
+ * This class contains all the prototypes of the commands that can be executed
+ * either on the server or on the client side.
  */
-public class Prototipes {
+public class Prototypes {
 	// COMMANDS EXECUTED ON THE SERVER SIDE
 	// --------------------------------------------------
 	/**
@@ -39,7 +50,7 @@ public class Prototipes {
 			this.sPassword = password;
 		}
 	}
-	
+
 	/**
 	 * StartRemote command responses
 	 */
@@ -55,13 +66,13 @@ public class Prototipes {
 	 * StartRemote command parameters
 	 */
 	public static class StartRemoteParams {
-		public Integer iSlotId;		
+		public Integer iSlotId;
 
 		public StartRemoteParams(int slotId) {
 			this.iSlotId = slotId;
 		}
 	}
-	
+
 	/**
 	 * EndRemote command responses. This command has no response.
 	 */
@@ -73,7 +84,7 @@ public class Prototipes {
 	 */
 	public static class EndRemoteParams {
 	}
-	
+
 	/**
 	 * SendMsg command responses
 	 */
@@ -109,7 +120,7 @@ public class Prototipes {
 		public final static int SLOT_END = -2;
 		public final static int END_REMOTE = -3;
 		public final static int REMOTE_CONNECTED = -4;
-		
+
 		public Integer iEvent;
 		public String sDetails;
 
@@ -144,7 +155,7 @@ public class Prototipes {
 			super("NotifyEvent", new String[] { "iEvent", "sDetails" });
 		}
 	}
-	
+
 	/**
 	 * NotifyEvent command responses
 	 */
@@ -165,6 +176,6 @@ public class Prototipes {
 		public NotifyMsgCommand() {
 			super("NotifyMsg", new String[] { "sMsg" });
 		}
-	}	
-	
+	}
+
 }

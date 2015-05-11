@@ -8,3 +8,7 @@ To install the dependencies execute:
 
 The execute this script execute:
 ```python client_amp.py -u crespo -p cre.spo -s /dev/ttyUSB0 -b 115200 -i 2```
+
+Other resources
+---------------
+A basic client-server implementation of the AMP protocol for Java and Python can be found at [this repository](https://github.com/xcrespo/Twisted-AMP-bidirectional)

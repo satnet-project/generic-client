@@ -41,17 +41,17 @@ public class ClientAMP extends AMP {
 		_reactor = reactor;
 
 		/** Define a local method that might be called remotely. */
-		localCommand("NotifyEvent", new Prototypes.NotifyEventCommand());
-		localCommand("NotifyMsg", new Prototypes.NotifyMsgCommand());
+		localCommand("NotifyEvent", new Commands.NotifyEventCommand());
+		localCommand("NotifyMsg", new Commands.NotifyMsgCommand());
 	}
 
 	/** Methods that might be called remotely must be public */
-	public Prototypes.NotifyEventResp substraction(int a, int b) {
+	public Commands.NotifyEventResp substraction(int a, int b) {
 		int res = a - b;
 		System.out.println("I did a substraction: " + a + " - " + b + " = "
 				+ res);
 
-		Prototypes.NotifyEventResp sr = new Prototypes.NotifyEventResp();
+		Commands.NotifyEventResp sr = new Commands.NotifyEventResp();
 		// sr.total = res;
 
 		return sr;
@@ -61,8 +61,8 @@ public class ClientAMP extends AMP {
 	/**
 	 * Handler for Log in response
 	 */
-	class LoginRes implements Deferred.Callback<Prototypes.LoginResp> {
-		public Object callback(Prototypes.LoginResp retval) {
+	class LoginRes implements Deferred.Callback<Commands.LoginResp> {
+		public Object callback(Commands.LoginResp retval) {
 
 			System.out.println("Log in result" + retval.getResponse());
 			return null;
@@ -94,12 +94,12 @@ public class ClientAMP extends AMP {
 		String sUsername = "crespo";
 		String sPassword = "cre.spo";
 
-		Prototypes.LoginParams rp = new Prototypes.LoginParams(sUsername,
+		Commands.LoginParams rp = new Commands.LoginParams(sUsername,
 				sPassword);
-		Prototypes.LoginResp cr = new Prototypes.LoginResp();
+		Commands.LoginResp cr = new Commands.LoginResp();
 
 		System.out.println("Trying to log in: " + sUsername);
-		AMP.RemoteCommand<Prototypes.LoginResp> remote = new RemoteCommand<Prototypes.LoginResp>(
+		AMP.RemoteCommand<Commands.LoginResp> remote = new RemoteCommand<Commands.LoginResp>(
 				"PasswordLogin", rp, cr);
 		Deferred dfd = remote.callRemote();
 		dfd.addCallback(new LoginRes());

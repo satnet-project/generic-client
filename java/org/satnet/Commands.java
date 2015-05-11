@@ -24,7 +24,7 @@ import com.twistedmatrix.amp.LocalCommand;
  * This class contains all the prototypes of the commands that can be executed
  * either on the server or on the client side.
  */
-public class Prototypes {
+public class Commands {
 	// COMMANDS EXECUTED ON THE SERVER SIDE
 	// --------------------------------------------------
 	/**

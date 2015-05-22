@@ -22,10 +22,12 @@ __author__ = 'xabicrespog@gmail.com'
 
 import sys
 
+from OpenSSL import SSL
+
 from twisted.python import log
-from twisted.internet import reactor, ssl, defer, protocol, endpoints
-from twisted.internet.protocol import ClientCreator
-from twisted.internet.error import ReactorNotRunning
+from twisted.internet import reactor
+from twisted.internet.ssl import ClientContextFactory
+from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
 from twisted.cred.credentials import UsernamePassword
 
@@ -79,10 +81,6 @@ class ClientProtocol(AMP):
         d.addErrback(error_handlers)
         return d
 
-    def connectionLost(self, reason):
-        log.err(reason)
-        super(ClientProtocol, self).connectionLost(reason)
-
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Message ---------")
         log.msg(sMsg)
@@ -94,19 +92,20 @@ class ClientProtocol(AMP):
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
-    def frameFromSerialport(self, frame):
-        log.msg("--------- Message from Serial port ---------")
+    def processFrame(self, frame):
+        log.msg('Received frame: ' + frame)
         res = self.callRemote(SendMsg, sMsg=frame, iTimestamp=misc.get_utc_timestamp())
         log.msg(res)
+
+    def frameFromSerialport(self, frame):
+        log.msg("--------- Message from Serial port ---------")
+        processFrame(frame)
 
     def frameFromUDPSocket(self):
         log.msg("--------- Message from UDP socket ---------")        
         while True:
             frame, addr = self.UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-            log.msg(frame)
-            res = self.callRemote(SendMsg, sMsg=frame, iTimestamp=misc.get_utc_timestamp())
-            log.msg(res)
-
+            processFrame(frame)
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Event ---------")
@@ -121,6 +120,35 @@ class ClientProtocol(AMP):
 
         return {}
     NotifyEvent.responder(vNotifyEvent)
+
+
+class ClientReconnectFactory(ReconnectingClientFactory):
+    def startedConnecting(self, connector):
+        log.msg('Starting connection...')
+
+    def buildProtocol(self, addr):
+        log.msg('Building protocol')
+        self.resetDelay()
+        return ClientProtocol()
+
+    def clientConnectionLost(self, connector, reason):
+        log.msg('Lost connection.  Reason: ', reason)
+        ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+
+    def clientConnectionFailed(self, connector, reason):
+        log.msg('Connection failed. Reason: ', reason)
+        ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
+
+
+class SatnetContextFactory(ClientContextFactory):
+    def getContext(self):
+        self.method = SSL.SSLv23_METHOD
+        ctx = ClientContextFactory.getContext(self)
+        ctx.use_certificate_file('../protocol/key/test.crt')
+        #ctx.use_privatekey_file('keys/client.key')
+
+        return ctx
+
 
 class Client():
 
@@ -150,23 +178,7 @@ class Client():
         else:
             self.readCMDConfig(opts)
 
-        #Load certificate to initialize a SSL connection
-        cert = ssl.Certificate.loadPEM(open('../protocol/key/public.pem').read())
-        options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
-
-        # Create a protocol instance to connect with the server 
-        factory = protocol.Factory.forProtocol(ClientProtocol)
-        endpoint = endpoints.SSL4ClientEndpoint(reactor, 'localhost', 1234, options)
-        d = endpoint.connect(factory)
-        def connectionSuccessful(clientAMP):
-            clientAMP.CONNECTION_INFO = self.CONNECTION_INFO
-            clientAMP.user_login()
-            return clientAMP
-        d.addCallback(connectionSuccessful)        
-        def connectionError(error):
-            log.err('Connection could not be established')
-            log.err(error)
-        d.addErrback(connectionError)
+        reactor.connectSSL('localhost', 1234, ClientReconnectFactory(), SatnetContextFactory())
         reactor.run()
 
     def readCMDConfig(self, opts):

@@ -79,10 +79,6 @@ class ClientProtocol(AMP):
         d.addErrback(error_handlers)
         return d
 
-    def connectionLost(self, reason):
-        log.err(reason)
-        super(ClientProtocol, self).connectionLost(reason)
-
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Message ---------")
         log.msg(sMsg)
@@ -94,19 +90,20 @@ class ClientProtocol(AMP):
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
-    def frameFromSerialport(self, frame):
-        log.msg("--------- Message from Serial port ---------")
+    def processFrame(self, frame):
+        log.msg('Received frame: ' + frame)
         res = self.callRemote(SendMsg, sMsg=frame, iTimestamp=misc.get_utc_timestamp())
         log.msg(res)
+
+    def frameFromSerialport(self, frame):
+        log.msg("--------- Message from Serial port ---------")
+        processFrame(frame)
 
     def frameFromUDPSocket(self):
         log.msg("--------- Message from UDP socket ---------")        
         while True:
             frame, addr = self.UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-            log.msg(frame)
-            res = self.callRemote(SendMsg, sMsg=frame, iTimestamp=misc.get_utc_timestamp())
-            log.msg(res)
-
+            processFrame(frame)
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Event ---------")
@@ -121,6 +118,7 @@ class ClientProtocol(AMP):
 
         return {}
     NotifyEvent.responder(vNotifyEvent)
+
 
 class Client():
 
@@ -150,11 +148,15 @@ class Client():
         else:
             self.readCMDConfig(opts)
 
+        self.startConnectionEP()
+        reactor.run()
+
+    def startConnectionEP(self):
+        # Reconnections must be implemented here!
+        
         #Load certificate to initialize a SSL connection
         cert = ssl.Certificate.loadPEM(open('../protocol/key/public.pem').read())
-        options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
-
-        # Create a protocol instance to connect with the server 
+        options = ssl.optionsForClientTLS(u'example.humsat.org', cert)        
         factory = protocol.Factory.forProtocol(ClientProtocol)
         endpoint = endpoints.SSL4ClientEndpoint(reactor, 'localhost', 1234, options)
         d = endpoint.connect(factory)
@@ -167,7 +169,6 @@ class Client():
             log.err('Connection could not be established')
             log.err(error)
         d.addErrback(connectionError)
-        reactor.run()
 
     def readCMDConfig(self, opts):
         for opt, arg in opts:

@@ -45,6 +45,12 @@ class ClientProtocol(AMP):
     UDPSocket = None
     thread = None
 
+    def __init__(self, CONNECTION_INFO):
+        self.CONNECTION_INFO = CONNECTION_INFO
+
+    def connectionMade(self):
+        self.user_login()
+
     def user_login(self):
         d = login(self, UsernamePassword(self.CONNECTION_INFO['username'], self.CONNECTION_INFO['password']))
         def connected(result):
@@ -54,12 +60,14 @@ class ClientProtocol(AMP):
             return failure
         d.addErrback(notConnected)
         def open_serial(result):
+            log.msg('Opening serial port (%s, %s)', self.CONNECTION_INFO['serialport'], self.CONNECTION_INFO['baudrate'])
             self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'], self.CONNECTION_INFO['baudrate'])
             self.kissTNC.start()  # inits the TNC, optionally passes KISS config flags.
             self.thread = threading.Thread(target=self.kissTNC.read, args=(self.frameFromSerialport,))
             self.thread.daemon = True # This thread will be close if the reactor stops
             self.thread.start()
         def open_socket(result):
+            log.msg('Opening UDP socket (%s, %s)', self.CONNECTION_INFO['ip'], self.CONNECTION_INFO['udpport'])            
             self.UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
             self.UDPSocket.bind((self.CONNECTION_INFO['ip'], self.CONNECTION_INFO['udpport']))
             self.thread = threading.Thread(target=self.frameFromUDPSocket)
@@ -123,13 +131,16 @@ class ClientProtocol(AMP):
 
 
 class ClientReconnectFactory(ReconnectingClientFactory):
+    def __init__(self, CONNECTION_INFO):
+        self.CONNECTION_INFO = CONNECTION_INFO
+
     def startedConnecting(self, connector):
         log.msg('Starting connection...')
 
     def buildProtocol(self, addr):
-        log.msg('Building protocol')
+        log.msg('Building protocol...')
         self.resetDelay()
-        return ClientProtocol()
+        return ClientProtocol(self.CONNECTION_INFO)
 
     def clientConnectionLost(self, connector, reason):
         log.msg('Lost connection.  Reason: ', reason)
@@ -145,8 +156,6 @@ class SatnetContextFactory(ClientContextFactory):
         self.method = SSL.SSLv23_METHOD
         ctx = ClientContextFactory.getContext(self)
         ctx.use_certificate_file('../protocol/key/test.crt')
-        #ctx.use_privatekey_file('keys/client.key')
-
         return ctx
 
 
@@ -178,7 +187,7 @@ class Client():
         else:
             self.readCMDConfig(opts)
 
-        reactor.connectSSL('localhost', 1234, ClientReconnectFactory(), SatnetContextFactory())
+        reactor.connectSSL('localhost', 1234, ClientReconnectFactory(self.CONNECTION_INFO), SatnetContextFactory())
         reactor.run()
 
     def readCMDConfig(self, opts):

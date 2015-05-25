@@ -107,13 +107,13 @@ class ClientProtocol(AMP):
 
     def frameFromSerialport(self, frame):
         log.msg("--------- Message from Serial port ---------")
-        processFrame(frame)
+        self.processFrame(frame)
 
     def frameFromUDPSocket(self):
         log.msg("--------- Message from UDP socket ---------")        
         while True:
             frame, addr = self.UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-            processFrame(frame)
+            self.processFrame(frame)
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Event ---------")

@@ -21,6 +21,7 @@ __author__ = 'xabicrespog@gmail.com'
 
 
 from twisted.python import log
+import time
 
 
 class GroundStationInterface():
@@ -64,6 +65,12 @@ class GroundStationInterface():
     :type AMP:
         L{ClientProtocol}
 
+    :ivar GS:
+        Name of the GS that is receiving the data. It will be used to save the frames
+        received to a local file in case of a connection failure.
+    :type AMP:
+        L{String}
+
     """
 
     kissTNC = None
@@ -72,10 +79,12 @@ class GroundStationInterface():
     frameBuffer = None
     CONNECTION_INFO = {}
     AMP = None
+    GS = None
 
-    def __init__(self, CONNECTION_INFO, AMP):
+    def __init__(self, CONNECTION_INFO, AMP, GS):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.AMP = AMP
+        self.GS = GS
 
         if CONNECTION_INFO['connection'] == 'serial':
             self._open_serial()
@@ -108,19 +117,23 @@ class GroundStationInterface():
         except:
             log.err('UDP port unavailable')
 
-    def updateLocalFile(frame):
-        with open("file.csv","a+") as f:
-            f.write(frame)
+    def _manageFrame(self, frame):
+        if self.AMP is not None:
+            self.AMP.processFrame(frame)
+        else:
+            self._updateLocalFile(frame)
+
+    def _updateLocalFile(self, frame):
+        filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
+        with open(filename,"a+") as f:
+            f.write(frame + ",")
 
     def _frameFromSerialport(self, frame):
         log.msg("--------- Message from Serial port ---------")
-        if self.AMP:
-            self.AMP.processFrame(frame)
-        else:
-            updateLocalFile()
+        self._manageFrame(frame)
 
     def _frameFromUDPSocket(self):
         log.msg("--------- Message from UDP socket ---------")        
         while True:
             frame, addr = self.UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-            self.AMP.processFrame(frame)
+            self._manageFrame(frame)

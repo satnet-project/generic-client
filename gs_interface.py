@@ -22,13 +22,14 @@ __author__ = 'xabicrespog@gmail.com'
 
 from twisted.python import log
 import time
-
+import threading
 
 class GroundStationInterface():
     """
     This class contains the interface between the GS and the SATNET protocol.
-    It supports either a UDP or a serial connection. In case the connection fails,
-    received frames shall be stored in l{frameBuffer}.
+    It supports either a UDP or a serial connection. In case the connection to 
+    the SATNET server fails fails, received frames will be stored inside a csv 
+    file named ESEO-gs-yyy.mm.dd.csv.
 
     :ivar kissTNC:
         This object is in charge of communicating with a TNC which shall support
@@ -81,7 +82,7 @@ class GroundStationInterface():
     AMP = None
     GS = None
 
-    def __init__(self, CONNECTION_INFO, AMP, GS):
+    def __init__(self, CONNECTION_INFO, GS, AMP=None):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.AMP = AMP
         self.GS = GS
@@ -102,20 +103,22 @@ class GroundStationInterface():
             self.thread = threading.Thread(target=self.kissTNC.read, args=(self._frameFromSerialport,))
             self.thread.daemon = True # This thread will be close if the reactor stops
             self.thread.start()
-        except:
+        except Exception as e:            
             log.err('Serial port unavailable')
+            log.err(e)
 
     def _open_socket(self):
         import socket
         try:
-            log.msg('Opening UDP socket (' + self.CONNECTION_INFO['ip'] + ',' + self.CONNECTION_INFO['udpport'] + ')')
+            log.msg('Opening UDP socket (' + self.CONNECTION_INFO['ip'] + ',' + str(self.CONNECTION_INFO['udpport']) + ')')
             self.UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
             self.UDPSocket.bind((self.CONNECTION_INFO['ip'], self.CONNECTION_INFO['udpport']))
             self.thread = threading.Thread(target=self._frameFromUDPSocket)
             self.thread.daemon = True # This thread will be close if the reactor stops
             self.thread.start()
-        except:
+        except Exception as e:            
             log.err('UDP port unavailable')
+            log.err(e)
 
     def _manageFrame(self, frame):
         if self.AMP is not None:
@@ -124,9 +127,10 @@ class GroundStationInterface():
             self._updateLocalFile(frame)
 
     def _updateLocalFile(self, frame):
+        log.msg('Saving message to local file')
         filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
         with open(filename,"a+") as f:
-            f.write(frame + ",")
+            f.write(frame + ",\n")
 
     def _frameFromSerialport(self, frame):
         log.msg("--------- Message from Serial port ---------")
@@ -137,3 +141,11 @@ class GroundStationInterface():
         while True:
             frame, addr = self.UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
             self._manageFrame(frame)
+
+    def connectProtocol(self, AMP):
+        log.msg('Protocol connected to the GS')
+        self.AMP = AMP
+
+    def disconnectProtocol(self):
+        log.msg('Protocol disconnected from the GS')
+        self.AMP = None        

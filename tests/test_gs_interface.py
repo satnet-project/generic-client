@@ -34,13 +34,13 @@ class TestSerialGroundStationInterface(unittest.TestCase):
 		self.CONNECTION_INFO['baudrate'] = '115200'
 
 		# Start connection
-		self.cp = ClientProtocol(self.CONNECTION_INFO)
+		self.cp = ClientProtocol(self.CONNECTION_INFO, self)
 
 	@mock.patch('socket.socket')
 	@mock.patch('serial.Serial')
 	def test_GroundStationInterface_withSerial_openSerialNotUDP(self, mock_serial, mock_socket):
 		# Only serial connection should be initialized
-		gsi = GroundStationInterface(self.CONNECTION_INFO, self.cp, "Vigo")
+		gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo", self.cp)
 
 		mock_serial.assert_called_once_with(self.CONNECTION_INFO['serialport'], self.CONNECTION_INFO['baudrate'])
 		self.assertFalse(mock_socket.called)
@@ -48,7 +48,7 @@ class TestSerialGroundStationInterface(unittest.TestCase):
 	def test_GroundStationInterface_frameFromSerial_processFrame(self):
 		frame = 'test_frame'
 
-		gsi = GroundStationInterface(self.CONNECTION_INFO, self.cp, "Vigo")
+		gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo", self.cp)
 
 		# Create mock of processFrame to avoid the need of an active server
 		self.cp.processFrame = mock.Mock()
@@ -61,7 +61,7 @@ class TestSerialGroundStationInterface(unittest.TestCase):
 	def test_GroundStationInterface_frameFromSerialNoConnection_writeToFile(self):
 		frame = 'test_frame'
 
-		gsi = GroundStationInterface(self.CONNECTION_INFO, None, "Vigo")
+		gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
 
 		# When the connection to the server is lost the protocol object is removed
 		self.cp = None
@@ -81,13 +81,13 @@ class TestUDPGroundStationInterface(unittest.TestCase):
 		self.CONNECTION_INFO['udpport'] = '2000'
 
 		# Start connection
-		self.cp = ClientProtocol(self.CONNECTION_INFO)
+		self.cp = ClientProtocol(self.CONNECTION_INFO, self)
 
 	@mock.patch('socket.socket.bind')
 	@mock.patch('serial.Serial')
 	def test_GroundStationInterface_withUDP_openUDPNotSerial(self, mock_serial, mock_socket):
 		# Only serial connection should be initialized
-		gsi = GroundStationInterface(self.CONNECTION_INFO, self.cp, "Vigo")
+		gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo", self.cp)
 
 		mock_socket.assert_called_once_with((self.CONNECTION_INFO['ip'], self.CONNECTION_INFO['udpport']))
 		self.assertFalse(mock_serial.called)

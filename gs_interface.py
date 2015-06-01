@@ -71,7 +71,6 @@ class GroundStationInterface():
         received to a local file in case of a connection failure.
     :type AMP:
         L{String}
-
     """
 
     kissTNC = None
@@ -142,10 +141,24 @@ class GroundStationInterface():
             frame, addr = self.UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
             self._manageFrame(frame)
 
+    """
+    Pass to this class a reference to the protocol, which is the class in
+    charge of talking to the SATNET server.
+
+    :ivar AMP:
+        Client protocol to which received frames will be sent to be processed. This
+        object shall contain a method called 'processFrame'
+    :type AMP:
+        L{ClientProtocol}    
+    """
     def connectProtocol(self, AMP):
         log.msg('Protocol connected to the GS')
         self.AMP = AMP
 
+    """
+    Removes the reference to the protocol object (self.AMP). It shall be invocked 
+    when the connection to the SATNET server is lost.
+    """
     def disconnectProtocol(self):
         log.msg('Protocol disconnected from the GS')
         self.AMP = None        

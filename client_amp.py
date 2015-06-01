@@ -30,64 +30,41 @@ from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
 from twisted.cred.credentials import UsernamePassword
+from twisted.internet.defer import inlineCallbacks
 
 from protocol.ampauth.client import login
 from protocol.commands import *
 from protocol.errors import *
 
+from gs_interface import GroundStationInterface
 import getpass, getopt, threading
 import misc
 
 class ClientProtocol(AMP):
 
     CONNECTION_INFO = {}
-    kissTNC = None
-    UDPSocket = None
-    thread = None
 
-    def __init__(self, CONNECTION_INFO):
+    def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
+        self.gsi = gsi
 
     def connectionMade(self):
         self.user_login()
+        self.gsi.connectProtocol(self)
 
-    def user_login(self):
-        d = login(self, UsernamePassword(self.CONNECTION_INFO['username'], self.CONNECTION_INFO['password']))
-        def connected(result):
-            return self.callRemote(StartRemote, iSlotId=self.CONNECTION_INFO['slot_id'])
-        d.addCallback(connected)
-        def notConnected(failure):
-            return failure
-        d.addErrback(notConnected)
-        def open_serial(result):
-            log.msg('Opening serial port (%s, %s)', self.CONNECTION_INFO['serialport'], self.CONNECTION_INFO['baudrate'])
-            self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'], self.CONNECTION_INFO['baudrate'])
-            self.kissTNC.start()  # inits the TNC, optionally passes KISS config flags.
-            self.thread = threading.Thread(target=self.kissTNC.read, args=(self.frameFromSerialport,))
-            self.thread.daemon = True # This thread will be close if the reactor stops
-            self.thread.start()
-        def open_socket(result):
-            log.msg('Opening UDP socket (%s, %s)', self.CONNECTION_INFO['ip'], self.CONNECTION_INFO['udpport'])            
-            self.UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
-            self.UDPSocket.bind((self.CONNECTION_INFO['ip'], self.CONNECTION_INFO['udpport']))
-            self.thread = threading.Thread(target=self.frameFromUDPSocket)
-            self.thread.daemon = True # This thread will be close if the reactor stops
-            self.thread.start()
+    def connectionLost(self, reason):
+        log.err("Connection lost")
+        log.err(reason)
+        self.gsi.disconnectProtocol()
 
-        if self.CONNECTION_INFO['connection'] == 'serial':
-            import kiss
-            d.addCallback(open_serial)
-        elif self.CONNECTION_INFO['connection'] == 'udp':
-            import socket
-            d.addCallback(open_socket)            
-
-        def error_handlers(failure):
-            if failure.type == OSError:
-                log.err("Is the TNC connected or the serial port correct?")
-            log.err(failure.type)
+    @inlineCallbacks
+    def user_login(self):        
+        try:
+            res = yield login(self, UsernamePassword(self.CONNECTION_INFO['username'], self.CONNECTION_INFO['password']))
+            res = yield self.callRemote(StartRemote, iSlotId=self.CONNECTION_INFO['slot_id'])
+        except Exception as e:            
+            log.err(e)
             reactor.stop()
-        d.addErrback(error_handlers)
-        return d
 
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Message ---------")
@@ -105,16 +82,6 @@ class ClientProtocol(AMP):
         res = self.callRemote(SendMsg, sMsg=frame, iTimestamp=misc.get_utc_timestamp())
         log.msg(res)
 
-    def frameFromSerialport(self, frame):
-        log.msg("--------- Message from Serial port ---------")
-        self.processFrame(frame)
-
-    def frameFromUDPSocket(self):
-        log.msg("--------- Message from UDP socket ---------")        
-        while True:
-            frame, addr = self.UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-            self.processFrame(frame)
-
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
@@ -131,8 +98,9 @@ class ClientProtocol(AMP):
 
 
 class ClientReconnectFactory(ReconnectingClientFactory):
-    def __init__(self, CONNECTION_INFO):
+    def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
+        self.gsi = gsi
 
     def startedConnecting(self, connector):
         log.msg('Starting connection...')
@@ -140,7 +108,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
     def buildProtocol(self, addr):
         log.msg('Building protocol...')
         self.resetDelay()
-        return ClientProtocol(self.CONNECTION_INFO)
+        return ClientProtocol(self.CONNECTION_INFO, self.gsi)
 
     def clientConnectionLost(self, connector, reason):
         log.msg('Lost connection.  Reason: ', reason)
@@ -160,13 +128,17 @@ class SatnetContextFactory(ClientContextFactory):
 
 
 class Client():
+    """
+    This class starts the client by reading the configuration parameters either from
+    a file called config.ini or from the command line.
 
-    ###
-    # CONNECTION_INFO contains the following data:
-    #   -  username, password, slot_id, connection
-    #   -  (serial connection) serialport, baudrate
-    #   -  (udp connection) ip, port
-    ###
+    :ivar CONNECTION_INFO:
+        This variable contains the following data: username, password, slot_id, 
+        connection (either 'serial' or 'udp'), serialport, baudrate, ip, port.
+    :type CONNECTION_INFO:
+        L{Dictionary}
+
+    """
     CONNECTION_INFO = {}
 
     def __init__(self, argv):
@@ -187,7 +159,8 @@ class Client():
         else:
             self.readCMDConfig(opts)
 
-        reactor.connectSSL('localhost', 1234, ClientReconnectFactory(self.CONNECTION_INFO), SatnetContextFactory())
+        gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
+        reactor.connectSSL('localhost', 1234, ClientReconnectFactory(self.CONNECTION_INFO, gsi), SatnetContextFactory())
         reactor.run()
 
     def readCMDConfig(self, opts):

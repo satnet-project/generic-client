@@ -2,6 +2,6 @@ kiss==2.0.2
 mock==1.0.1
 pyOpenSSL==0.15.1
 pyserial==2.7
-pytz==2014.4
+pytz==2015.4
 service-identity==14.0.0
 twisted==15.2.1

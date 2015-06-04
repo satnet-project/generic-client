@@ -119,14 +119,6 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
 
-class SatnetContextFactory(ClientContextFactory):
-    def getContext(self):
-        self.method = SSL.SSLv23_METHOD
-        ctx = ClientContextFactory.getContext(self)
-        ctx.use_certificate_file('../protocol/key/test.crt')
-        return ctx
-
-
 class Client():
     """
     This class starts the client by reading the configuration parameters either from
@@ -160,7 +152,7 @@ class Client():
             self.readCMDConfig(opts)
 
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
-        reactor.connectSSL('localhost', 1234, ClientReconnectFactory(self.CONNECTION_INFO, gsi), SatnetContextFactory())
+        reactor.connectSSL('localhost', 1234, ClientReconnectFactory(self.CONNECTION_INFO, gsi), ClientContextFactory())
         reactor.run()
 
     def readCMDConfig(self, opts):

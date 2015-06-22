@@ -60,7 +60,7 @@ class ClientProtocol(AMP):
     @inlineCallbacks
     def user_login(self):        
         try:
-            res = yield login(self, UsernamePassword(self.CONNECTION_INFO['username'], self.CONNECTION_INFO['password']))
+            res = yield self.callRemote(Login, sUsername=self.CONNECTION_INFO['username'], sPassword=self.CONNECTION_INFO['password'])
             res = yield self.callRemote(StartRemote, iSlotId=self.CONNECTION_INFO['slot_id'])
         except Exception as e:            
             log.err(e)
@@ -137,17 +137,20 @@ class Client():
         log.startLogging(sys.stdout)
 
         try:
-           opts, args = getopt.getopt(argv,"hfu:p:t:c:s:b:i:u:",
+           opts, args = getopt.getopt(argv,"hfgu:p:t:c:s:b:i:u:",
             ["username=","password=","slot=","connection=","serialport=","baudrate=","ip=","udpport="])
         except getopt.GetoptError:
             log.msg('Incorrect script usage')
             self.usage()
             return
-        if ('-h','') in opts:
+        if ('-h','--help') in opts:
             self.usage()
             return
-        elif ('-f','') in opts:
+        elif ('-f','--file') in opts:
             self.readFileConfig(opts)
+        elif ('-g', '--gui') in opts:
+            #start GUI
+            return
         else:
             self.readCMDConfig(opts)
 
@@ -173,23 +176,7 @@ class Client():
                 self.CONNECTION_INFO['ip']  = arg
             elif opt in ("-u", "--udpport"):
                 self.CONNECTION_INFO['udpport']  = int(arg)
-
-        if 'username' not in self.CONNECTION_INFO:
-            log.msg('Enter SATNET username: ')
-            self.CONNECTION_INFO['username']  = raw_input()
-        if 'password' not in self.CONNECTION_INFO:
-            log.msg('Enter', self.CONNECTION_INFO['username'],' password: ')
-            self.CONNECTION_INFO['password']  = getpass.getpass()
-        if self.CONNECTION_INFO['connection'] == 'serial':
-            log.msg('Using a serial interface with the GS')
-            if 'serialport' not in self.CONNECTION_INFO or 'baudrate' not in self.CONNECTION_INFO:
-                log.msg('Missing some client configurations (serialport [-s] or baudrate [-b])')
-                return
-        if self.CONNECTION_INFO['connection'] == 'udp':
-            log.msg('Using an UDP interface with the GS')
-            if 'ip' not in self.CONNECTION_INFO or 'udpport' not in self.CONNECTION_INFO:
-                log.msg('Missing some client configurations (ip [-i] or udpport [-u])')
-                return
+        self.paramValidation()
 
     def readFileConfig(self, opts):
         import ConfigParser
@@ -206,6 +193,26 @@ class Client():
         if self.CONNECTION_INFO['connection'] == 'udp':
             self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
             self.CONNECTION_INFO['udpport'] = int(config.get('UDP', 'udpport'))
+        self.paramValidation()
+
+    def paramValidation(self):
+        # Parameters validation
+        if 'username' not in self.CONNECTION_INFO:
+            log.err('Missing username parameter [-u username]')
+        if 'password' not in self.CONNECTION_INFO:
+            log.err('Missing username parameter [-p password]')
+        if 'connection' not in self.CONNECTION_INFO:
+            log.err('Missing connection parameter [-c serial] or [-c udp]')
+        if self.CONNECTION_INFO['connection'] == 'serial':
+            log.msg('Using a serial interface with the GS')
+            if 'serialport' not in self.CONNECTION_INFO or 'baudrate' not in self.CONNECTION_INFO:
+                log.msg('Missing some client configurations (serialport [-s] or baudrate [-b])')
+                return
+        if self.CONNECTION_INFO['connection'] == 'udp':
+            log.msg('Using an UDP interface with the GS')
+            if 'ip' not in self.CONNECTION_INFO or 'udpport' not in self.CONNECTION_INFO:
+                log.msg('Missing some client configurations (ip [-i] or udpport [-u])')
+                return
 
     def usage(self):
         print ("USAGE of client_amp.py\n"
@@ -236,5 +243,42 @@ class Client():
                 "ip: 127.0.0.1\n"
                 "udpport: 5005")
 
+
+class SatNetGUI(QtGui.QWidget):
+    
+    def __init__(self, fdm):
+        super(FDM_GUI, self).__init__()
+        self.fdm = fdm
+        self.initUI()
+        
+    def initUI(self):
+        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
+        
+        self.lName = QtGui.QLabel("Nome do evento", self)
+        self.lName.move(20, 20)
+        self.leTitle = QtGui.QLineEdit(self)
+        self.leTitle.move(20, 40)
+        self.leTitle.textChanged.connect(partial(self.assign, 'EVENT_NAME'))
+
+        self.btnNew = QtGui.QPushButton('Novo', self)
+        self.btnNew.move(20, 80)
+        self.btnNew.clicked.connect(self.fdm.addEvent)
+
+        self.btnStop = QtGui.QPushButton('Finalizar', self)
+        self.btnStop.move(120, 80)
+
+
+        self.setGeometry(300, 300, 290, 150)
+        self.setWindowTitle('Icon')
+        #self.setWindowIcon(QtGui.QIcon('web.png'))
+        self.show()
+
+    def assign(self, var, val):
+        self.fdm.event[var] = val
+
 if __name__ == '__main__':
     c = Client(sys.argv[1:])
+    ex = SatNetGUI(c)
+
+    app = QtGui.QApplication(sys.argv)
+    sys.exit(app.exec_())

@@ -23,6 +23,7 @@ __author__ = 'xabicrespog@gmail.com'
 import sys
 
 from OpenSSL import SSL
+from PyQt4 import QtGui
 
 from twisted.python import log
 from twisted.internet import reactor
@@ -32,7 +33,7 @@ from twisted.protocols.amp import AMP
 from twisted.cred.credentials import UsernamePassword
 from twisted.internet.defer import inlineCallbacks
 
-from protocol.ampauth.client import login
+from protocol.ampauth.client import Login
 from protocol.commands import *
 from protocol.errors import *
 
@@ -143,12 +144,13 @@ class Client():
             log.msg('Incorrect script usage')
             self.usage()
             return
-        if ('-h','--help') in opts:
+        if ('-h','') in opts:
             self.usage()
             return
-        elif ('-f','--file') in opts:
+        elif ('-f','') in opts:
+            log.msg('entra')
             self.readFileConfig(opts)
-        elif ('-g', '--gui') in opts:
+        elif ('-g','') in opts:
             #start GUI
             return
         else:
@@ -199,20 +201,23 @@ class Client():
         # Parameters validation
         if 'username' not in self.CONNECTION_INFO:
             log.err('Missing username parameter [-u username]')
+            exit()
         if 'password' not in self.CONNECTION_INFO:
             log.err('Missing username parameter [-p password]')
+            exit()
         if 'connection' not in self.CONNECTION_INFO:
             log.err('Missing connection parameter [-c serial] or [-c udp]')
+            exit()
         if self.CONNECTION_INFO['connection'] == 'serial':
             log.msg('Using a serial interface with the GS')
             if 'serialport' not in self.CONNECTION_INFO or 'baudrate' not in self.CONNECTION_INFO:
                 log.msg('Missing some client configurations (serialport [-s] or baudrate [-b])')
-                return
+                exit()
         if self.CONNECTION_INFO['connection'] == 'udp':
             log.msg('Using an UDP interface with the GS')
             if 'ip' not in self.CONNECTION_INFO or 'udpport' not in self.CONNECTION_INFO:
                 log.msg('Missing some client configurations (ip [-i] or udpport [-u])')
-                return
+                exit()
 
     def usage(self):
         print ("USAGE of client_amp.py\n"
@@ -246,25 +251,24 @@ class Client():
 
 class SatNetGUI(QtGui.QWidget):
     
-    def __init__(self, fdm):
-        super(FDM_GUI, self).__init__()
-        self.fdm = fdm
+    def __init__(self):
+        super(SatNetGUI, self).__init__()
         self.initUI()
         
     def initUI(self):
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         
-        self.lName = QtGui.QLabel("Nome do evento", self)
+        self.lName = QtGui.QLabel("Test", self)
         self.lName.move(20, 20)
         self.leTitle = QtGui.QLineEdit(self)
         self.leTitle.move(20, 40)
-        self.leTitle.textChanged.connect(partial(self.assign, 'EVENT_NAME'))
+        #self.leTitle.textChanged.connect(func)
 
-        self.btnNew = QtGui.QPushButton('Novo', self)
+        self.btnNew = QtGui.QPushButton('Test BTN', self)
         self.btnNew.move(20, 80)
         self.btnNew.clicked.connect(self.fdm.addEvent)
 
-        self.btnStop = QtGui.QPushButton('Finalizar', self)
+        self.btnStop = QtGui.QPushButton('Test2 BTN', self)
         self.btnStop.move(120, 80)
 
 
@@ -273,12 +277,12 @@ class SatNetGUI(QtGui.QWidget):
         #self.setWindowIcon(QtGui.QIcon('web.png'))
         self.show()
 
-    def assign(self, var, val):
-        self.fdm.event[var] = val
-
 if __name__ == '__main__':
-    c = Client(sys.argv[1:])
-    ex = SatNetGUI(c)
 
     app = QtGui.QApplication(sys.argv)
+    from qtreactor import pyqt4reactor
+    pyqt4reactor.install()
     sys.exit(app.exec_())
+    ex = SatNetGUI()
+
+    c = Client(sys.argv[1:])

@@ -26,7 +26,6 @@ from OpenSSL import SSL
 from PyQt4 import QtGui
 
 from twisted.python import log
-from twisted.internet import reactor
 from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
@@ -149,16 +148,20 @@ class Client():
             return
         elif ('-f','') in opts:
             log.msg('entra')
-            self.readFileConfig(opts)
+            self.readFileConfig()
+            self.createConnection()
         elif ('-g','') in opts:
-            #start GUI
-            return
+            self.readFileConfig()
+            ex = SatNetGUI()
         else:
             self.readCMDConfig(opts)
+            self.createConnection()
+        
+        reactor.run()
 
+    def createConnection(self):
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
         reactor.connectSSL('localhost', 1234, ClientReconnectFactory(self.CONNECTION_INFO, gsi), ClientContextFactory())
-        reactor.run()
 
     def readCMDConfig(self, opts):
         for opt, arg in opts:
@@ -180,7 +183,7 @@ class Client():
                 self.CONNECTION_INFO['udpport']  = int(arg)
         self.paramValidation()
 
-    def readFileConfig(self, opts):
+    def readFileConfig(self):
         import ConfigParser
         config = ConfigParser.ConfigParser()
         config.read("config.ini")
@@ -266,7 +269,7 @@ class SatNetGUI(QtGui.QWidget):
 
         self.btnNew = QtGui.QPushButton('Test BTN', self)
         self.btnNew.move(20, 80)
-        self.btnNew.clicked.connect(self.fdm.addEvent)
+        #self.btnNew.clicked.connect(self.fdm.addEvent)
 
         self.btnStop = QtGui.QPushButton('Test2 BTN', self)
         self.btnStop.move(120, 80)
@@ -282,7 +285,7 @@ if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     from qtreactor import pyqt4reactor
     pyqt4reactor.install()
-    sys.exit(app.exec_())
-    ex = SatNetGUI()
-
+    from twisted.internet import reactor
+    # sys.exit frozes the program. Possible solution in https://github.com/ghtdak/qtreactor/issues/1
+    #sys.exit(app.exec_())
     c = Client(sys.argv[1:])

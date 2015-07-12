@@ -32,7 +32,7 @@ from twisted.protocols.amp import AMP
 from twisted.cred.credentials import UsernamePassword
 from twisted.internet.defer import inlineCallbacks
 
-from protocol.ampauth.client import Login
+from protocol.ampauth.commands import Login
 from protocol.commands import *
 from protocol.errors import *
 

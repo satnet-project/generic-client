@@ -1,8 +1,7 @@
 dependencies:
   pre:
     - sudo apt-get update
-    - sudo apt-get install mock
-    - sudo apt-get install kiss
+    - sudo apt-get install python-mock
     - virtualenv .venv
     - source .venv/bin/activate
 checkout:

@@ -9,7 +9,7 @@ dependencies:
     - sudo apt-get install python-mock
     - virtualenv .venv
     - source .venv/bin/activate
-    - pip install -r scripts/requirements.txt
-    - pip install -r protocol/scripts/requirements.txt
-    - pip install django
-    - pip install django-core
+    - sudo pip install -r scripts/requirements.txt
+    - sudo pip install -r protocol/scripts/requirements.txt
+    - sudo pip install django
+    - sudo pip install django-core

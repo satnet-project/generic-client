@@ -1,5 +1,6 @@
 dependencies:
   pre:
+    - sudo apt-get update
     - sudo apt-get install mock
     - sudo apt-get install kiss
     - virtualenv .venv

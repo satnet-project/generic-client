@@ -1,3 +1,8 @@
+checkout:
+  post:
+    - git submodule init
+    - git submodule update
+
 dependencies:
   pre:
     - sudo apt-get update
@@ -5,9 +10,4 @@ dependencies:
     - virtualenv .venv
     - source .venv/bin/activate
     - sudo pip install -r scripts/requirements.txt
-checkout:
-  post:
-    - pwd
-    - git submodule init
-    - git submodule update
-    - ls protocol/
+    - sudo pip install -r protocol/scripts/requirements.txt

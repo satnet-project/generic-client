@@ -1,7 +1,7 @@
 dependencies:
   pre:
-    - apt install mock
-    - apt install kiss
+    - sudo apt install mock
+    - sudo apt install kiss
     - virtualenv .venv
     - source .venv/bin/activate
 checkout:

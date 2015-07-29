@@ -1,3 +1,8 @@
+dependencies:
+  pre:
+    - sudo apt-get install -y mock kiss
+    - virtualenv .venv
+    - source .venv/bin/activate
 checkout:
   post:
     - git submodule sync

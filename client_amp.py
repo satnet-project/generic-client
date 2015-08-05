@@ -62,7 +62,7 @@ class ClientProtocol(AMP):
         try:
             res = yield self.callRemote(Login, sUsername=self.CONNECTION_INFO['username'], sPassword=self.CONNECTION_INFO['password'])
             res = yield self.callRemote(StartRemote, iSlotId=self.CONNECTION_INFO['slot_id'])
-        except Exception as e:            
+        except Exception as e:
             log.err(e)
             reactor.stop()
 
@@ -147,7 +147,6 @@ class Client():
             self.usage()
             return
         elif ('-f','') in opts:
-            log.msg('entra')
             self.readFileConfig()
             self.createConnection()
         elif ('-g','') in opts:

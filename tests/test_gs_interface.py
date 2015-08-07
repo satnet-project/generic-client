@@ -17,10 +17,16 @@
 :Author:
     Xabier Crespo Álvarez (xabicrespog@gmail.com)
 """
+
 __author__ = 'xabicrespog@gmail.com'
 
 
+import os.path
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import unittest, mock, kiss
+
 from client_amp import ClientProtocol
 from gs_interface import GroundStationInterface
 

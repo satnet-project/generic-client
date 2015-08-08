@@ -118,5 +118,5 @@ class TestUDPGroundStationInterface(unittest.TestCase):
 		self.cp.processFrame.assert_called_once_with(frame)
 	"""
 	
-	if __name__ == '__main__':
-		unittest.main()
+if __name__ == '__main__':
+	unittest.main()

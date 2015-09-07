@@ -1,8 +1,10 @@
 checkout:
   post:
+    - cd client/
     - git submodule init
-    - git submodule checkout jrpc_if
     - git submodule update
+    - cd protocol/
+    - git checkout jrpc_if
 
 dependencies:
   pre:

@@ -1,6 +1,7 @@
 checkout:
   post:
     - git submodule init
+    - git submodule checkout jrpc_if
     - git submodule update
 
 dependencies:
@@ -10,6 +11,4 @@ dependencies:
     - virtualenv .venv
     - source .venv/bin/activate
     - sudo pip install -r scripts/requirements.txt
-    - sudo pip install -r protocol/scripts/requirements.txt
-    - sudo pip install django
-    - sudo pip install django-core
+    - sudo pip install -r protocol/scripts/test_requirements.txt

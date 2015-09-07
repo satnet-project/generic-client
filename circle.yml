@@ -1,6 +1,6 @@
 checkout:
   post:
-    - cd client/
+    - ls
     - git submodule init
     - git submodule update
     - cd protocol/

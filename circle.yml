@@ -2,6 +2,7 @@ checkout:
   post:
     - git submodule init
     - git submodule update
+    - cd protocol && git checkout jrpc_if
 
 dependencies:
   pre:
@@ -10,7 +11,3 @@ dependencies:
     - virtualenv .venv
     - source .venv/bin/activate
     - sudo pip install -r scripts/requirements.txt
-
-test:
-  post:
-    - cd protocol && git checkout jrpc_if

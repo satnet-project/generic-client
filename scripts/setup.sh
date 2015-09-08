@@ -34,7 +34,7 @@ get_python_lib_cmd="from distutils.sysconfig import get_python_lib; print (get_p
 lib_virtualenv_path=$(python -c "$get_python_lib_cmd")
 lib_system_path=$(${var[-1]} -c "$get_python_lib_cmd")
  
-for lib in ${libs[@]}
-do
-    ln -s $lib_system_path/$lib $lib_virtualenv_path/$lib 
-done
+# for lib in ${libs[@]}
+# do
+#     ln -s $lib_system_path/$lib $lib_virtualenv_path/$lib 
+# done

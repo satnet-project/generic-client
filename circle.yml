@@ -11,5 +11,5 @@ dependencies:
     - cd scripts && bash ./setup.sh
 
 test:
-  pre:
+  override:
     - source .venv/bin/activate

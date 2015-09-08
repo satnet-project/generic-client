@@ -8,7 +8,6 @@ dependencies:
   pre:
     - sudo apt-get update
     - sudo apt-get install python-mock
-    - sudo apt-get install django
     - cd scripts && bash ./setup.sh
     - cd protocol/scripts && bash ./protocol-setup.sh
     - source .venv/bin/activate && pip install django && pip install django-test

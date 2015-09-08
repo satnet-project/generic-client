@@ -13,5 +13,4 @@ dependencies:
 
 test:
   post:
-    - cd protocol
-    - ls
+    - cd protocol && git checkout jrpc_if

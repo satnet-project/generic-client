@@ -8,13 +8,15 @@ dependencies:
   pre:
     - sudo apt-get update
     - sudo apt-get install python-mock
+    - sudo apt-get install django
     - cd scripts && bash ./setup.sh
     - cd protocol/scripts && bash ./protocol-setup.sh
+    - source .venv/bin/activate && pip install django && pip install django-test
 
 test:
   override:
     - source .venv/bin/activate && cd protocol/tests/ && python test_creds.py
-#    - ls && cat protocol/tests/test_end2end.py && source .venv/bin/activate && cd protocol/tests/ && python test_end2end.py
+    - source .venv/bin/activate && cd protocol/tests/ && python test_end2end.py
     - source .venv/bin/activate && cd protocol/tests/ && python test_login_singleClient.py
     - source .venv/bin/activate && cd protocol/tests/ && python test_login_multipleClients.py
 #    - source .venv/bin/activate && python protocol/tests/test_sendMsg.py

@@ -9,3 +9,7 @@ dependencies:
     - sudo apt-get update
     - sudo apt-get install python-mock
     - cd scripts && bash ./setup.sh
+
+tests:
+  pre:
+    - source .venv/bin/activate

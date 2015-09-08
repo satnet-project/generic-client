@@ -8,6 +8,4 @@ dependencies:
   pre:
     - sudo apt-get update
     - sudo apt-get install python-mock
-    - virtualenv .venv
-    - source .venv/bin/activate
-    - pip install -r scripts/requirements.txt
+    - cd scripts && bash ./setup.sh

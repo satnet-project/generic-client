@@ -1,3 +1,5 @@
+[![Circle CI](https://circleci.com/gh/satnet-project/client.svg?style=svg)](https://circleci.com/gh/satnet-project/client)
+
 client
 ======
 

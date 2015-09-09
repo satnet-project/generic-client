@@ -1,0 +1,18 @@
+language: 'python'
+branches:
+  only:
+    - master
+python:
+  - '2.7'
+install:
+#  - 'pip install -r requirements.txt'
+  - './scripts/setup.sh'
+#before_script:
+#  - "psql -c 'create database satnet_db;' -U postgres"
+#  - 'python manage.py migrate'
+#script:
+#  - 'python manage.py test'
+#  - 'coverage erase'
+#  - 'coverage run manage.py test'
+#after_script:
+#  - 'coveralls'

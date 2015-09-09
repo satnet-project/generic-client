@@ -1,4 +1,6 @@
 [![Circle CI](https://circleci.com/gh/satnet-project/client.svg?style=shield)](https://circleci.com/gh/satnet-project/client)
+[![Coverage Status](https://coveralls.io/repos/satnet-project/client/badge.svg?branch=master)](https://coveralls.io/r/satnet-project/client?branch=master)
+
 
 client
 ======

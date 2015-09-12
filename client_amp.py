@@ -23,7 +23,7 @@ __author__ = 'xabicrespog@gmail.com'
 import sys
 
 from OpenSSL import SSL
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 
 from twisted.python import log
 from twisted.internet.ssl import ClientContextFactory
@@ -33,7 +33,7 @@ from twisted.cred.credentials import UsernamePassword
 from twisted.internet.defer import inlineCallbacks
 
 from protocol.ampauth.commands import Login
-from protocol.commands import *
+from protocol.commands import StartRemote, NotifyMsg, NotifyEvent
 from protocol.errors import *
 
 from gs_interface import GroundStationInterface
@@ -251,37 +251,60 @@ class Client():
                 "udpport: 5005")
 
 
-class SatNetGUI(QtGui.QWidget):
-    
-    def __init__(self):
-        super(SatNetGUI, self).__init__()
+# class SatNetGUI(QtGui.QWidget):
+class SatNetGUI(QtGui.QDialog):
+
+    def __init__(self, parent = None):
+        QtGui.QWidget.__init__(self, parent)
         self.initUI()
-        
+
     def initUI(self):
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         
         self.lName = QtGui.QLabel("Test", self)
-        self.lName.move(20, 20)
-        self.leTitle = QtGui.QLineEdit(self)
-        self.leTitle.move(20, 40)
-        #self.leTitle.textChanged.connect(func)
 
-        self.btnNew = QtGui.QPushButton('Test BTN', self)
+
+        self.setGeometry(1000, 600, 980, 580)
+
+        self.btnNew = QtGui.QPushButton('Close connection', self)
         self.btnNew.move(20, 80)
-        #self.btnNew.clicked.connect(self.fdm.addEvent)
 
-        self.btnStop = QtGui.QPushButton('Test2 BTN', self)
-        self.btnStop.move(120, 80)
+    # def __init__(self):
+    #     super(SatNetGUI, self).__init__()
+    #     self.initUI()
+        
+    # def initUI(self):
+    #     QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
+        
+    #     self.lName = QtGui.QLabel("Test", self)
+    #     self.lName.move(20, 20)
+    #     self.leTitle = QtGui.QLineEdit(self)
+    #     self.leTitle.move(20, 40)
+    #     #self.leTitle.textChanged.connect(func)
+
+    #     self.btnNew = QtGui.QPushButton('Test BTN', self)
+    #     self.btnNew.move(20, 80)
+    #     #self.btnNew.clicked.connect(self.fdm.addEvent)
+
+    #     self.btnStop = QtGui.QPushButton('Test2 BTN', self)
+    #     self.btnStop.move(120, 80)
 
 
-        self.setGeometry(300, 300, 290, 150)
-        self.setWindowTitle('Icon')
-        #self.setWindowIcon(QtGui.QIcon('web.png'))
-        self.show()
+    #     self.setGeometry(300, 300, 290, 150)
+    #     self.setWindowTitle('Icon')
+    #     #self.setWindowIcon(QtGui.QIcon('web.png'))
+    #     self.show()
 
 if __name__ == '__main__':
 
+    # app = QtGui.QApplication(sys.argv)
     app = QtGui.QApplication(sys.argv)
+
+    myapp = SatNetGUI()
+    # Show window.
+    myapp.show()
+
+
     from qtreactor import pyqt4reactor
     pyqt4reactor.install()
     from twisted.internet import reactor

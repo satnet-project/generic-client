@@ -40,6 +40,8 @@ from gs_interface import GroundStationInterface
 import getpass, getopt, threading
 import misc
 
+import os
+
 class ClientProtocol(AMP):
 
     CONNECTION_INFO = {}
@@ -155,8 +157,31 @@ class Client():
         else:
             self.readCMDConfig(opts)
             self.createConnection()
+
+    # def __init__(self, argv):
+    #     log.startLogging(sys.stdout)
+
+    #     try:
+    #        opts, args = getopt.getopt(argv,"hfgu:p:t:c:s:b:i:u:",
+    #         ["username=","password=","slot=","connection=","serialport=","baudrate=","ip=","udpport="])
+    #     except getopt.GetoptError:
+    #         log.msg('Incorrect script usage')
+    #         self.usage()
+    #         return
+    #     if ('-h','') in opts:
+    #         self.usage()
+    #         return
+    #     elif ('-f','') in opts:
+    #         self.readFileConfig()
+    #         self.createConnection()
+    #     elif ('-g','') in opts:
+    #         self.readFileConfig()
+    #         ex = SatNetGUI()
+    #     else:
+    #         self.readCMDConfig(opts)
+    #         self.createConnection()
         
-        reactor.run()
+    #     reactor.run()
 
     def createConnection(self):
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
@@ -251,7 +276,6 @@ class Client():
                 "udpport: 5005")
 
 
-# class SatNetGUI(QtGui.QWidget):
 class SatNetGUI(QtGui.QDialog):
 
     def __init__(self, parent = None):
@@ -259,41 +283,101 @@ class SatNetGUI(QtGui.QDialog):
         self.initUI()
 
     def initUI(self):
-        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
-        
-        self.lName = QtGui.QLabel("Test", self)
+        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 12))
+        self.resize(1300, 800)
 
+        # self.formGroupBox = QtGui.QGroupBox("Form layout")
+        # layout = QtGui.QFormLayout()
+        # layout.addRow(QtGui.QLabel("Line 1:"), QtGui.QLineEdit())
+        # layout.addRow(QtGui.QLabel("Line 2, long text:"), QtGui.QComboBox())
+        # layout.addRow(QtGui.QLabel("Line 3:"), QtGui.QSpinBox())
+        # self.formGroupBox.setLayout(layout)
 
-        self.setGeometry(1000, 600, 980, 580)
+        # Control buttons.
+        buttons = QtGui.QGroupBox(self)
+        buttons.setLayout(QtGui.QHBoxLayout(buttons))
 
-        self.btnNew = QtGui.QPushButton('Close connection', self)
-        self.btnNew.move(20, 80)
+        # New connection.
+        ButtonNew = QtGui.QPushButton('New connection', buttons)
+        ButtonNew.setFixedWidth(145)
+        ButtonNew.clicked.connect(self.NewConnection)
+        # Close connection.
+        ButtonCancel = QtGui.QPushButton('Close connection', buttons)
+        ButtonCancel.setFixedWidth(145)
 
-    # def __init__(self):
-    #     super(SatNetGUI, self).__init__()
-    #     self.initUI()
-        
-    # def initUI(self):
-    #     QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
-        
-    #     self.lName = QtGui.QLabel("Test", self)
-    #     self.lName.move(20, 20)
-    #     self.leTitle = QtGui.QLineEdit(self)
-    #     self.leTitle.move(20, 40)
-    #     #self.leTitle.textChanged.connect(func)
+        buttons.layout().addWidget(ButtonNew)
+        buttons.layout().addWidget(ButtonCancel)
+        buttons.setTitle("Connection parameters")
+        buttons.move(10, 10)
 
-    #     self.btnNew = QtGui.QPushButton('Test BTN', self)
-    #     self.btnNew.move(20, 80)
-    #     #self.btnNew.clicked.connect(self.fdm.addEvent)
+        # Parameters group.
+        parameters = QtGui.QGroupBox(self)
+        layout = QtGui.QFormLayout()
+        self.LabelUsername = QtGui.QLineEdit()
+        self.LabelUsername.setFixedWidth(190)
+        layout.addRow(QtGui.QLabel("Username:       "), self.LabelUsername)
+        self.LabelPassword = QtGui.QLineEdit()
+        self.LabelPassword.setFixedWidth(190)
+        self.LabelPassword.setEchoMode(QtGui.QLineEdit.Password)
+        layout.addRow(QtGui.QLabel("Password:       "), self.LabelPassword)
+        self.LabelSlotID = QtGui.QSpinBox()
+        layout.addRow(QtGui.QLabel("slot_id:        "), self.LabelSlotID)
+        layout.addRow(QtGui.QLabel("Connection:     "))
+        layout.addRow(QtGui.QLabel("Serial port:    "))
+        layout.addRow(QtGui.QLabel("Baudrate:       "))
+        layout.addRow(QtGui.QLabel("UDP:            "))
+        layout.addRow(QtGui.QLabel("UDP port:       "))
 
-    #     self.btnStop = QtGui.QPushButton('Test2 BTN', self)
-    #     self.btnStop.move(120, 80)
+        parameters.setLayout(layout)
+        parameters.setTitle("Connection parameters")
+        parameters.move(10, 150)
 
+        # Logo.
+        self.LabelLogo = QtGui.QLabel(self)
+        self.LabelLogo.move(20, 490)
+        pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
+        self.LabelLogo.setPixmap(pic)
+        self.LabelLogo.show()
 
-    #     self.setGeometry(300, 300, 290, 150)
-    #     self.setWindowTitle('Icon')
-    #     #self.setWindowIcon(QtGui.QIcon('web.png'))
-    #     self.show()
+        # Console
+        console = QtGui.QTextBrowser(self)
+        console.move(340, 10)
+        console.resize(950, 780)
+        console.setFont(QtGui.QFont('SansSerif', 12))
+
+        XStream.stdout().messageWritten.connect(console.insertPlainText)
+        XStream.stderr().messageWritten.connect(console.insertPlainText)
+
+    def NewConnection(self):
+        c = Client(sys.argv[1:])
+
+        patata = self.LabelUsername.text()
+        print patata
+
+class XStream(QtCore.QObject):
+    _stdout = None
+    _stderr = None
+    messageWritten = QtCore.pyqtSignal(str)
+    def flush( self ):
+        pass
+    def fileno( self ):
+        return -1
+    def write( self, msg ):
+        if ( not self.signalsBlocked() ):
+            self.messageWritten.emit(unicode(msg))
+    @staticmethod
+    def stdout():
+        if ( not XStream._stdout ):
+            XStream._stdout = XStream()
+            sys.stdout = XStream._stdout
+        return XStream._stdout
+    @staticmethod
+    def stderr():
+        if ( not XStream._stderr ):
+            XStream._stderr = XStream()
+            sys.stderr = XStream._stderr
+        return XStream._stderr
+
 
 if __name__ == '__main__':
 
@@ -301,13 +385,16 @@ if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
 
     myapp = SatNetGUI()
-    # Show window.
     myapp.show()
-
 
     from qtreactor import pyqt4reactor
     pyqt4reactor.install()
+
     from twisted.internet import reactor
+
     # sys.exit frozes the program. Possible solution in https://github.com/ghtdak/qtreactor/issues/1
     #sys.exit(app.exec_())
-    c = Client(sys.argv[1:])
+
+    reactor.run()
+
+    # c = Client(sys.argv[1:])

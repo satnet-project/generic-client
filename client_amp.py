@@ -133,32 +133,9 @@ class Client():
         L{Dictionary}
 
     """
-    CONNECTION_INFO = {}
+    # CONNECTION_INFO = {}
 
-    def __init__(self, argv):
-        log.startLogging(sys.stdout)
-
-        try:
-           opts, args = getopt.getopt(argv,"hfgu:p:t:c:s:b:i:u:",
-            ["username=","password=","slot=","connection=","serialport=","baudrate=","ip=","udpport="])
-        except getopt.GetoptError:
-            log.msg('Incorrect script usage')
-            self.usage()
-            return
-        if ('-h','') in opts:
-            self.usage()
-            return
-        elif ('-f','') in opts:
-            self.readFileConfig()
-            self.createConnection()
-        elif ('-g','') in opts:
-            self.readFileConfig()
-            ex = SatNetGUI()
-        else:
-            self.readCMDConfig(opts)
-            self.createConnection()
-
-    # def __init__(self, argv):
+    # def __init__(self, argv, CONNECTION_INFO):
     #     log.startLogging(sys.stdout)
 
     #     try:
@@ -168,6 +145,7 @@ class Client():
     #         log.msg('Incorrect script usage')
     #         self.usage()
     #         return
+
     #     if ('-h','') in opts:
     #         self.usage()
     #         return
@@ -175,13 +153,18 @@ class Client():
     #         self.readFileConfig()
     #         self.createConnection()
     #     elif ('-g','') in opts:
-    #         self.readFileConfig()
-    #         ex = SatNetGUI()
-    #     else:
+    #         # self.readFileConfig()
+    #         # ex = SatNetGUI()
     #         self.readCMDConfig(opts)
     #         self.createConnection()
-        
-    #     reactor.run()
+    #     else:
+    #         self.CONNECTION_INFO = CONNECTION_INFO
+    #         self.createConnection()
+
+
+    def __init__(self, CONNECTION_INFO):
+        self.CONNECTION_INFO = CONNECTION_INFO
+        self.createConnection()
 
     def createConnection(self):
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
@@ -259,8 +242,8 @@ class Client():
                 "Usage: python client_amp.py [-i <ip>] # Set ip direction\n"
                 "Usage: python client_amp.py [-u <udpport>] # Set udp port\n"
                 "\n"
-                "Example for serial config: python client_amp.py -u crespo -p cre.spo -t 2 -c serial -s /dev/ttyS1 -b 115200\n"
-                "Example for udp config: python client_amp.py -u crespo -p cre.spo -t 2 -c udp -i 127.0.0.1 -u 5001\n"
+                "Example for serial config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c serial -s /dev/ttyS1 -b 115200\n"
+                "Example for udp config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c udp -i 127.0.0.1 -u 5001\n"
                 "\n"
                 "Example using file config: python client_amp.py -f -t 2\n"
                 "[User]\n"
@@ -285,6 +268,7 @@ class SatNetGUI(QtGui.QDialog):
     def initUI(self):
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 12))
         self.resize(1300, 800)
+        self.setWindowTitle("SATNet client - Universidade de Vigo") 
 
         # self.formGroupBox = QtGui.QGroupBox("Form layout")
         # layout = QtGui.QFormLayout()
@@ -298,11 +282,11 @@ class SatNetGUI(QtGui.QDialog):
         buttons.setLayout(QtGui.QHBoxLayout(buttons))
 
         # New connection.
-        ButtonNew = QtGui.QPushButton('New connection', buttons)
+        ButtonNew = QtGui.QPushButton("New connection", buttons)
         ButtonNew.setFixedWidth(145)
         ButtonNew.clicked.connect(self.NewConnection)
         # Close connection.
-        ButtonCancel = QtGui.QPushButton('Close connection', buttons)
+        ButtonCancel = QtGui.QPushButton("Close connection", buttons)
         ButtonCancel.setFixedWidth(145)
 
         buttons.layout().addWidget(ButtonNew)
@@ -322,11 +306,19 @@ class SatNetGUI(QtGui.QDialog):
         layout.addRow(QtGui.QLabel("Password:       "), self.LabelPassword)
         self.LabelSlotID = QtGui.QSpinBox()
         layout.addRow(QtGui.QLabel("slot_id:        "), self.LabelSlotID)
-        layout.addRow(QtGui.QLabel("Connection:     "))
-        layout.addRow(QtGui.QLabel("Serial port:    "))
-        layout.addRow(QtGui.QLabel("Baudrate:       "))
-        layout.addRow(QtGui.QLabel("UDP:            "))
-        layout.addRow(QtGui.QLabel("UDP port:       "))
+
+        self.LabelConnection = QtGui.QComboBox()
+        self.LabelConnection.addItems(['serial', 'udp'])
+        self.LabelConnection.activated.connect(self.CheckConnection)
+        layout.addRow(QtGui.QLabel("Connection:     "), self.LabelConnection)
+        self.LabelSerialPort = QtGui.QComboBox()
+        layout.addRow(QtGui.QLabel("Serial port:    "), self.LabelSerialPort)
+        self.LabelBaudrate = QtGui.QLineEdit()
+        layout.addRow(QtGui.QLabel("Baudrate:       "), self.LabelBaudrate)
+        self.LabelUDP = QtGui.QLineEdit()
+        layout.addRow(QtGui.QLabel("UDP:            "), self.LabelUDP)
+        self.LabelUDPPort = QtGui.QLineEdit()
+        layout.addRow(QtGui.QLabel("UDP port:       "), self.LabelUDPPort)
 
         parameters.setLayout(layout)
         parameters.setTitle("Connection parameters")
@@ -349,10 +341,39 @@ class SatNetGUI(QtGui.QDialog):
         XStream.stderr().messageWritten.connect(console.insertPlainText)
 
     def NewConnection(self):
-        c = Client(sys.argv[1:])
+        self.CONNECTION_INFO = {}
+        self.CONNECTION_INFO['username'] = str(self.LabelUsername.text())
+        self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
+        self.CONNECTION_INFO['slot_id'] = int(self.LabelSlotID.text())
+        self.CONNECTION_INFO['connection'] = str(self.LabelConnection.currentText())
+        self.CONNECTION_INFO['serialport'] = str(self.LabelSerialPort.currentText())
+        self.CONNECTION_INFO['baudrate'] = str(self.LabelBaudrate.text())
+        self.CONNECTION_INFO['ip'] = self.LabelUDP.text()
+        self.CONNECTION_INFO['udpport'] = self.LabelUDPPort.text()
 
-        patata = self.LabelUsername.text()
-        print patata
+        # c = Client(sys.argv[1:], self.CONNECTION_INFO)
+        c = Client(self.CONNECTION_INFO)
+
+
+    def CheckConnection(self):
+        Connection = str(self.LabelConnection.currentText())
+
+        if Connection == 'serial':
+            from glob import glob
+            ports = glob('/dev/tty[A-Za-z]*')
+            self.LabelSerialPort.addItems(ports)
+            self.LabelSerialPort.setEnabled(True)
+            self.LabelBaudrate.setEnabled(True)
+            self.LabelUDP.setEnabled(False)
+            self.LabelUDPPort.setEnabled(False)
+        elif Connection == 'udp':
+            self.LabelSerialPort.setEnabled(False)
+            self.LabelBaudrate.setEnabled(False)
+            self.LabelUDP.setEnabled(True)
+            self.LabelUDPPort.setEnabled(True)
+        else:
+            print "Error"
+
 
 class XStream(QtCore.QObject):
     _stdout = None
@@ -381,7 +402,6 @@ class XStream(QtCore.QObject):
 
 if __name__ == '__main__':
 
-    # app = QtGui.QApplication(sys.argv)
     app = QtGui.QApplication(sys.argv)
 
     myapp = SatNetGUI()
@@ -396,5 +416,3 @@ if __name__ == '__main__':
     #sys.exit(app.exec_())
 
     reactor.run()
-
-    # c = Client(sys.argv[1:])

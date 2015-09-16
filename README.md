@@ -5,14 +5,18 @@
 client
 ======
 
-This repository contains the source code for a client of the SATNet network. This is the code for a GS with a TNC to demodulate/modulate the frames which are being received/sent from/to the satellite.
+This repository contains the source code for a generic client of the 
+SATNet network. 
+This is the code for a GS with a TNC to demodulate/modulate the frames 
+which are being received/sent from/to the satellite.
 
-To install the dependencies execute:
-```bash ./scripts/setup.sh```
+In the file INSTALL you will find detailed installation instructions.
 
-The execute this script execute:
-```python client_amp.py -u crespo -p cre.spo -s /dev/ttyUSB0 -b 115200 -i 2```
+To run this script you have the following options:
+1) ```python client_amp.py```
+2) ```python client_amp.py -g -u username -p userpassword -t slot -c serial -s serialport -b baudrate```
 
 Other resources
 ---------------
-A basic client-server implementation of the AMP protocol for Java and Python can be found at [this repository](https://github.com/xcrespo/Twisted-AMP-bidirectional)
+A basic client-server implementation of the AMP protocol for Java and 
+Python can be found at [this repository](https://github.com/xcrespo/Twisted-AMP-bidirectional)

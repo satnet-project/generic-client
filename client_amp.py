@@ -62,30 +62,37 @@ class ClientProtocol(AMP):
     @inlineCallbacks
     def user_login(self):        
         try:
-            res = yield self.callRemote(Login, sUsername=self.CONNECTION_INFO['username'], sPassword=self.CONNECTION_INFO['password'])
-            res = yield self.callRemote(StartRemote, iSlotId=self.CONNECTION_INFO['slot_id'])
+            res = yield self.callRemote(Login,\
+             sUsername=self.CONNECTION_INFO['username'],\
+              sPassword=self.CONNECTION_INFO['password'])
+            res = yield self.callRemote(StartRemote,\
+             iSlotId=self.CONNECTION_INFO['slot_id'])
         except Exception as e:
             log.err(e)
             reactor.stop()
 
     def vNotifyMsg(self, sMsg):
-        log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Message ---------")
+        log.msg("(" + self.CONNECTION_INFO['username'] +\
+         ") --------- Notify Message ---------")
         log.msg(sMsg)
         if self.CONNECTION_INFO['connection'] == 'serial':        
             self.kissTNC.write(sMsg)
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'], self.CONNECTION_INFO['udpport']))
+            self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
+             self.CONNECTION_INFO['udpport']))
 
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
     def processFrame(self, frame):
         log.msg('Received frame: ' + frame)
-        res = self.callRemote(SendMsg, sMsg=frame, iTimestamp=misc.get_utc_timestamp())
+        res = self.callRemote(SendMsg, sMsg=frame,\
+         iTimestamp=misc.get_utc_timestamp())
         log.msg(res)
 
     def vNotifyEvent(self, iEvent, sDetails):
-        log.msg("(" + self.CONNECTION_INFO['username'] + ") --------- Notify Event ---------")
+        log.msg("(" + self.CONNECTION_INFO['username'] +\
+         ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
             log.msg("Disconnection because the slot has ended")
         elif iEvent == NotifyEvent.REMOTE_DISCONNECTED:
@@ -114,17 +121,19 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     def clientConnectionLost(self, connector, reason):
         log.msg('Lost connection.  Reason: ', reason)
-        ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
+        ReconnectingClientFactory.clientConnectionLost(self,\
+         connector, reason)
 
     def clientConnectionFailed(self, connector, reason):
         log.msg('Connection failed. Reason: ', reason)
-        ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
+        ReconnectingClientFactory.clientConnectionFailed(self,\
+         connector, reason)
 
 
 class Client():
     """
-    This class starts the client by reading the configuration parameters either from
-    a file called config.ini or from the command line.
+    This class starts the client by reading the configuration 
+    parameters either from a file called config.ini or from the command line.
 
     :ivar CONNECTION_INFO:
         This variable contains the following data: username, password, slot_id, 
@@ -138,14 +147,6 @@ class Client():
     # def __init__(self, argv, CONNECTION_INFO):
     #     log.startLogging(sys.stdout)
 
-    #     try:
-    #        opts, args = getopt.getopt(argv,"hfgu:p:t:c:s:b:i:u:",
-    #         ["username=","password=","slot=","connection=","serialport=","baudrate=","ip=","udpport="])
-    #     except getopt.GetoptError:
-    #         log.msg('Incorrect script usage')
-    #         self.usage()
-    #         return
-
     #     if ('-h','') in opts:
     #         self.usage()
     #         return
@@ -157,9 +158,6 @@ class Client():
     #         # ex = SatNetGUI()
     #         self.readCMDConfig(opts)
     #         self.createConnection()
-    #     else:
-    #         self.CONNECTION_INFO = CONNECTION_INFO
-    #         self.createConnection()
 
 
     def __init__(self, CONNECTION_INFO):
@@ -168,27 +166,9 @@ class Client():
 
     def createConnection(self):
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
-        reactor.connectSSL('localhost', 1234, ClientReconnectFactory(self.CONNECTION_INFO, gsi), ClientContextFactory())
-
-    def readCMDConfig(self, opts):
-        for opt, arg in opts:
-            if opt in ("-u", "--username"):
-                self.CONNECTION_INFO['username']  = arg
-            elif opt in ("-p", "--password"):
-                self.CONNECTION_INFO['password']  = arg
-            elif opt in ("-t", "--slot"):
-                self.CONNECTION_INFO['slot_id']  = arg
-            elif opt in ("-c", "--connection"):
-                self.CONNECTION_INFO['connection'] = arg
-            elif opt in ("-s", "--serialport"):
-                self.CONNECTION_INFO['serialport']  = arg
-            elif opt in ("-b", "--baudrate"):
-                self.CONNECTION_INFO['baudrate']  = arg
-            elif opt in ("-i", "--ip"):
-                self.CONNECTION_INFO['ip']  = arg
-            elif opt in ("-u", "--udpport"):
-                self.CONNECTION_INFO['udpport']  = int(arg)
-        self.paramValidation()
+        reactor.connectSSL('localhost', 1234,\
+         ClientReconnectFactory(self.CONNECTION_INFO, gsi),\
+          ClientContextFactory())
 
     def readFileConfig(self):
         import ConfigParser
@@ -200,11 +180,14 @@ class Client():
         self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')        
         self.CONNECTION_INFO['connection'] = config.get('User', 'connection')        
         if self.CONNECTION_INFO['connection'] == 'serial':
-            self.CONNECTION_INFO['serialport'] = config.get('Serial', 'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial', 'baudrate')
+            self.CONNECTION_INFO['serialport'] = config.get('Serial',\
+             'serialport')
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial',\
+             'baudrate')
         if self.CONNECTION_INFO['connection'] == 'udp':
             self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('UDP', 'udpport'))
+            self.CONNECTION_INFO['udpport'] = int(config.get('UDP',\
+             'udpport'))
         self.paramValidation()
 
     def paramValidation(self):
@@ -270,13 +253,6 @@ class SatNetGUI(QtGui.QDialog):
         self.resize(1300, 800)
         self.setWindowTitle("SATNet client - Universidade de Vigo") 
 
-        # self.formGroupBox = QtGui.QGroupBox("Form layout")
-        # layout = QtGui.QFormLayout()
-        # layout.addRow(QtGui.QLabel("Line 1:"), QtGui.QLineEdit())
-        # layout.addRow(QtGui.QLabel("Line 2, long text:"), QtGui.QComboBox())
-        # layout.addRow(QtGui.QLabel("Line 3:"), QtGui.QSpinBox())
-        # self.formGroupBox.setLayout(layout)
-
         # Control buttons.
         buttons = QtGui.QGroupBox(self)
         buttons.setLayout(QtGui.QHBoxLayout(buttons))
@@ -288,6 +264,7 @@ class SatNetGUI(QtGui.QDialog):
         # Close connection.
         ButtonCancel = QtGui.QPushButton("Close connection", buttons)
         ButtonCancel.setFixedWidth(145)
+        ButtonCancel.clicked.connect(self.CloseConnection)
 
         buttons.layout().addWidget(ButtonNew)
         buttons.layout().addWidget(ButtonCancel)
@@ -342,18 +319,55 @@ class SatNetGUI(QtGui.QDialog):
 
     def NewConnection(self):
         self.CONNECTION_INFO = {}
-        self.CONNECTION_INFO['username'] = str(self.LabelUsername.text())
-        self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
-        self.CONNECTION_INFO['slot_id'] = int(self.LabelSlotID.text())
-        self.CONNECTION_INFO['connection'] = str(self.LabelConnection.currentText())
-        self.CONNECTION_INFO['serialport'] = str(self.LabelSerialPort.currentText())
-        self.CONNECTION_INFO['baudrate'] = str(self.LabelBaudrate.text())
-        self.CONNECTION_INFO['ip'] = self.LabelUDP.text()
-        self.CONNECTION_INFO['udpport'] = self.LabelUDPPort.text()
+
+        try:
+            opts, args = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
+             ["username=", "password=", "slot=", "connection=", "serialport=",\
+              "baudrate=", "ip=", "udpport="])
+
+            for opt, arg in opts:
+                if opt in ("-u", "--username"):
+                    self.CONNECTION_INFO['username']  = arg
+                elif opt in ("-p", "--password"):
+                    self.CONNECTION_INFO['password']  = arg
+                elif opt in ("-t", "--slot"):
+                    self.CONNECTION_INFO['slot_id']  = arg
+                elif opt in ("-c", "--connection"):
+                    self.CONNECTION_INFO['connection'] = arg
+                elif opt in ("-s", "--serialport"):
+                    self.CONNECTION_INFO['serialport']  = arg
+                elif opt in ("-b", "--baudrate"):
+                    self.CONNECTION_INFO['baudrate']  = arg
+                elif opt in ("-i", "--ip"):
+                    self.CONNECTION_INFO['ip']  = arg
+                elif opt in ("-u", "--udpport"):
+                    self.CONNECTION_INFO['udpport']  = int(arg)
+
+        except getopt.GetoptError:
+            self.CONNECTION_INFO['username'] =\
+             str(self.LabelUsername.text())
+            self.CONNECTION_INFO['password'] =\
+             str(self.LabelPassword.text())
+            self.CONNECTION_INFO['slot_id'] =\
+             int(self.LabelSlotID.text())
+            self.CONNECTION_INFO['connection'] =\
+             str(self.LabelConnection.currentText())
+            self.CONNECTION_INFO['serialport'] =\
+             str(self.LabelSerialPort.currentText())
+            self.CONNECTION_INFO['baudrate'] =\
+             str(self.LabelBaudrate.text())
+            self.CONNECTION_INFO['ip'] =\
+             self.LabelUDP.text()
+            self.CONNECTION_INFO['udpport'] =\
+             self.LabelUDPPort.text()
 
         # c = Client(sys.argv[1:], self.CONNECTION_INFO)
         c = Client(self.CONNECTION_INFO)
 
+    # To-do. Not closed properly.
+    def CloseConnection(self):
+        reactor.stop()
+        self.close()
 
     def CheckConnection(self):
         Connection = str(self.LabelConnection.currentText())
@@ -371,8 +385,8 @@ class SatNetGUI(QtGui.QDialog):
             self.LabelBaudrate.setEnabled(False)
             self.LabelUDP.setEnabled(True)
             self.LabelUDPPort.setEnabled(True)
-        else:
-            print "Error"
+
+    # def readCMDConfig(self, opts):
 
 
 class XStream(QtCore.QObject):
@@ -411,8 +425,6 @@ if __name__ == '__main__':
     pyqt4reactor.install()
 
     from twisted.internet import reactor
-
-    # sys.exit frozes the program. Possible solution in https://github.com/ghtdak/qtreactor/issues/1
-    #sys.exit(app.exec_())
-
     reactor.run()
+
+    # sys.exit(app.exec_())

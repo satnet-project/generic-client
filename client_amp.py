@@ -289,6 +289,9 @@ class SatNetGUI(QtGui.QDialog):
         self.LabelConnection.activated.connect(self.CheckConnection)
         layout.addRow(QtGui.QLabel("Connection:     "), self.LabelConnection)
         self.LabelSerialPort = QtGui.QComboBox()
+        from glob import glob
+        ports = glob('/dev/tty[A-Za-z]*')
+        self.LabelSerialPort.addItems(ports)
         layout.addRow(QtGui.QLabel("Serial port:    "), self.LabelSerialPort)
         self.LabelBaudrate = QtGui.QLineEdit()
         layout.addRow(QtGui.QLabel("Baudrate:       "), self.LabelBaudrate)
@@ -317,6 +320,34 @@ class SatNetGUI(QtGui.QDialog):
         XStream.stdout().messageWritten.connect(console.insertPlainText)
         XStream.stderr().messageWritten.connect(console.insertPlainText)
 
+        try:
+            opts, args = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
+             ["username=", "password=", "slot=", "connection=", "serialport=",\
+              "baudrate=", "ip=", "udpport="])
+        except getopt.GetoptError:
+            print "error"
+
+        if ('-g', '') in opts:
+            for opt, arg in opts:
+                if opt == "-u":
+                    self.LabelUsername.setText(arg)
+                elif opt == "-p":
+                    self.LabelPassword.setText(arg)
+                # elif opt == "-t":
+                #     self.LabelSlotID.setText(arg)
+                elif opt == "-c":
+                    index = self.LabelConnection.findText(arg)
+                    self.LabelConnection.setCurrentIndex(index)
+                elif opt == "-s":
+                    index = self.LabelSerialPort.findText(arg)
+                    self.LabelSerialPort.setCurrentIndex(index)
+                elif opt == "-b":
+                    self.LabelBaudrate.setText(arg)
+                elif opt == "-i":
+                    self.LabelUDP.setText(arg)
+                elif opt == "-u":
+                    self.LabelUDPPort.setText(arg)
+
     def NewConnection(self):
         self.CONNECTION_INFO = {}
 
@@ -324,7 +355,10 @@ class SatNetGUI(QtGui.QDialog):
             opts, args = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
              ["username=", "password=", "slot=", "connection=", "serialport=",\
               "baudrate=", "ip=", "udpport="])
+        except getopt.GetoptError:
+            print "error"
 
+        if ('-g','') in opts:
             for opt, arg in opts:
                 if opt in ("-u", "--username"):
                     self.CONNECTION_INFO['username']  = arg
@@ -342,26 +376,16 @@ class SatNetGUI(QtGui.QDialog):
                     self.CONNECTION_INFO['ip']  = arg
                 elif opt in ("-u", "--udpport"):
                     self.CONNECTION_INFO['udpport']  = int(arg)
+        else:
+            self.CONNECTION_INFO['username'] = str(self.LabelUsername.text())
+            self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
+            self.CONNECTION_INFO['slot_id'] = int(self.LabelSlotID.text())
+            self.CONNECTION_INFO['connection'] = str(self.LabelConnection.currentText())
+            self.CONNECTION_INFO['serialport'] = str(self.LabelSerialPort.currentText())
+            self.CONNECTION_INFO['baudrate'] = str(self.LabelBaudrate.text())
+            self.CONNECTION_INFO['ip'] = self.LabelUDP.text()
+            self.CONNECTION_INFO['udpport'] = self.LabelUDPPort.text()
 
-        except getopt.GetoptError:
-            self.CONNECTION_INFO['username'] =\
-             str(self.LabelUsername.text())
-            self.CONNECTION_INFO['password'] =\
-             str(self.LabelPassword.text())
-            self.CONNECTION_INFO['slot_id'] =\
-             int(self.LabelSlotID.text())
-            self.CONNECTION_INFO['connection'] =\
-             str(self.LabelConnection.currentText())
-            self.CONNECTION_INFO['serialport'] =\
-             str(self.LabelSerialPort.currentText())
-            self.CONNECTION_INFO['baudrate'] =\
-             str(self.LabelBaudrate.text())
-            self.CONNECTION_INFO['ip'] =\
-             self.LabelUDP.text()
-            self.CONNECTION_INFO['udpport'] =\
-             self.LabelUDPPort.text()
-
-        # c = Client(sys.argv[1:], self.CONNECTION_INFO)
         c = Client(self.CONNECTION_INFO)
 
     # To-do. Not closed properly.
@@ -373,9 +397,9 @@ class SatNetGUI(QtGui.QDialog):
         Connection = str(self.LabelConnection.currentText())
 
         if Connection == 'serial':
-            from glob import glob
-            ports = glob('/dev/tty[A-Za-z]*')
-            self.LabelSerialPort.addItems(ports)
+            # from glob import glob
+            # ports = glob('/dev/tty[A-Za-z]*')
+            # self.LabelSerialPort.addItems(ports)
             self.LabelSerialPort.setEnabled(True)
             self.LabelBaudrate.setEnabled(True)
             self.LabelUDP.setEnabled(False)

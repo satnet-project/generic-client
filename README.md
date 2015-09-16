@@ -2,8 +2,8 @@
 [![Coverage Status](https://coveralls.io/repos/satnet-project/client/badge.svg?branch=master)](https://coveralls.io/r/satnet-project/client?branch=master)
 
 
-client
-======
+Generic client for SATNet project.
+==================================
 
 This repository contains the source code for a generic client of the 
 SATNet network. 
@@ -14,12 +14,13 @@ In the file INSTALL you will find detailed installation instructions.
 
 To run this script you have the following options:
 
-1. If you want to enter data connection from the user interface.
-```python client_amp.py```
+1. If you want to enter data connection from the user interface. ```python client_amp.py```
 
-2. To start connecting directly from the command line will have to enter 
+2. To start a serial connection directly from the command line will have to enter 
 the parameters as follows:
 ```python client_amp.py -g -u username -p userpassword -t slot -c serial -s serialport -b baudrate```
+3. For a UDP connection you must set an ip and a port: 
+```python client_amp.py -g -u username -p userpassword -t slot -c udp -i ip -u ipport```
 
 Other resources
 ---------------

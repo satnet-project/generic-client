@@ -13,8 +13,11 @@ which are being received/sent from/to the satellite.
 In the file INSTALL you will find detailed installation instructions.
 
 To run this script you have the following options:
-1) ```python client_amp.py```
-2) ```python client_amp.py -g -u username -p userpassword -t slot -c serial -s serialport -b baudrate```
+1. If you want to enter data connection from the user interface.
+```python client_amp.py```
+2. To start connecting directly from the command line will have to enter 
+the parameters as follows:
+```python client_amp.py -g -u username -p userpassword -t slot -c serial -s serialport -b baudrate```
 
 Other resources
 ---------------

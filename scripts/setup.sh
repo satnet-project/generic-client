@@ -13,28 +13,24 @@ pip install -r "$script_path/requirements.txt"
 
 # Downloading packages for GUI
 # Needed to install SIP first
-wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.16.8/sip-4.16.8.tar.gz
-tar xvzf sip-4.16.8.tar.gz
-python sip-4.16.8/configure.py --incdir="$virtualenv/include/python2.7"
+cd $venv_path
+mkdir build && cd build
+wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.16.9/sip-4.16.9.tar.gz
+tar xzvf sip-4.16.9.tar.gz
+cd sip-4.16.9
+python configure.py
 make
-make install
-rm sip-4.16.8.tar.gz
-rm -R sip-4.16.8
+sudo make install
+cd ../ && rm -r -f sip*
 
-# This hook is run after a new virtualenv is activated.
-# ~/.virtualenvs/postmkvirtualenv
-# Source (@jlesquembre): https://gist.github.com/jlesquembre/2042882
-
-libs=( PyQt4 sip.so )
- 
-python_version=python$(python -c "import sys; print (str(sys.version_info[0])+'.'+str(sys.version_info[1]))")
-var=( $(which -a $python_version) )
- 
-get_python_lib_cmd="from distutils.sysconfig import get_python_lib; print (get_python_lib())"
-lib_virtualenv_path=$(python -c "$get_python_lib_cmd")
-lib_system_path=$(${var[-1]} -c "$get_python_lib_cmd")
- 
-# for lib in ${libs[@]}
-# do
-#     ln -s $lib_system_path/$lib $lib_virtualenv_path/$lib 
-# done
+# PyQt4 installation.
+wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
+tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
+cd PyQt-x11-gpl-4.11.4
+python ./configure.py -q /usr/bin/qmake-qt4
+make
+# Bug. Needed ldconfig, copy it from /usr/sbin
+cp /sbin/ldconfig ../../bin/
+sudo ldconfig
+sudo make install
+cd ../ && rm -r -f PyQt*

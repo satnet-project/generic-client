@@ -36,6 +36,16 @@ the parameters as follows:
 
     `python client_amp.py -g -u username -p userpassword -t slot -c udp -i ip -u ipport`
 
+#### Installation
+
+Steps to install the generic client for the SATNet network:
+
+1. To install the dependencies run, from the Scripts folder:
+
+`./setup.sh`
+
+You will need root privileges.
+
 #### Other resources
 
 A basic client-server implementation of the AMP protocol for Java and 

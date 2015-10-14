@@ -4,19 +4,23 @@ project_path=$( readlink -e "$script_path/.." )
 venv_path="$project_path/.venv"
 
 # Install required packages
-sudo apt install python-qt4
+sudo apt install python-qt4 -f 
+sudo apt install unzip -f
 
 # Create a virtualenv
 virtualenv $venv_path
 source "$venv_path/bin/activate"
-pip install -r "$script_path/requirements.txt"
+# pip install -r "$script_path/requirements.txt"
+pip install -r "$project_path/requirements.txt"
 
 # Downloading packages for GUI
 # Needed to install SIP first
 cd $venv_path
 mkdir build && cd build
-wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.16.9/sip-4.16.9.tar.gz
-tar xzvf sip-4.16.9.tar.gz
+# wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.16.9/sip-4.16.9.tar.gz
+pip install SIP --allow-unverified SIP --download="."
+# tar xzvf sip-4.16.9.tar.gz
+unzip sip*
 cd sip-4.16.9
 python configure.py
 make

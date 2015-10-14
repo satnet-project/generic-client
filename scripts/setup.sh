@@ -12,10 +12,10 @@ sudo apt install unzip -f
 sudo apt install python-pip -f
 sudo apt install python-dev 
 
+
 # Create a virtualenv
 virtualenv $venv_path
 source "$venv_path/bin/activate"
-# pip install -r "$script_path/requirements.txt"
 pip install -r "$project_path/requirements.txt"
 
 # Downloading packages for GUI

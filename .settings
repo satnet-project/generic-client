@@ -1,0 +1,3 @@
+[Connection]
+reconnection: no
+parameters: yes

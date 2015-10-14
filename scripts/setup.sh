@@ -10,8 +10,7 @@ sudo apt install python-qt4 -f
 sudo apt install libqt4-dev -f 
 sudo apt install unzip -f
 sudo apt install python-pip -f
-sudo apt install python-dev 
-
+sudo apt install python-dev -f
 
 # Create a virtualenv
 virtualenv $venv_path
@@ -22,11 +21,9 @@ pip install -r "$project_path/requirements.txt"
 # Needed to install SIP first
 cd $venv_path
 mkdir build && cd build
-# wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.16.9/sip-4.16.9.tar.gz
 pip install SIP --allow-unverified SIP --download="."
-# tar xzvf sip-4.16.9.tar.gz
 unzip sip*
-cd sip-4.16.9
+cd sip*
 python configure.py
 make
 sudo make install

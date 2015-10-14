@@ -206,7 +206,7 @@ class SatNetGUI(QtGui.QWidget):
     def initUI(self):
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         self.setFixedSize(1300, 800)
-        self.setWindowTitle("SATNet client - Universidade de Vigo") 
+        self.setWindowTitle("SATNet client - Generic") 
 
         # Control buttons.
         buttons = QtGui.QGroupBox(self)

@@ -23,6 +23,9 @@ __author__ = 'xabicrespog@gmail.com'
 from twisted.python import log
 import time
 import threading
+import sys
+from twisted.internet.defer import inlineCallbacks
+
 
 class GroundStationInterface():
     """
@@ -82,6 +85,7 @@ class GroundStationInterface():
     GS = None
 
     def __init__(self, CONNECTION_INFO, GS, AMP=None):
+        log.startLogging(sys.stdout)
         self.CONNECTION_INFO = CONNECTION_INFO
         self.AMP = AMP
         self.GS = GS
@@ -160,5 +164,5 @@ class GroundStationInterface():
     when the connection to the SATNET server is lost.
     """
     def disconnectProtocol(self):
-        log.msg('Protocol disconnected from the GS')
-        self.AMP = None        
+        log.msg('Protocol disconnected from the GS')   
+        self.AMP = None

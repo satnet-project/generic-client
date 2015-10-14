@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-   Copyright 2014 Xabier Crespo Álvarez
+   Copyright 2014, 2015 Xabier Crespo Álvarez
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@ __author__ = 'xabicrespog@gmail.com'
 
 
 import sys
+import os
 
 from OpenSSL import SSL
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
+from PyQt4 import QtCore
 
 from twisted.python import log
 from twisted.internet.ssl import ClientContextFactory
@@ -31,20 +33,22 @@ from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
 from twisted.cred.credentials import UsernamePassword
 from twisted.internet.defer import inlineCallbacks
+from twisted.python.logfile import DailyLogFile
 
-from protocol.ampauth.commands import Login
-from protocol.commands import StartRemote, NotifyMsg, NotifyEvent
-from protocol.errors import *
+from protocol.ampauth.login import Login
+from protocol.ampCommands import EndRemote
+from protocol.ampCommands import StartRemote
+from protocol.ampCommands import NotifyMsg
+from protocol.ampCommands import NotifyEvent
 
 from gs_interface import GroundStationInterface
-import getpass, getopt, threading
+import getpass
+import getopt
+import threading
 import misc
 
-import os
 
 class ClientProtocol(AMP):
-
-    CONNECTION_INFO = {}
 
     def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
@@ -58,6 +62,11 @@ class ClientProtocol(AMP):
         log.err("Connection lost")
         log.err(reason)
         self.gsi.disconnectProtocol()
+        res = yield self.callRemote(EndRemote)
+
+    # @inlineCallbacks
+    # def desconexion(self):
+    #     res = yield self.callRemote(EndRemote)
 
     @inlineCallbacks
     def user_login(self):        
@@ -77,10 +86,12 @@ class ClientProtocol(AMP):
         log.msg(sMsg)
         if self.CONNECTION_INFO['connection'] == 'serial':        
             self.kissTNC.write(sMsg)
+        # Only serial communications are needed.
+        """
         elif self.CONNECTION_INFO['connection'] == 'udp':
             self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
              self.CONNECTION_INFO['udpport']))
-
+        """
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
@@ -107,9 +118,15 @@ class ClientProtocol(AMP):
 
 
 class ClientReconnectFactory(ReconnectingClientFactory):
+    """
+    ReconnectingClientFactory inherited object class to handle the 
+    reconnection process.
+
+    """
     def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
+        # self.continueTrying = 0
 
     def startedConnecting(self, connector):
         log.msg('Starting connection...')
@@ -120,11 +137,21 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         return ClientProtocol(self.CONNECTION_INFO, self.gsi)
 
     def clientConnectionLost(self, connector, reason):
-        log.msg('Lost connection.  Reason: ', reason)
+        """
+        self.CONNECTION_INFO ok
+        """
+        self.continueTrying = None
+
+        log.msg('Lost connection. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionLost(self,\
          connector, reason)
 
     def clientConnectionFailed(self, connector, reason):
+        """
+        self.CONNECTION_INFO ok
+        """
+        self.continueTrying = None
+
         log.msg('Connection failed. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionFailed(self,\
          connector, reason)
@@ -132,8 +159,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
 class Client():
     """
-    This class starts the client by reading the configuration 
-    parameters either from a file called config.ini or from the command line.
+    This class starts the client using the data provided by user interface.
 
     :ivar CONNECTION_INFO:
         This variable contains the following data: username, password, slot_id, 
@@ -141,139 +167,92 @@ class Client():
     :type CONNECTION_INFO:
         L{Dictionary}
 
+    :ivar
+
     """
-    # CONNECTION_INFO = {}
-
-    # def __init__(self, argv, CONNECTION_INFO):
-    #     log.startLogging(sys.stdout)
-
-    #     if ('-h','') in opts:
-    #         self.usage()
-    #         return
-    #     elif ('-f','') in opts:
-    #         self.readFileConfig()
-    #         self.createConnection()
-    #     elif ('-g','') in opts:
-    #         # self.readFileConfig()
-    #         # ex = SatNetGUI()
-    #         self.readCMDConfig(opts)
-    #         self.createConnection()
-
-
     def __init__(self, CONNECTION_INFO):
         self.CONNECTION_INFO = CONNECTION_INFO
-        self.createConnection()
 
     def createConnection(self):
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
-        reactor.connectSSL('localhost', 1234,\
+
+        global connector
+
+        connector = reactor.connectSSL('localhost', 1234,\
          ClientReconnectFactory(self.CONNECTION_INFO, gsi),\
           ClientContextFactory())
 
-    def readFileConfig(self):
-        import ConfigParser
-        config = ConfigParser.ConfigParser()
-        config.read("config.ini")
-
-        self.CONNECTION_INFO['username'] = config.get('User', 'username')
-        self.CONNECTION_INFO['password'] = config.get('User', 'password')
-        self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')        
-        self.CONNECTION_INFO['connection'] = config.get('User', 'connection')        
-        if self.CONNECTION_INFO['connection'] == 'serial':
-            self.CONNECTION_INFO['serialport'] = config.get('Serial',\
-             'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial',\
-             'baudrate')
-        if self.CONNECTION_INFO['connection'] == 'udp':
-            self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('UDP',\
-             'udpport'))
-        self.paramValidation()
-
-    def paramValidation(self):
-        # Parameters validation
-        if 'username' not in self.CONNECTION_INFO:
-            log.err('Missing username parameter [-u username]')
-            exit()
-        if 'password' not in self.CONNECTION_INFO:
-            log.err('Missing username parameter [-p password]')
-            exit()
-        if 'connection' not in self.CONNECTION_INFO:
-            log.err('Missing connection parameter [-c serial] or [-c udp]')
-            exit()
-        if self.CONNECTION_INFO['connection'] == 'serial':
-            log.msg('Using a serial interface with the GS')
-            if 'serialport' not in self.CONNECTION_INFO or 'baudrate' not in self.CONNECTION_INFO:
-                log.msg('Missing some client configurations (serialport [-s] or baudrate [-b])')
-                exit()
-        if self.CONNECTION_INFO['connection'] == 'udp':
-            log.msg('Using an UDP interface with the GS')
-            if 'ip' not in self.CONNECTION_INFO or 'udpport' not in self.CONNECTION_INFO:
-                log.msg('Missing some client configurations (ip [-i] or udpport [-u])')
-                exit()
-
-    def usage(self):
-        print ("USAGE of client_amp.py\n"
-                "Usage: python client_amp.py [-h] # Shows script help\n"
-                "Usage: python client_amp.py [-f] # Load config from file\n"                
-                "Usage: python client_amp.py [-u <username>] # Set SATNET username to login\n"
-                "Usage: python client_amp.py [-p <password>] # Set SATNET user password to login\n"
-                "Usage: python client_amp.py [-t <slot_ID>] # Set the slot id corresponding to the pass you will track\n"
-                "Usage: python client_amp.py [-c <connection>] # Set the type of interface with the GS (serial or udp)\n"
-                "Usage: python client_amp.py [-s <serialport>] # Set serial port\n"
-                "Usage: python client_amp.py [-b <baudrate>] # Set serial port baudrate\n"
-                "Usage: python client_amp.py [-i <ip>] # Set ip direction\n"
-                "Usage: python client_amp.py [-u <udpport>] # Set udp port\n"
-                "\n"
-                "Example for serial config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c serial -s /dev/ttyS1 -b 115200\n"
-                "Example for udp config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c udp -i 127.0.0.1 -u 5001\n"
-                "\n"
-                "Example using file config: python client_amp.py -f -t 2\n"
-                "[User]\n"
-                "username: crespo\n"
-                "password: cre.spo\n"
-                "slot_id: 2\n"
-                "connection: udp\n"
-                "[Serial]\n"
-                "serialport: /dev/ttyUSB0\n"
-                "baudrate: 9600\n"
-                "[UDP]\n"
-                "ip: 127.0.0.1\n"
-                "udpport: 5005")
+        return connector
 
 
-class SatNetGUI(QtGui.QDialog):
+"""
+Really we need to use QtGui.QMainWindow class. For time reasons we 
+maintain QtGui.QWidget although is not the right way.
+class SatNetGUI(QtGui.QMainWindow):
+"""
+
+class SatNetGUI(QtGui.QWidget):
+    """
+    This class creates an object of class QtGui.QWidget to the main window.
+
+    """
 
     def __init__(self, parent = None):
         QtGui.QWidget.__init__(self, parent)
+        self.ConfigurationWindow = None
         self.initUI()
+        self.center()
 
     def initUI(self):
-        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 12))
-        self.resize(1300, 800)
+        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
+        self.setFixedSize(1300, 800)
         self.setWindowTitle("SATNet client - Universidade de Vigo") 
 
         # Control buttons.
         buttons = QtGui.QGroupBox(self)
-        buttons.setLayout(QtGui.QHBoxLayout(buttons))
+        grid = QtGui.QGridLayout(buttons)
+        buttons.setLayout(grid)
 
         # New connection.
-        ButtonNew = QtGui.QPushButton("New connection", buttons)
+        ButtonNew = QtGui.QPushButton("Connect")
+        ButtonNew.setToolTip("Start a new connection")
         ButtonNew.setFixedWidth(145)
+        # ButtonNew.setCheckable(True)
         ButtonNew.clicked.connect(self.NewConnection)
         # Close connection.
-        ButtonCancel = QtGui.QPushButton("Close connection", buttons)
+        ButtonCancel = QtGui.QPushButton("Disconnect")
+        ButtonCancel.setToolTip("End current connection")
         ButtonCancel.setFixedWidth(145)
         ButtonCancel.clicked.connect(self.CloseConnection)
+        # Load parameters from file
+        ButtonLoad = QtGui.QPushButton("Load parameters from file")
+        ButtonLoad.setToolTip("Load parameters from <i>config.ini</i> file")
+        ButtonLoad.setFixedWidth(298)
+        ButtonLoad.clicked.connect(self.LoadParameters)
+        # Configuration
+        ButtonConfiguration = QtGui.QPushButton("Configuration")
+        ButtonConfiguration.setToolTip("Set configuration")
+        ButtonConfiguration.setFixedWidth(145)
+        ButtonConfiguration.clicked.connect(self.SetConfiguration)
+        # Help.
+        ButtonHelp = QtGui.QPushButton("Help")
+        ButtonHelp.setToolTip("Click for help")
+        ButtonHelp.setFixedWidth(145)
+        ButtonHelp.clicked.connect(self.usage)
 
-        buttons.layout().addWidget(ButtonNew)
-        buttons.layout().addWidget(ButtonCancel)
-        buttons.setTitle("Connection parameters")
+        grid.addWidget(ButtonNew, 0, 0, 1, 1)
+        grid.addWidget(ButtonCancel, 0, 1, 1, 1)
+        grid.addWidget(ButtonLoad, 1, 0, 1, 2)
+        grid.addWidget(ButtonConfiguration, 2, 0, 1, 1)
+        grid.addWidget(ButtonHelp, 2, 1, 1, 1)
+        buttons.setTitle("Connection")
         buttons.move(10, 10)
 
         # Parameters group.
         parameters = QtGui.QGroupBox(self)
         layout = QtGui.QFormLayout()
+        parameters.setLayout(layout)
+
         self.LabelUsername = QtGui.QLineEdit()
         self.LabelUsername.setFixedWidth(190)
         layout.addRow(QtGui.QLabel("Username:       "), self.LabelUsername)
@@ -300,9 +279,23 @@ class SatNetGUI(QtGui.QDialog):
         self.LabelUDPPort = QtGui.QLineEdit()
         layout.addRow(QtGui.QLabel("UDP port:       "), self.LabelUDPPort)
 
-        parameters.setLayout(layout)
-        parameters.setTitle("Connection parameters")
-        parameters.move(10, 150)
+        parameters.setTitle("User data")
+        parameters.move(10, 145)
+
+        # Configuration group.
+        configuration = QtGui.QGroupBox(self)
+        configurationLayout = QtGui.QVBoxLayout()
+        configuration.setLayout(configurationLayout)
+
+        self.LoadDefaultSettings =\
+         QtGui.QCheckBox("Automatically load settings from 'config.ini'")
+        configurationLayout.addWidget(self.LoadDefaultSettings)
+        self.AutomaticReconnection =\
+         QtGui.QCheckBox("Reconnect after a failure")
+        configurationLayout.addWidget(self.AutomaticReconnection)
+
+        configuration.setTitle("Basic configuration")
+        configuration.move(10, 400)
 
         # Logo.
         self.LabelLogo = QtGui.QLabel(self)
@@ -315,7 +308,7 @@ class SatNetGUI(QtGui.QDialog):
         console = QtGui.QTextBrowser(self)
         console.move(340, 10)
         console.resize(950, 780)
-        console.setFont(QtGui.QFont('SansSerif', 12))
+        console.setFont(QtGui.QFont('SansSerif', 10))
 
         XStream.stdout().messageWritten.connect(console.insertPlainText)
         XStream.stderr().messageWritten.connect(console.insertPlainText)
@@ -333,8 +326,8 @@ class SatNetGUI(QtGui.QDialog):
                     self.LabelUsername.setText(arg)
                 elif opt == "-p":
                     self.LabelPassword.setText(arg)
-                # elif opt == "-t":
-                #     self.LabelSlotID.setText(arg)
+                elif opt == "-t":
+                    self.LabelSlotID.setValue(arg)
                 elif opt == "-c":
                     index = self.LabelConnection.findText(arg)
                     self.LabelConnection.setCurrentIndex(index)
@@ -348,7 +341,23 @@ class SatNetGUI(QtGui.QDialog):
                 elif opt == "-u":
                     self.LabelUDPPort.setText(arg)
 
+        reconnection, parameters = self.LoadSettings()
+        if reconnection == 'yes':
+            self.AutomaticReconnection.setChecked(True)
+        elif reconnection == 'no':
+            self.AutomaticReconnection.setChecked(False)
+        if parameters == 'yes':
+            self.LoadDefaultSettings.setChecked(True)
+            self.LoadParameters()
+        elif parameters == 'no':
+            self.LoadDefaultSettings.setChecked(False)
+
     def NewConnection(self):
+        """
+        Create a new connection by loading the connection parameters from 
+        the command line or from the interface window.
+
+        """
         self.CONNECTION_INFO = {}
 
         try:
@@ -376,30 +385,99 @@ class SatNetGUI(QtGui.QDialog):
                     self.CONNECTION_INFO['ip']  = arg
                 elif opt in ("-u", "--udpport"):
                     self.CONNECTION_INFO['udpport']  = int(arg)
+            self.paramValidation()
+
         else:
             self.CONNECTION_INFO['username'] = str(self.LabelUsername.text())
             self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
             self.CONNECTION_INFO['slot_id'] = int(self.LabelSlotID.text())
-            self.CONNECTION_INFO['connection'] = str(self.LabelConnection.currentText())
-            self.CONNECTION_INFO['serialport'] = str(self.LabelSerialPort.currentText())
+            self.CONNECTION_INFO['connection'] =\
+             str(self.LabelConnection.currentText())
+            self.CONNECTION_INFO['serialport'] =\
+             str(self.LabelSerialPort.currentText())
             self.CONNECTION_INFO['baudrate'] = str(self.LabelBaudrate.text())
             self.CONNECTION_INFO['ip'] = self.LabelUDP.text()
-            self.CONNECTION_INFO['udpport'] = self.LabelUDPPort.text()
+            print self.LabelUDPPort.text()
+            # self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
 
-        c = Client(self.CONNECTION_INFO)
+        self.c = Client(self.CONNECTION_INFO).createConnection()
+
 
     # To-do. Not closed properly.
     def CloseConnection(self):
-        reactor.stop()
-        self.close()
+        """
+        Closes the connection in a fancy way.
+        """
+        try:
+            self.c.disconnect()
+        except Exception:
+            log.msg('Already stopped.')
+
+    def LoadSettings(self):
+        """
+        Load settings from .settings file.
+        """
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        config.read(".settings")
+
+        reconnection = config.get('Connection', 'reconnection')
+        parameters = config.get('Connection', 'parameters')
+
+        return reconnection, parameters
+
+    def LoadParameters(self):
+        """
+        Load connection parameters from config.ini file.
+        """
+        self.CONNECTION_INFO = {}
+
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        config.read("config.ini")
+
+        self.CONNECTION_INFO['username'] = config.get('User', 'username')
+        self.LabelUsername.setText(self.CONNECTION_INFO['username'])
+        self.CONNECTION_INFO['password'] = config.get('User', 'password')
+        self.LabelPassword.setText(self.CONNECTION_INFO['password'])
+        self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
+        self.LabelSlotID.setValue(int(self.CONNECTION_INFO['slot_id']))        
+        self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
+        index = self.LabelConnection.findText(self.CONNECTION_INFO['connection'])
+        self.LabelConnection.setCurrentIndex(index)
+
+        if self.CONNECTION_INFO['connection'] == 'serial':
+            self.LabelSerialPort.setEnabled(True)
+            self.LabelBaudrate.setEnabled(True)
+            self.LabelUDP.setEnabled(False)
+            self.LabelUDPPort.setEnabled(False)
+            self.CONNECTION_INFO['serialport'] = config.get('Serial',\
+             'serialport')
+            index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
+            self.LabelSerialPort.setCurrentIndex(index)
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial',\
+             'baudrate')
+            self.LabelBaudrate.setText(self.CONNECTION_INFO['baudrate'])
+
+        elif self.CONNECTION_INFO['connection'] == 'udp':
+            self.LabelSerialPort.setEnabled(False)
+            self.LabelBaudrate.setEnabled(False)
+            self.LabelUDP.setEnabled(True)
+            self.LabelUDPPort.setEnabled(True)
+            self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
+            self.LabelUDP.setText(self.CONNECTION_INFO['ip'])
+            self.CONNECTION_INFO['udpport'] = int(config.get('UDP',\
+             'udpport'))
+            self.LabelUDPPort.setText(config.get('UDP', 'udpport'))
+
+    def SetConfiguration(self):
+        self.ConfigurationWindow = ConfigurationWindow()
+        self.ConfigurationWindow.show()
 
     def CheckConnection(self):
         Connection = str(self.LabelConnection.currentText())
 
         if Connection == 'serial':
-            # from glob import glob
-            # ports = glob('/dev/tty[A-Za-z]*')
-            # self.LabelSerialPort.addItems(ports)
             self.LabelSerialPort.setEnabled(True)
             self.LabelBaudrate.setEnabled(True)
             self.LabelUDP.setEnabled(False)
@@ -410,26 +488,109 @@ class SatNetGUI(QtGui.QDialog):
             self.LabelUDP.setEnabled(True)
             self.LabelUDPPort.setEnabled(True)
 
-    # def readCMDConfig(self, opts):
+    def paramValidation(self):
+        # Parameters validation
+        if 'username' not in self.CONNECTION_INFO:
+            log.err('Missing username parameter [-u username]')
+            exit()
+        if 'password' not in self.CONNECTION_INFO:
+            log.err('Missing username parameter [-p password]')
+            exit()
+        if 'connection' not in self.CONNECTION_INFO:
+            log.err('Missing connection parameter [-c serial] or [-c udp]')
+            exit()
+        if self.CONNECTION_INFO['connection'] == 'serial':
+            log.msg('Using a serial interface with the GS')
+            if 'serialport' not in self.CONNECTION_INFO or 'baudrate' not in self.CONNECTION_INFO:
+                log.msg('Missing some client configurations (serialport [-s] or baudrate [-b])')
+                exit()
+        if self.CONNECTION_INFO['connection'] == 'udp':
+            log.msg('Using an UDP interface with the GS')
+            if 'ip' not in self.CONNECTION_INFO or 'udpport' not in self.CONNECTION_INFO:
+                log.msg('Missing some client configurations (ip [-i] or udpport [-u])')
+                exit()
+
+    def usage(self):
+        print ("\n"
+                "USAGE of client_amp.py\n"               
+                "Usage: python client_amp.py [-u <username>] # Set SATNET username to login\n"
+                "Usage: python client_amp.py [-p <password>] # Set SATNET user password to login\n"
+                "Usage: python client_amp.py [-t <slot_ID>] # Set the slot id corresponding to the pass you will track\n"
+                "Usage: python client_amp.py [-c <connection>] # Set the type of interface with the GS (serial or udp)\n"
+                "Usage: python client_amp.py [-s <serialport>] # Set serial port\n"
+                "Usage: python client_amp.py [-b <baudrate>] # Set serial port baudrate\n"
+                "Usage: python client_amp.py [-i <ip>] # Set ip direction\n"
+                "Usage: python client_amp.py [-u <udpport>] # Set udp port\n"
+                "\n"
+                "Example for serial config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c serial -s /dev/ttyS1 -b 115200\n"
+                "Example for udp config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c udp -i 127.0.0.1 -u 5001\n"
+                "\n"
+                "[User]\n"
+                "username: crespo\n"
+                "password: cre.spo\n"
+                "slot_id: 2\n"
+                "connection: udp\n"
+                "[Serial]\n"
+                "serialport: /dev/ttyUSB0\n"
+                "baudrate: 9600\n"
+                "[UDP]\n"
+                "ip: 127.0.0.1\n"
+                "udpport: 5005")
+
+    def center(self):
+        frameGm = self.frameGeometry()
+        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
+        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        frameGm.moveCenter(centerPoint)
+        self.move(frameGm.topLeft())
+
+    def closeEvent(self, event):
+        
+        reply = QtGui.QMessageBox.question(self, 'Exit confirmation',
+            "Are you sure to quit?", QtGui.QMessageBox.Yes | 
+            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+
+        if reply == QtGui.QMessageBox.Yes:
+            try:
+                self.c.disconnect()
+                reactor.stop()
+            except Exception:
+                log.msg("Reactor not running.")
+
+            event.accept()
+        else:
+            event.ignore()  
 
 
 class XStream(QtCore.QObject):
+    """
+
+    This class creates an object of class QtCore.QObject to 
+    display announcements.
+
+    """
     _stdout = None
     _stderr = None
+
     messageWritten = QtCore.pyqtSignal(str)
+
     def flush( self ):
         pass
+
     def fileno( self ):
         return -1
+
     def write( self, msg ):
         if ( not self.signalsBlocked() ):
             self.messageWritten.emit(unicode(msg))
+
     @staticmethod
     def stdout():
         if ( not XStream._stdout ):
             XStream._stdout = XStream()
             sys.stdout = XStream._stdout
         return XStream._stdout
+
     @staticmethod
     def stderr():
         if ( not XStream._stderr ):
@@ -438,17 +599,64 @@ class XStream(QtCore.QObject):
         return XStream._stderr
 
 
+class ConfigurationWindow(QtGui.QWidget):
+    """
+
+    This class creates a new window where you can set the 
+    connection parameters.
+
+    """
+    def __init__(self):
+        QtGui.QWidget.__init__(self)
+        self.initUI()
+        self.center()
+
+    def initUI(self):
+        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 11))
+        self.setFixedSize(350, 135)
+        self.setWindowTitle("Configuration window")
+
+        configuration = QtGui.QGroupBox(self)
+        layout = QtGui.QFormLayout()
+        configuration.setLayout(layout)
+
+        self.LabelMaxRetries = QtGui.QLineEdit()
+        self.LabelMaxRetries.setFixedWidth(150)
+        layout.addRow(QtGui.QLabel("Maximum retries:         "),\
+         self.LabelMaxRetries)
+        self.LabelDelay = QtGui.QLineEdit()
+        self.LabelDelay.setFixedWidth(150)
+        layout.addRow(QtGui.QLabel("Password:                "),\
+         self.LabelDelay)
+
+        configuration.setTitle("User data")
+        configuration.move(10, 10)
+
+    def center(self):
+        frameGm = self.frameGeometry()
+        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
+        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        frameGm.moveCenter(centerPoint)
+        self.move(frameGm.topLeft())
+
+
 if __name__ == '__main__':
+    
+    log.startLogging(DailyLogFile.fromFullPath("foo.log"))
 
+    # log.startLogging(sys.stdout)
     app = QtGui.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon('logo.png'))
+    window = SatNetGUI()
+    window.show()
 
-    myapp = SatNetGUI()
-    myapp.show()
-
+    """
+    Using a specific reactor implementation, pyqt4reactor
+    """
     from qtreactor import pyqt4reactor
     pyqt4reactor.install()
 
     from twisted.internet import reactor
     reactor.run()
 
-    # sys.exit(app.exec_())
+    sys.exit(app.exec_())

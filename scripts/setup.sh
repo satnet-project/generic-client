@@ -24,6 +24,8 @@ mkdir build && cd build
 pip install SIP --allow-unverified SIP --download="."
 unzip sip*
 cd sip*
+# python configure.py
+# echo yes | python configure.py
 python configure.py
 make
 sudo make install
@@ -33,7 +35,7 @@ cd ../ && rm -r -f sip*
 wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
 tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
 cd PyQt-x11-gpl-4.11.4
-python ./configure.py -q /usr/bin/qmake-qt4
+python ./configure.py --confirm-license -q /usr/bin/qmake-qt4
 make
 # Bug. Needed ldconfig, copy it from /usr/sbin
 cp /sbin/ldconfig ../../bin/

@@ -5,22 +5,18 @@ branches:
 python:
   - '2.7'
 
-
-#  - './scripts/setup.sh'
-#before_script:
-#  - "psql -c 'create database satnet_db;' -U postgres"
-#  - 'python manage.py migrate'
-
 # Handle git submodules yourself
 git:
     submodules: false
+
 # Use sed to replace the SSH URL with the public URL, then initialize submodules
 before_install:
     - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
     - git submodule update --init --recursive
     - cd protocol
-    - git checkout
+    - git checkout jrpc_if
     - cd ../
+
 install:
   - 'pip install -r requirements.txt'
 
@@ -33,5 +29,6 @@ script:
   - 'python protocol/tests/test_startRemote.py test'
 #  - 'coverage erase'
 #  - 'coverage run manage.py test'
+
 #after_script:
 #  - 'coveralls'

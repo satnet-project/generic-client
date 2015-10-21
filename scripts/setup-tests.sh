@@ -11,4 +11,4 @@ sudo apt-get install python-dev -f
 # Create a virtualenv
 virtualenv $venv_path
 source "$venv_path/bin/activate"
-pip install -r "$project_path/requirements.txt"
+pip install -r "$project_path/requirements-tests.txt"

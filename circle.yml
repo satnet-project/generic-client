@@ -3,6 +3,7 @@ checkout:
   post:
     - git submodule update --init
     - cd protocol && git checkout jrpc_if
+    - cd protocol && git status
 
 dependencies:
   pre:

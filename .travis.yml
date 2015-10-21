@@ -26,7 +26,7 @@ install:
   - cd ../tests/
 
 script:
-  - coverage run test_creds
+  - coverage run test_creds.py
 #   - 'python test_creds.py'
 #   - 'python test_end2end.py'
 #   - 'python test_login_multipleClients.py'

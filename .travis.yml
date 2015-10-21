@@ -15,7 +15,7 @@ before_install:
     - git submodule update --init --recursive
     - cd protocol
     - git checkout jrpc_if
-    - cd ..
+    - cd ../
     - chmod +x ./scripts/setup-tests.sh
     - chmod +x ./protocol/scripts/setup.sh
 

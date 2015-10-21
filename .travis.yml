@@ -14,7 +14,7 @@ before_install:
     - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
     - git submodule update --init --recursive
     - cd scripts
-    - './setup-tests.sh'
+    - 'sudo ./setup-tests.sh'
     - cd ../
     - ls
     - cd protocol
@@ -39,5 +39,5 @@ script:
 #  - 'coverage erase'
 #  - 'coverage run manage.py test'
 
-#after_script:
-#  - 'coveralls'
+after_script:
+  - 'coveralls'

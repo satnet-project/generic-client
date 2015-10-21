@@ -34,5 +34,5 @@ script:
 #  - 'python test_sendMsg.py'
   - 'python test_startRemote.py'
 
-after_script:
+after_success:
   - 'coveralls'

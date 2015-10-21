@@ -1,0 +1,18 @@
+#!/bin/bash
+script_path="$( cd "$( dirname "$0" )" && pwd )"
+project_path=$( readlink -e "$script_path/.." )
+venv_path="$project_path/.venv"
+
+# Install required packages
+sudo apt-get install build-essential -f 
+sudo apt-get install virtualenv -f 
+sudo apt-get install python-qt4 -f
+sudo apt-get install libqt4-dev -f 
+sudo apt-get install unzip -f
+sudo apt-get install python-pip -f
+sudo apt-get install python-dev -f
+
+# Create a virtualenv
+virtualenv $venv_path
+source "$venv_path/bin/activate"
+pip install -r "$project_path/requirements.txt"

@@ -21,7 +21,7 @@ before_install:
 install:
   - pip install -r requirements.txt
   - cd protocol/scripts
-  - pip install -r requirements.txt
+  - pip install -r requirements-tests.txt
   - './protocol-setup.sh'
   - cd ../tests/
 

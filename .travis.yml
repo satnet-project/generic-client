@@ -5,7 +5,8 @@ branches:
 python:
   - '2.7'
 
-# Handle git submodules yourself
+# The SSH references to submodules could cause some problems. We will 
+# change the ssh directions to http.
 git:
   submodules: false
 
@@ -22,17 +23,15 @@ install:
   - cd protocol/scripts
   - pip install -r requirements.txt
   - './protocol-setup.sh'
-  - cd ../../
+  - cd ../tests/
 
 script:
-  - 'python protocol/tests/test_creds.py'
-  - 'python protocol/tests/test_end2end.py'
-  - 'python protocol/tests/test_login_multipleClients.py'
-  - 'python protocol/tests/test_login_singleClient.py'
-  - 'python protocol/tests/test_sendMsg.py'
-  - 'python protocol/tests/test_startRemote.py'
-#  - 'coverage erase'
-#  - 'coverage run manage.py test'
+  - 'python test_creds.py'
+  - 'python test_end2end.py'
+  - 'python test_login_multipleClients.py'
+  - 'python test_login_singleClient.py'
+  - 'python test_sendMsg.py'
+  - 'python test_startRemote.py'
 
 after_script:
   - 'coveralls'

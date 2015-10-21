@@ -16,6 +16,8 @@ before_install:
     - cd protocol
     - git checkout jrpc_if
     - cd ..
+    - chmod +x ./scripts/setup-tests.sh
+    - chmod +x ./protocol/scripts/setup.sh
 
 install:
 	- ./scripts/setup-tests.sh

@@ -16,12 +16,12 @@ before_install:
   - cd protocol
   - git checkout jrpc_if
   - cd ../
-  - 'chmod +x ./scripts/setup-tests.sh'
-  - 'chmod +x ./protocol/scripts/setup.sh'
 
 install:
-  - ./scripts/setup-tests.sh
-  - ./protocol/scripts/setup.sh
+  - pip install -r requirements
+  - cd protocol
+  - pip install -r requirements.txt
+  - cd ../
 
 script:
   - 'python protocol/tests/test_creds.py'

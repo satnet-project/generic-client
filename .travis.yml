@@ -21,6 +21,7 @@ install:
   - pip install -r requirements.txt
   - cd protocol/scripts
   - pip install -r requirements.txt
+  - './protocol-setup.sh'
   - cd ../../
 
 script:

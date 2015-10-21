@@ -1,14 +1,11 @@
 
 checkout:
   post:
-    - git submodule init
-    - git submodule update
+    - git submodule update --init
     - cd protocol && git checkout jrpc_if
-    - pwd
 
 dependencies:
   pre:
-    - sudo apt-get update
     - sudo apt-get install python-mock
     - cd scripts && bash ./setup-tests.sh
     - cd protocol/scripts && bash ./protocol-setup.sh

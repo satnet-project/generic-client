@@ -19,6 +19,7 @@ before_install:
     - chmod +x ./scripts/setup-tests.sh
     - chmod +x ./protocol/scripts/setup.sh
 
+
 install:
 	- ./scripts/setup-tests.sh
 	- ./protocol/scripts/setup.sh

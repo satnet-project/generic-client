@@ -26,13 +26,14 @@ install:
   - cd ../tests/
 
 script:
-  - 'python test_creds.py'
-  - 'python test_end2end.py'
-  - 'python test_login_multipleClients.py'
-  - 'python test_login_singleClient.py'
-# Still needs an active server to test. TO-DO
-#  - 'python test_sendMsg.py'
-  - 'python test_startRemote.py'
+  - coverage run test_creds
+#   - 'python test_creds.py'
+#   - 'python test_end2end.py'
+#   - 'python test_login_multipleClients.py'
+#   - 'python test_login_singleClient.py'
+# # Still needs an active server to test. TO-DO
+# #  - 'python test_sendMsg.py'
+#   - 'python test_startRemote.py'
 
 after_success:
   - 'coveralls'

@@ -13,14 +13,21 @@ git:
 before_install:
     - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
     - git submodule update --init --recursive
+    - cd scripts
+    - './setup-tests.sh'
+    - cd ../
+    - ls
     - cd protocol
     - git checkout jrpc_if
     - cd scripts
     - './protocol-setup.sh'
-    - cd ../../
+    - cd ../
+    - ls
+    - cd ../
+    - ls
 
-install:
-  - 'pip install -r requirements.txt'
+#install:
+#  - 'pip install -r requirements.txt'
 
 script:
   - 'python protocol/tests/test_creds.py'

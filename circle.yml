@@ -1,6 +1,6 @@
 
 checkout:
-  post:
+  pre:
     - git submodule init
     - git submodule update
     - cd protocol && git checkout jrpc_if

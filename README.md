@@ -1,4 +1,5 @@
 [![Circle CI](https://circleci.com/gh/satnet-project/generic-client.svg?style=shield)](https://circleci.com/gh/satnet-project/generic-client)
+[![Build Status](https://travis-ci.org/satnet-project/generic-client.svg?branch=master)](https://travis-ci.org/satnet-project/generic-client)
 [![Coverage Status](https://coveralls.io/repos/satnet-project/client/badge.svg?branch=master)](https://coveralls.io/r/satnet-project/client?branch=master)
 
 ### Generic client for SATNet project.

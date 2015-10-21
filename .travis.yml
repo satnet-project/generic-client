@@ -15,7 +15,9 @@ before_install:
     - git submodule update --init --recursive
     - cd protocol
     - git checkout jrpc_if
-    - cd ../
+    - cd scripts
+    - './protocol-setup.sh'
+    - cd ../../
 
 install:
   - 'pip install -r requirements.txt'

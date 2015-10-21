@@ -11,10 +11,11 @@ dependencies:
     - cd scripts && bash ./setup-tests.sh
     - cd protocol/scripts && bash ./protocol-setup.sh
     - source .venv/bin/activate && pip install django && pip install django-test
+    - sudo apt-get autoremove
 
 test:
   override:
     - source .venv/bin/activate && cd protocol/tests/ && python test_creds.py
     - source .venv/bin/activate && cd protocol/tests/ && python test_login_singleClient.py
     - source .venv/bin/activate && cd protocol/tests/ && python test_login_multipleClients.py
-    - source .venv/bin/activate && cd protocol/tests/ && python test_startRemote
+    - source .venv/bin/activate && cd protocol/tests/ && python test_startRemote.py

@@ -13,31 +13,23 @@ git:
 before_install:
     - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
     - git submodule update --init --recursive
-    - cd scripts
-    - 'sudo ./setup-tests.sh'
-    - cd ../
-    - ls
     - cd protocol
     - git checkout jrpc_if
-    - cd scripts
-    - './protocol-setup.sh'
-    - cd ../
-    - ls
-    - cd ../
-    - ls
+    - cd ..
 
-#install:
-#  - 'pip install -r requirements.txt'
+install:
+	- ./scripts/setup-tests.sh
+	- ./protocol/scripts/setup.sh
 
 script:
-  - 'python protocol/tests/test_creds.py'
-  - 'python protocol/tests/test_end2end.py'
-  - 'python protocol/tests/test_login_multipleClients.py'
-  - 'python protocol/tests/test_login_singleClient.py'
-  - 'python protocol/tests/test_sendMsg.py'
-  - 'python protocol/tests/test_startRemote.py'
+	- 'python protocol/tests/test_creds.py'
+	- 'python protocol/tests/test_end2end.py'
+	- 'python protocol/tests/test_login_multipleClients.py'
+	- 'python protocol/tests/test_login_singleClient.py'
+	- 'python protocol/tests/test_sendMsg.py'
+	- 'python protocol/tests/test_startRemote.py'
 #  - 'coverage erase'
 #  - 'coverage run manage.py test'
 
 after_script:
-  - 'coveralls'
+	- 'coveralls'

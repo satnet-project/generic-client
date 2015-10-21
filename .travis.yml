@@ -20,9 +20,9 @@ before_install:
     - chmod +x ./protocol/scripts/setup.sh
 
 
-install:
-	- ./scripts/setup-tests.sh
-	- ./protocol/scripts/setup.sh
+# install:
+# 	- ./scripts/setup-tests.sh
+# 	- ./protocol/scripts/setup.sh
 
 script:
 	- 'python protocol/tests/test_creds.py'

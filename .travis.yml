@@ -22,7 +22,6 @@ before_install:
 install:
   - ./scripts/setup-tests.sh
   - ./protocol/scripts/setup.sh
-  - 'sudo apt-get install python-twisted'
 
 script:
   - 'python protocol/tests/test_creds.py'

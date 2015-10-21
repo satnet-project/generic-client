@@ -16,7 +16,5 @@ dependencies:
 test:
   override:
     - source .venv/bin/activate && cd protocol/tests/ && python test_creds.py
-    - source .venv/bin/activate && cd protocol/tests/ && python test_end2end.py
     - source .venv/bin/activate && cd protocol/tests/ && python test_login_singleClient.py
     - source .venv/bin/activate && cd protocol/tests/ && python test_login_multipleClients.py
-    - source .venv/bin/activate && cd protocol/tests/ && python test_startRemote.py

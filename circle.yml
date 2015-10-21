@@ -1,9 +1,10 @@
 
 checkout:
-  pre:
+  post:
     - git submodule init
     - git submodule update
     - cd protocol && git checkout jrpc_if
+    - pwd
 
 dependencies:
   pre:

@@ -40,6 +40,7 @@ from protocol.ampCommands import EndRemote
 from protocol.ampCommands import StartRemote
 from protocol.ampCommands import NotifyMsg
 from protocol.ampCommands import NotifyEvent
+from protocol.ampCommands import SendMsg
 
 from gs_interface import GroundStationInterface
 import getpass

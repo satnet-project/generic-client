@@ -21,5 +21,5 @@ test:
     - source .venv/bin/activate && cd protocol/tests/ && python test_login_multipleClients.py
     # Lines remove for testing the coveralls.io integration.
     - source .venv/bin/activate && cd protocol/tests/ && python test_startRemote.py
-    - source .venv/bin/activate && cd protocol/tests/ && python test_sendMsg.p
+    - source .venv/bin/activate && cd protocol/tests/ && python test_sendMsg.py
     - source .venv/bin/activate && cd protocol/tests/ && python test_end2end.py

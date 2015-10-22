@@ -37,5 +37,6 @@ script:
 
 after_success:
 #  - cd ../../
+  - pip install coveralls
   - pwd
   - 'coveralls'

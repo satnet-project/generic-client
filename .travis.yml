@@ -36,7 +36,7 @@ script:
   - coverage run test_startRemote.py
 
 after_success:
-#  - cd ../../
+  - cd ../../
   - pip install coveralls
   - pwd
   - 'coveralls'

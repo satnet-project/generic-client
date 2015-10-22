@@ -64,10 +64,6 @@ class ClientProtocol(AMP):
         self.gsi.disconnectProtocol()
         res = yield self.callRemote(EndRemote)
 
-    # @inlineCallbacks
-    # def desconexion(self):
-    #     res = yield self.callRemote(EndRemote)
-
     @inlineCallbacks
     def user_login(self):        
         try:

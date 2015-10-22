@@ -23,7 +23,6 @@ install:
   - cd protocol/scripts
   - pip install -r requirements-tests.txt
   - './protocol-setup.sh'
-  - pip install coveralls
   - cd ../tests/
 
 script:
@@ -36,6 +35,6 @@ script:
   - coverage run test_startRemote.py
 
 after_success:
-  - source /home/travis/virtualenv/bin/activate
-  - pip install coverage
+  - cd ../../../
+  - pwd
   - 'coveralls'

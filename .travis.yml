@@ -19,6 +19,7 @@ before_install:
   - cd ../
 
 install:
+  - pwd
   - pip install coveralls
   - pip install -r requirements-tests.txt
   - cd protocol/scripts
@@ -37,6 +38,4 @@ script:
 
 after_success:
   - cd ../../
-  - pip install coveralls
-  - pwd
   - 'coveralls'

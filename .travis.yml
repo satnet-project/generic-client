@@ -23,6 +23,7 @@ install:
   - cd protocol/scripts
   - pip install -r requirements-tests.txt
   - './protocol-setup.sh'
+  - pip install coveralls
   - cd ../tests/
 
 script:

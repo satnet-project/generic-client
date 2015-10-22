@@ -19,7 +19,7 @@ before_install:
   - cd ../
 
 install:
-  - pip install -r requirements.txt
+  - pip install -r requirements-tests.txt
   - cd protocol/scripts
   - pip install -r requirements-tests.txt
   - './protocol-setup.sh'
@@ -27,13 +27,14 @@ install:
 
 script:
   - coverage run test_creds.py
-#   - 'python test_creds.py'
-#   - 'python test_end2end.py'
-#   - 'python test_login_multipleClients.py'
-#   - 'python test_login_singleClient.py'
-# # Still needs an active server to test. TO-DO
-# #  - 'python test_sendMsg.py'
-#   - 'python test_startRemote.py'
+  - coverage run test_end2end.py
+  - coverage run test_login_multipleClients.py
+  - coverage run test_login_singleClient.py
+# Still needs an active server to test. TO-DO
+#  - 'python test_sendMsg.py'
+  - coverage run test_startRemote.py
 
 after_success:
+  - pwd
+  - ls
   - 'coveralls'

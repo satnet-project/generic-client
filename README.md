@@ -1,6 +1,7 @@
 [![Circle CI](https://circleci.com/gh/satnet-project/generic-client.svg?style=shield)](https://circleci.com/gh/satnet-project/generic-client)
 [![Build Status](https://travis-ci.org/satnet-project/generic-client.svg?branch=master)](https://travis-ci.org/satnet-project/generic-client)
 [![Coverage Status](https://coveralls.io/repos/satnet-project/client/badge.svg?branch=master)](https://coveralls.io/r/satnet-project/client?branch=master)
+[![Code Health](https://landscape.io/github/satnet-project/generic-client/master/landscape.svg?style=flat)](https://landscape.io/github/satnet-project/generic-client/master)
 
 ### Generic client for SATNet project.
 

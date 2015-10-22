@@ -37,6 +37,6 @@ script:
   - coverage run test_startRemote.py
 
 after_success:
-  - cd ../../
+#  - cd ../../
   - pwd
   - 'coveralls'

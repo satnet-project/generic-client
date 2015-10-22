@@ -1,7 +1,9 @@
 language: 'python'
+
 branches:
   only:
     - master
+
 python:
   - '2.7'
 
@@ -33,10 +35,9 @@ script:
   - coverage run test_login_multipleClients.py
   - coverage run test_login_singleClient.py
 # Still needs an active server to test. TO-DO
-#  - 'python test_sendMsg.py'
+#  - coverage run test_sendMsg.py
   - coverage run test_startRemote.py
 
 after_success:
   - cd ../../
-  - ls -a
   - 'coveralls'

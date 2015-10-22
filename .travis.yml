@@ -23,16 +23,17 @@ install:
   - cd protocol/scripts
   - pip install -r requirements-tests.txt
   - './protocol-setup.sh'
+  - pip install coveralls
   - cd ../tests/
 
 script:
-  - coverage run test_creds.py
-  - coverage run test_end2end.py
-  - coverage run test_login_multipleClients.py
-  - coverage run test_login_singleClient.py
+  - coverage run test_creds.py test
+  - coverage run test_end2end.py test
+  - coverage run test_login_multipleClients.py test
+  - coverage run test_login_singleClient.py test
 # Still needs an active server to test. TO-DO
 #  - 'python test_sendMsg.py'
-  - coverage run test_startRemote.py
+  - coverage run test_startRemote.py test
 
 after_success:
   - source /home/travis/virtualenv/bin/activate

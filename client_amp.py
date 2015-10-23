@@ -23,7 +23,6 @@ __author__ = 'xabicrespog@gmail.com'
 import sys
 import os
 
-from OpenSSL import SSL
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 
@@ -31,7 +30,6 @@ from twisted.python import log
 from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
-from twisted.cred.credentials import UsernamePassword
 from twisted.internet.defer import inlineCallbacks
 from twisted.python.logfile import DailyLogFile
 
@@ -43,9 +41,7 @@ from protocol.ampCommands import NotifyEvent
 from protocol.ampCommands import SendMsg
 
 from gs_interface import GroundStationInterface
-import getpass
 import getopt
-import threading
 import misc
 
 
@@ -63,7 +59,7 @@ class ClientProtocol(AMP):
         log.err("Connection lost")
         log.err(reason)
         self.gsi.disconnectProtocol()
-        res = yield self.callRemote(EndRemote)
+        # res = yield self.callRemote(EndRemote)
 
     @inlineCallbacks
     def user_login(self):        
@@ -358,7 +354,8 @@ class SatNetGUI(QtGui.QWidget):
         self.CONNECTION_INFO = {}
 
         try:
-            opts, args = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
+            # was opts, args
+            opts= getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
              ["username=", "password=", "slot=", "connection=", "serialport=",\
               "baudrate=", "ip=", "udpport="])
         except getopt.GetoptError:

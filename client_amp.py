@@ -307,7 +307,7 @@ class SatNetGUI(QtGui.QWidget):
         XStream.stderr().messageWritten.connect(console.insertPlainText)
 
         try:
-            opts, args = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
+            opts = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
              ["username=", "password=", "slot=", "connection=", "serialport=",\
               "baudrate=", "ip=", "udpport="])
         except getopt.GetoptError:

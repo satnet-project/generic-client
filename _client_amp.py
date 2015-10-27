@@ -191,45 +191,29 @@ class Client():
 TO-DO
 QDialog, QWidget or QMainWindow, which is better in this situation?
 """
-class SATNetGUI(QWidget):
+class SATNetGUI(QtGui.QWidget):
     def __init__(self, parent = None):
-        QWidget.__init__(self, parent)
+        QtGui.QWidget.__init__(self, parent)
 
         self.initUI()
 
-    def _test(self):
-        log.msg("tested!")
-
     def run(self):
         self.runKISSThread()
-        # self.runClientThread()
 
     """
     Run threads associated to KISS protocol
     """
     def runKISSThread(self):
-        # QObject.connect(self.workerKISSThread, SIGNAL( "readingPort( PyQt_PyObject )" ), self._test)
-        # QObject.connect( self.workerKISSThread, SIGNAL( "primaryValue( PyQt_PyObject )" ), self.primaryValueFromThread )
-        # QObject.connect( self.workerKISSThread, SIGNAL( "primaryRange( PyQt_PyObject )" ), self.primaryRangeFromThread )
-        # QObject.connect( self.workerKISSThread, SIGNAL( "primaryText( PyQt_PyObject )" ), self.primaryTextFromThread )
-        # QObject.connect( self.workerKISSThread, SIGNAL( "secondaryValue( PyQt_PyObject )" ), self.secondaryValueFromThread )
-        # QObject.connect( self.workerKISSThread, SIGNAL( "secondaryRange( PyQt_PyObject )" ), self.secondaryRangeFromThread )
-        # QObject.connect( self.workerKISSThread, SIGNAL( "secondaryText( PyQt_PyObject )" ), self.secondaryTextFromThread )
-        
-        # KISSTNC thread
         self.workerKISSThread.start()
 
     """
-    Run threads associated to information output
+    Gets a string but can't format it!
     """
-    def runStdoutThread(self):
-        self.workerStdoutThread.start()
-
-    # """
-    # Run threads associated to UI interface
-    # """
-    # def runClientThread(self):
-    #     self.workerClientThread.start()
+    def sendData(self, result):
+        log.msg('sendData')
+        log.msg(type(result))
+        # val = result.val
+        # print("got val {}".format(val))
 
     def NewConnection(self):
         """
@@ -675,60 +659,27 @@ class KISSThread(QThread):
 
 
 class OperativeKISSThread(KISSThread):
-    def __init__(self, parent = None):
+    finished = QtCore.pyqtSignal(object)
+
+    def __init__(self, queue, callback, parent = None):
         KISSThread.__init__(self, parent)
+        self.queue = queue
+        self.finished.connect(callback)
     
     def doWork(self, kissTNC):
         kissTNC.read(callback=self.catchValue)
         return True
 
     def catchValue(self, frame):
-        log.msg(type(frame))
-        return frame
-
-
-# """
-# Class associated to output information
-# """
-# class StdoutThread(QThread):
-#     def __init__(self, parent = None):
-#         QThread.__init__(self, parent)
-
-#     def run(self):
-#         log.msg('Streaming text to text widget')
-#         self.running = True
-#         success = self.doWork()
-
-#     def stop(self):
-#         self.running = False
-#         pass
-
-#     def doWork(self):
-#         return True
-
-#     def cleanup(self):
-#         pass
-
-
-# class OperativeStdoutThread(StdoutThread):
-#     def __init__(self, parent = None):
-#         StdoutThread.__init__(self, parent)
-
-#     def doWork(self):
-#         """
-#         Insert work actions
-#         """
-#         my_receiver = MyReceiver(queue)
-#         my_receiver.mysignal.connect
-#         return True 
-
+        # self.finished.emit(ResultObj(frame))
+        self.finished.emit(frame)
+        
 
 """
 Objects designed for output the information
 """
 class WriteStream(object):
     def __init__(self,queue):
-        print "abierto WriteStream"
         self.queue = queue
 
     def write(self, text):
@@ -758,7 +709,15 @@ class MyReceiver(QThread):
             self.mysignal.emit(text)
 
 
+class ResultObj(QtCore.QObject):
+    def __init__(self, val):
+        self.val = val
+
+
 if __name__ == '__main__':
+
+
+    serial_queue = Queue()
 
     # Create Queue and redirect sys.stdout to this queue
     queue = Queue()
@@ -766,20 +725,13 @@ if __name__ == '__main__':
 
     log.startLogging(sys.stdout)
 
-    # log.PythonLoggingObserver()
-    # logging.basicConfig(stream=WriteStream(queue), level=logging.DEBUG)
-
     qapp = QApplication(sys.argv)
     app = SATNetGUI()
-    """
-    Threads
-    """
-    app.workerKISSThread = OperativeKISSThread()
-    # app.workerStdoutThread = OperativeStdoutThread()
-    # d.workerClientThread = OperativeClientThread()
+    # Threads
+    app.workerKISSThread = OperativeKISSThread(serial_queue, app.sendData)
     app.setWindowIcon(QIcon('logo.png'))
-
     app.show()
+    
     # Start threads
     app.run()
 

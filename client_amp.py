@@ -25,7 +25,6 @@ from PyQt4.QtGui import *
 import sys
 import getopt
 import os
-import logging
 import misc
 
 from PyQt4 import QtGui
@@ -38,10 +37,8 @@ from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
 from twisted.internet.defer import inlineCallbacks
-from twisted.python.logfile import DailyLogFile
 
 from protocol.ampauth.login import Login
-from protocol.ampCommands import EndRemote
 from protocol.ampCommands import StartRemote
 from protocol.ampCommands import NotifyMsg
 from protocol.ampCommands import NotifyEvent
@@ -73,10 +70,13 @@ class ClientProtocol(AMP):
             res = yield self.callRemote(Login,\
              sUsername=self.CONNECTION_INFO['username'],\
               sPassword=self.CONNECTION_INFO['password'])
+            log.msg(res)
             res = yield self.callRemote(StartRemote,\
              iSlotId=self.CONNECTION_INFO['slot_id'])
+            log.msg(res)
             res = yield self.callRemote(SendMsg, sMsg='hola',\
              iTimestamp=misc.get_utc_timestamp())
+            log.msg(res)
         except Exception as e:
             log.err(e)
             reactor.stop()
@@ -172,7 +172,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         ReconnectingClientFactory.clientConnectionFailed(self,\
          connector, reason)
 
-class Client():
+class Client(object):
     """
     This class starts the client using the data provided by user interface.
 

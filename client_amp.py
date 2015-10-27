@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-   Copyright 2014, 2015 Xabier Crespo Álvarez
+   Copyright 2015 Samuel Góngora García
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,23 @@
    limitations under the License.
 
 :Author:
-    Xabier Crespo Álvarez (xabicrespog@gmail.com)
+    Samuel Góngora García (s.gongoragarcia@gmail.com)
 """
-__author__ = 'xabicrespog@gmail.com'
+__author__ = 's.gongoragarcia@gmail.com'
 
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
 import sys
+import getopt
 import os
+import logging
+import misc
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
+
+from Queue import Queue
 
 from twisted.python import log
 from twisted.internet.ssl import ClientContextFactory
@@ -40,9 +47,7 @@ from protocol.ampCommands import NotifyMsg
 from protocol.ampCommands import NotifyEvent
 from protocol.ampCommands import SendMsg
 
-from gs_interface import GroundStationInterface
-import getopt
-import misc
+from _gs_interface import GroundStationInterface
 
 
 class ClientProtocol(AMP):
@@ -50,6 +55,8 @@ class ClientProtocol(AMP):
     def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
+
+        log.msg('he pasado por el __init_- de ClientProtocol')
 
     def connectionMade(self):
         self.user_login()
@@ -59,7 +66,6 @@ class ClientProtocol(AMP):
         log.err("Connection lost")
         log.err(reason)
         self.gsi.disconnectProtocol()
-        # res = yield self.callRemote(EndRemote)
 
     @inlineCallbacks
     def user_login(self):        
@@ -69,6 +75,8 @@ class ClientProtocol(AMP):
               sPassword=self.CONNECTION_INFO['password'])
             res = yield self.callRemote(StartRemote,\
              iSlotId=self.CONNECTION_INFO['slot_id'])
+            res = yield self.callRemote(SendMsg, sMsg='hola',\
+             iTimestamp=misc.get_utc_timestamp())
         except Exception as e:
             log.err(e)
             reactor.stop()
@@ -88,10 +96,13 @@ class ClientProtocol(AMP):
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
+    # @staticmethod
     def processFrame(self, frame):
+
         log.msg('Received frame: ' + frame)
-        res = self.callRemote(SendMsg, sMsg=frame,\
+        res = yield self.callRemote(SendMsg, sMsg=frame,\
          iTimestamp=misc.get_utc_timestamp())
+        
         log.msg(res)
 
     def vNotifyEvent(self, iEvent, sDetails):
@@ -121,14 +132,23 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         self.gsi = gsi
         # self.continueTrying = 0
 
+    """
+    Called when a connection has been started
+    """
     def startedConnecting(self, connector):
         log.msg('Starting connection...')
 
+    """
+    Create an instance of a subclass of Protocol
+    """
     def buildProtocol(self, addr):
         log.msg('Building protocol...')
         self.resetDelay()
         return ClientProtocol(self.CONNECTION_INFO, self.gsi)
 
+    """
+    Called when an established connection is lost
+    """
     def clientConnectionLost(self, connector, reason):
         """
         self.CONNECTION_INFO ok
@@ -139,6 +159,9 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         ReconnectingClientFactory.clientConnectionLost(self,\
          connector, reason)
 
+    """
+    Called when a connection has failed to connect
+    """
     def clientConnectionFailed(self, connector, reason):
         """
         self.CONNECTION_INFO ok
@@ -148,7 +171,6 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         log.msg('Connection failed. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionFailed(self,\
          connector, reason)
-
 
 class Client():
     """
@@ -167,7 +189,11 @@ class Client():
         self.CONNECTION_INFO = CONNECTION_INFO
 
     def createConnection(self):
-        gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
+        """
+        New interface
+        """
+        gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",\
+         ClientProtocol)
 
         global connector
 
@@ -177,179 +203,53 @@ class Client():
 
         return connector
 
+        """
+        Puedo retornar dos valores en vez de uno!!
+        """
+
 
 """
-Really we need to use QtGui.QMainWindow class. For time reasons we 
-maintain QtGui.QWidget although is not the right way.
-class SatNetGUI(QtGui.QMainWindow):
+TO-DO
+QDialog, QWidget or QMainWindow, which is better in this situation?
 """
-
-class SatNetGUI(QtGui.QWidget):
-    """
-    This class creates an object of class QtGui.QWidget to the main window.
-
-    """
-
+class SATNetGUI(QtGui.QWidget):
     def __init__(self, parent = None):
         QtGui.QWidget.__init__(self, parent)
-        self.ConfigurationWindow = None
+
         self.initUI()
-        self.center()
 
-    def initUI(self):
-        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
-        self.setFixedSize(1300, 800)
-        self.setWindowTitle("SATNet client - Generic") 
 
-        # Control buttons.
-        buttons = QtGui.QGroupBox(self)
-        grid = QtGui.QGridLayout(buttons)
-        buttons.setLayout(grid)
+    def run(self):
+        self.runKISSThread()
 
-        # New connection.
-        ButtonNew = QtGui.QPushButton("Connect")
-        ButtonNew.setToolTip("Start a new connection")
-        ButtonNew.setFixedWidth(145)
-        # ButtonNew.setCheckable(True)
-        ButtonNew.clicked.connect(self.NewConnection)
-        # Close connection.
-        ButtonCancel = QtGui.QPushButton("Disconnect")
-        ButtonCancel.setToolTip("End current connection")
-        ButtonCancel.setFixedWidth(145)
-        ButtonCancel.clicked.connect(self.CloseConnection)
-        # Load parameters from file
-        ButtonLoad = QtGui.QPushButton("Load parameters from file")
-        ButtonLoad.setToolTip("Load parameters from <i>config.ini</i> file")
-        ButtonLoad.setFixedWidth(298)
-        ButtonLoad.clicked.connect(self.LoadParameters)
-        # Configuration
-        ButtonConfiguration = QtGui.QPushButton("Configuration")
-        ButtonConfiguration.setToolTip("Set configuration")
-        ButtonConfiguration.setFixedWidth(145)
-        ButtonConfiguration.clicked.connect(self.SetConfiguration)
-        # Help.
-        ButtonHelp = QtGui.QPushButton("Help")
-        ButtonHelp.setToolTip("Click for help")
-        ButtonHelp.setFixedWidth(145)
-        ButtonHelp.clicked.connect(self.usage)
+    """
+    Run threads associated to KISS protocol
+    """
+    def runKISSThread(self):
+        self.workerKISSThread.start()
 
-        grid.addWidget(ButtonNew, 0, 0, 1, 1)
-        grid.addWidget(ButtonCancel, 0, 1, 1, 1)
-        grid.addWidget(ButtonLoad, 1, 0, 1, 2)
-        grid.addWidget(ButtonConfiguration, 2, 0, 1, 1)
-        grid.addWidget(ButtonHelp, 2, 1, 1, 1)
-        buttons.setTitle("Connection")
-        buttons.move(10, 10)
+    """
+    Gets a string but can't format it!
+    """
+    def sendData(self, result):
+        log.msg('sendData')
+        log.msg(type(result))
 
-        # Parameters group.
-        parameters = QtGui.QGroupBox(self)
-        layout = QtGui.QFormLayout()
-        parameters.setLayout(layout)
 
-        self.LabelUsername = QtGui.QLineEdit()
-        self.LabelUsername.setFixedWidth(190)
-        layout.addRow(QtGui.QLabel("Username:       "), self.LabelUsername)
-        self.LabelPassword = QtGui.QLineEdit()
-        self.LabelPassword.setFixedWidth(190)
-        self.LabelPassword.setEchoMode(QtGui.QLineEdit.Password)
-        layout.addRow(QtGui.QLabel("Password:       "), self.LabelPassword)
-        self.LabelSlotID = QtGui.QSpinBox()
-        layout.addRow(QtGui.QLabel("slot_id:        "), self.LabelSlotID)
 
-        self.LabelConnection = QtGui.QComboBox()
-        self.LabelConnection.addItems(['serial', 'udp'])
-        self.LabelConnection.activated.connect(self.CheckConnection)
-        layout.addRow(QtGui.QLabel("Connection:     "), self.LabelConnection)
-        self.LabelSerialPort = QtGui.QComboBox()
-        from glob import glob
-        ports = glob('/dev/tty[A-Za-z]*')
-        self.LabelSerialPort.addItems(ports)
-        layout.addRow(QtGui.QLabel("Serial port:    "), self.LabelSerialPort)
-        self.LabelBaudrate = QtGui.QLineEdit()
-        layout.addRow(QtGui.QLabel("Baudrate:       "), self.LabelBaudrate)
-        self.LabelUDP = QtGui.QLineEdit()
-        layout.addRow(QtGui.QLabel("UDP:            "), self.LabelUDP)
-        self.LabelUDPPort = QtGui.QLineEdit()
-        layout.addRow(QtGui.QLabel("UDP port:       "), self.LabelUDPPort)
+        # self.gsi._manageFrame(result)
+        
 
-        parameters.setTitle("User data")
-        parameters.move(10, 145)
 
-        # Configuration group.
-        configuration = QtGui.QGroupBox(self)
-        configurationLayout = QtGui.QVBoxLayout()
-        configuration.setLayout(configurationLayout)
+        # print gsi
 
-        self.LoadDefaultSettings =\
-         QtGui.QCheckBox("Automatically load settings from 'config.ini'")
-        configurationLayout.addWidget(self.LoadDefaultSettings)
-        self.AutomaticReconnection =\
-         QtGui.QCheckBox("Reconnect after a failure")
-        configurationLayout.addWidget(self.AutomaticReconnection)
-
-        configuration.setTitle("Basic configuration")
-        configuration.move(10, 400)
-
-        # Logo.
-        self.LabelLogo = QtGui.QLabel(self)
-        self.LabelLogo.move(20, 490)
-        pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
-        self.LabelLogo.setPixmap(pic)
-        self.LabelLogo.show()
-
-        # Console
-        console = QtGui.QTextBrowser(self)
-        console.move(340, 10)
-        console.resize(950, 780)
-        console.setFont(QtGui.QFont('SansSerif', 10))
-
-        XStream.stdout().messageWritten.connect(console.insertPlainText)
-        XStream.stderr().messageWritten.connect(console.insertPlainText)
-
-        try:
-            opts = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
-             ["username=", "password=", "slot=", "connection=", "serialport=",\
-              "baudrate=", "ip=", "udpport="])
-        except getopt.GetoptError:
-            print "error"
-
-        if ('-g', '') in opts:
-            for opt, arg in opts:
-                if opt == "-u":
-                    self.LabelUsername.setText(arg)
-                elif opt == "-p":
-                    self.LabelPassword.setText(arg)
-                elif opt == "-t":
-                    self.LabelSlotID.setValue(arg)
-                elif opt == "-c":
-                    index = self.LabelConnection.findText(arg)
-                    self.LabelConnection.setCurrentIndex(index)
-                elif opt == "-s":
-                    index = self.LabelSerialPort.findText(arg)
-                    self.LabelSerialPort.setCurrentIndex(index)
-                elif opt == "-b":
-                    self.LabelBaudrate.setText(arg)
-                elif opt == "-i":
-                    self.LabelUDP.setText(arg)
-                elif opt == "-u":
-                    self.LabelUDPPort.setText(arg)
-
-        reconnection, parameters = self.LoadSettings()
-        if reconnection == 'yes':
-            self.AutomaticReconnection.setChecked(True)
-        elif reconnection == 'no':
-            self.AutomaticReconnection.setChecked(False)
-        if parameters == 'yes':
-            self.LoadDefaultSettings.setChecked(True)
-            self.LoadParameters()
-        elif parameters == 'no':
-            self.LoadDefaultSettings.setChecked(False)
+        # val = result.val
+        # print("got val {}".format(val))
 
     def NewConnection(self):
         """
         Create a new connection by loading the connection parameters from 
         the command line or from the interface window.
-
         """
         self.CONNECTION_INFO = {}
 
@@ -394,8 +294,193 @@ class SatNetGUI(QtGui.QWidget):
             print self.LabelUDPPort.text()
             # self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
 
+        self.gsi = GroundStationInterface(self.CONNECTION_INFO, 'Vigo',\
+         ClientProtocol)
+
         self.c = Client(self.CONNECTION_INFO).createConnection()
 
+    # """
+    # Stops all the thread associated to the KISS protocol
+    # """
+    # def cancelThread( self ):
+    #     self.workerKISSThread.stop()
+
+    # def jobFinishedFromThread( self, success ):
+    #     self.workerKISSThread.stop()
+    #     self.primaryBar.setValue(self.primaryBar.maximum())
+    #     self.secondaryBar.setValue(self.secondaryBar.maximum())
+    #     self.emit( SIGNAL( "jobFinished( PyQt_PyObject )" ), success )
+    #     self.closeButton.setEnabled( True )
+
+    # def primaryValueFromThread( self, value ):
+    #     self.primaryBar.setValue(value)
+
+    # def primaryRangeFromThread( self, range_vals ):
+    #     self.primaryBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
+
+    # def primaryTextFromThread( self, value ):
+    #     self.primaryLabel.setText(value)
+
+    # def secondaryValueFromThread( self, value ):
+    #     self.secondaryBar.setValue(value)
+
+    # def secondaryRangeFromThread( self, range_vals ):
+    #     self.secondaryBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
+
+    # def secondaryTextFromThread( self, value ):
+    #     self.secondaryLabel.setText(value)
+
+    def initUI(self):
+
+        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
+        self.setFixedSize(1300, 800)
+        self.setWindowTitle("SATNet client - Generic") 
+
+        # Control buttons.
+        buttons = QtGui.QGroupBox(self)
+        grid = QtGui.QGridLayout(buttons)
+        buttons.setLayout(grid)
+
+        # New connection.
+        ButtonNew = QtGui.QPushButton("Connect")
+        ButtonNew.setToolTip("Start a new connection")
+        ButtonNew.setFixedWidth(145)
+        # ButtonNew.setCheckable(True)
+        ButtonNew.clicked.connect(self.NewConnection)
+        # Close connection.
+        ButtonCancel = QtGui.QPushButton("Disconnect")
+        ButtonCancel.setToolTip("End current connection")
+        ButtonCancel.setFixedWidth(145)
+        ButtonCancel.clicked.connect(self.CloseConnection)
+        # Load parameters from file
+        ButtonLoad = QtGui.QPushButton("Load parameters from file")
+        ButtonLoad.setToolTip("Load parameters from <i>config.ini</i> file")
+        ButtonLoad.setFixedWidth(298)
+        ButtonLoad.clicked.connect(self.LoadParameters)
+        # Configuration
+        ButtonConfiguration = QtGui.QPushButton("Configuration")
+        ButtonConfiguration.setToolTip("Set configuration")
+        ButtonConfiguration.setFixedWidth(145)
+        """
+        ButtonConfiguration.clicked.connect(self.SetConfiguration)
+        """
+        # Help.
+        ButtonHelp = QtGui.QPushButton("Help")
+        ButtonHelp.setToolTip("Click for help")
+        ButtonHelp.setFixedWidth(145)
+        """
+        ButtonHelp.clicked.connect(self.usage)
+        """
+        grid.addWidget(ButtonNew, 0, 0, 1, 1)
+        grid.addWidget(ButtonCancel, 0, 1, 1, 1)
+        grid.addWidget(ButtonLoad, 1, 0, 1, 2)
+        grid.addWidget(ButtonConfiguration, 2, 0, 1, 1)
+        grid.addWidget(ButtonHelp, 2, 1, 1, 1)
+        buttons.setTitle("Connection")
+        buttons.move(10, 10)
+
+        # Parameters group.
+        parameters = QtGui.QGroupBox(self)
+        layout = QtGui.QFormLayout()
+        parameters.setLayout(layout)
+
+        self.LabelUsername = QtGui.QLineEdit()
+        self.LabelUsername.setFixedWidth(190)
+        layout.addRow(QtGui.QLabel("Username:       "), self.LabelUsername)
+        self.LabelPassword = QtGui.QLineEdit()
+        self.LabelPassword.setFixedWidth(190)
+        self.LabelPassword.setEchoMode(QtGui.QLineEdit.Password)
+        layout.addRow(QtGui.QLabel("Password:       "), self.LabelPassword)
+        self.LabelSlotID = QtGui.QSpinBox()
+        layout.addRow(QtGui.QLabel("slot_id:        "), self.LabelSlotID)
+
+        self.LabelConnection = QtGui.QComboBox()
+        self.LabelConnection.addItems(['serial', 'udp'])
+        """
+        self.LabelConnection.activated.connect(self.CheckConnection)
+        """
+        layout.addRow(QtGui.QLabel("Connection:     "), self.LabelConnection)
+        self.LabelSerialPort = QtGui.QComboBox()
+        from glob import glob
+        ports = glob('/dev/tty[A-Za-z]*')
+        self.LabelSerialPort.addItems(ports)
+        layout.addRow(QtGui.QLabel("Serial port:    "), self.LabelSerialPort)
+        self.LabelBaudrate = QtGui.QLineEdit()
+        layout.addRow(QtGui.QLabel("Baudrate:       "), self.LabelBaudrate)
+        self.LabelUDP = QtGui.QLineEdit()
+        layout.addRow(QtGui.QLabel("UDP:            "), self.LabelUDP)
+        self.LabelUDPPort = QtGui.QLineEdit()
+        layout.addRow(QtGui.QLabel("UDP port:       "), self.LabelUDPPort)
+
+        parameters.setTitle("User data")
+        parameters.move(10, 145)
+
+        # Configuration group.
+        configuration = QtGui.QGroupBox(self)
+        configurationLayout = QtGui.QVBoxLayout()
+        configuration.setLayout(configurationLayout)
+
+        self.LoadDefaultSettings =\
+         QtGui.QCheckBox("Automatically load settings from 'config.ini'")
+        configurationLayout.addWidget(self.LoadDefaultSettings)
+        self.AutomaticReconnection =\
+         QtGui.QCheckBox("Reconnect after a failure")
+        configurationLayout.addWidget(self.AutomaticReconnection)
+
+        configuration.setTitle("Basic configuration")
+        configuration.move(10, 400)
+
+        # Logo.
+        self.LabelLogo = QtGui.QLabel(self)
+        self.LabelLogo.move(20, 490)
+        pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
+        self.LabelLogo.setPixmap(pic)
+        self.LabelLogo.show()
+
+        # Console
+        self.console = QtGui.QTextBrowser(self)
+        self.console.move(340, 10)
+        self.console.resize(950, 780)
+        self.console.setFont(QtGui.QFont('SansSerif', 10))
+
+        try:
+            opts = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
+             ["username=", "password=", "slot=", "connection=", "serialport=",\
+              "baudrate=", "ip=", "udpport="])
+        except getopt.GetoptError:
+            print "error"
+
+        if ('-g', '') in opts:
+            for opt, arg in opts:
+                if opt == "-u":
+                    self.LabelUsername.setText(arg)
+                elif opt == "-p":
+                    self.LabelPassword.setText(arg)
+                elif opt == "-t":
+                    self.LabelSlotID.setValue(arg)
+                elif opt == "-c":
+                    index = self.LabelConnection.findText(arg)
+                    self.LabelConnection.setCurrentIndex(index)
+                elif opt == "-s":
+                    index = self.LabelSerialPort.findText(arg)
+                    self.LabelSerialPort.setCurrentIndex(index)
+                elif opt == "-b":
+                    self.LabelBaudrate.setText(arg)
+                elif opt == "-i":
+                    self.LabelUDP.setText(arg)
+                elif opt == "-u":
+                    self.LabelUDPPort.setText(arg)
+
+        # reconnection, parameters = self.LoadSettings()
+        # if reconnection == 'yes':
+        #     self.AutomaticReconnection.setChecked(True)
+        # elif reconnection == 'no':
+        #     self.AutomaticReconnection.setChecked(False)
+        # if parameters == 'yes':
+        #     self.LoadDefaultSettings.setChecked(True)
+        #     self.LoadParameters()
+        # elif parameters == 'no':
+        #     self.LoadDefaultSettings.setChecked(False)
 
     # To-do. Not closed properly.
     def CloseConnection(self):
@@ -538,15 +623,23 @@ class SatNetGUI(QtGui.QWidget):
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-    def closeEvent(self, event):
-        
+    """
+    Functions designed to output information
+    """
+    @pyqtSlot(str)
+    def append_text(self,text):
+        self.console.moveCursor(QTextCursor.End)
+        self.console.insertPlainText(text)
+
+    def closeEvent(self, event):       
         reply = QtGui.QMessageBox.question(self, 'Exit confirmation',
             "Are you sure to quit?", QtGui.QMessageBox.Yes | 
             QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes:
             try:
-                self.c.disconnect()
+                #self.c.disconnect()
+                self.workerKISSThread.stop()
                 reactor.stop()
             except Exception:
                 log.msg("Reactor not running.")
@@ -556,101 +649,136 @@ class SatNetGUI(QtGui.QWidget):
             event.ignore()  
 
 
-class XStream(QtCore.QObject):
-    """
+"""
+Class associated to KISS protocol
+"""
+class KISSThread(QThread):
+    
+    def __init__(self, parent = None):
+        QThread.__init__(self, parent)
 
-    This class creates an object of class QtCore.QObject to 
-    display announcements.
+        """
+        Opening port
+        """
+        import kiss
+        try:
+            log.msg('Opening serial port')
+            self.kissTNC = kiss.KISS('/dev/ttyS1', '9000')
+        except Exception as e:
+            log.err('Error opening port')
+            log.err(e)
 
-    """
-    _stdout = None
-    _stderr = None
+        try:
+            self.kissTNC.start()
+        except Exception as e:
+            log.err('Error starting KISS protocol')
+            log.err(e)
 
-    messageWritten = QtCore.pyqtSignal(str)
-
-    def flush( self ):
+    def run(self):
+        log.msg('Listening')
+        self.running = True
+        success = self.doWork(self.kissTNC)
+        # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
+    
+    def stop(self):
+        log.msg('Stopping serial port')
+        self.running = False
+        pass
+    
+    def doWork(self):
+        return True
+    
+    def cleanUp(self):
         pass
 
-    def fileno( self ):
-        return -1
 
-    def write( self, msg ):
-        if ( not self.signalsBlocked() ):
-            self.messageWritten.emit(unicode(msg))
+class OperativeKISSThread(KISSThread):
+    finished = QtCore.pyqtSignal(object)
 
-    @staticmethod
-    def stdout():
-        if ( not XStream._stdout ):
-            XStream._stdout = XStream()
-            sys.stdout = XStream._stdout
-        return XStream._stdout
+    def __init__(self, queue, callback, parent = None):
+        KISSThread.__init__(self, parent)
+        self.queue = queue
+        self.finished.connect(callback)
+    
+    def doWork(self, kissTNC):
+        kissTNC.read(callback=self.catchValue)
+        return True
 
-    @staticmethod
-    def stderr():
-        if ( not XStream._stderr ):
-            XStream._stderr = XStream()
-            sys.stderr = XStream._stderr
-        return XStream._stderr
+    def catchValue(self, frame):
+        # self.finished.emit(ResultObj(frame))
+        self.finished.emit(frame)
+        
+
+"""
+Objects designed for output the information
+"""
+class WriteStream(object):
+    def __init__(self,queue):
+        self.queue = queue
+
+    def write(self, text):
+        self.queue.put(text)
+
+    def flush(self):
+        pass
 
 
-class ConfigurationWindow(QtGui.QWidget):
-    """
+"""
+A QObject (to be run in a QThread) which sits waiting for data to come 
+through a Queue.Queue().
+It blocks until data is available, and one it has got something from the 
+queue, it sends it to the "MainThread" by emitting a Qt Signal 
+"""
+class MyReceiver(QThread):
+    mysignal = pyqtSignal(str)
 
-    This class creates a new window where you can set the 
-    connection parameters.
+    def __init__(self,queue,*args,**kwargs):
+        QThread.__init__(self,*args,**kwargs)
+        self.queue = queue
 
-    """
-    def __init__(self):
-        QtGui.QWidget.__init__(self)
-        self.initUI()
-        self.center()
+    @pyqtSlot()
+    def run(self):
+        while True:
+            text = self.queue.get()
+            self.mysignal.emit(text)
 
-    def initUI(self):
-        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 11))
-        self.setFixedSize(350, 135)
-        self.setWindowTitle("Configuration window")
 
-        configuration = QtGui.QGroupBox(self)
-        layout = QtGui.QFormLayout()
-        configuration.setLayout(layout)
-
-        self.LabelMaxRetries = QtGui.QLineEdit()
-        self.LabelMaxRetries.setFixedWidth(150)
-        layout.addRow(QtGui.QLabel("Maximum retries:         "),\
-         self.LabelMaxRetries)
-        self.LabelDelay = QtGui.QLineEdit()
-        self.LabelDelay.setFixedWidth(150)
-        layout.addRow(QtGui.QLabel("Password:                "),\
-         self.LabelDelay)
-
-        configuration.setTitle("User data")
-        configuration.move(10, 10)
-
-    def center(self):
-        frameGm = self.frameGeometry()
-        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
-        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
-        frameGm.moveCenter(centerPoint)
-        self.move(frameGm.topLeft())
+class ResultObj(QtCore.QObject):
+    def __init__(self, val):
+        self.val = val
 
 
 if __name__ == '__main__':
+
+
+    serial_queue = Queue()
+
+    # Create Queue and redirect sys.stdout to this queue
+    queue = Queue()
+    sys.stdout = WriteStream(queue)
+
+    log.startLogging(sys.stdout)
+
+    qapp = QApplication(sys.argv)
+    app = SATNetGUI()
+    # Threads
+    app.workerKISSThread = OperativeKISSThread(serial_queue, app.sendData)
+    app.setWindowIcon(QIcon('logo.png'))
+    app.show()
     
-    log.startLogging(DailyLogFile.fromFullPath("foo.log"))
+    # Start threads
+    app.run()
 
-    # log.startLogging(sys.stdout)
-    app = QtGui.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon('logo.png'))
-    window = SatNetGUI()
-    window.show()
+    # Create thread that will listen on the other end of the queue, and 
+    # send the text to the textedit in our application
+    my_receiver = MyReceiver(queue)
+    my_receiver.mysignal.connect(app.append_text)
+    my_receiver.start()
 
-    """
-    Using a specific reactor implementation, pyqt4reactor
-    """
     from qtreactor import pyqt4reactor
     pyqt4reactor.install()
 
     from twisted.internet import reactor
     reactor.run()
 
-    sys.exit(app.exec_())
+    qapp.exec_()

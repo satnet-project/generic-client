@@ -22,20 +22,138 @@ __author__ = 's.gongoragarcia@gmail.com'
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from PyQt4 import QtGui
-from PyQt4 import QtCore
 import sys
 import getopt
 import os
+import logging
+import misc
+
+from PyQt4 import QtGui
+from PyQt4 import QtCore
 
 from Queue import Queue
 
 from twisted.python import log
+from twisted.internet.ssl import ClientContextFactory
+from twisted.internet.protocol import ReconnectingClientFactory
+from twisted.protocols.amp import AMP
+from twisted.internet.defer import inlineCallbacks
+from twisted.python.logfile import DailyLogFile
 
-import logging
+from protocol.ampauth.login import Login
+from protocol.ampCommands import EndRemote
+from protocol.ampCommands import StartRemote
+from protocol.ampCommands import NotifyMsg
+from protocol.ampCommands import NotifyEvent
+from protocol.ampCommands import SendMsg
 
-from gs_interface import GroundStationInterface
+from _gs_interface import GroundStationInterface
 
+
+class ClientProtocol(AMP):
+
+    def __init__(self, CONNECTION_INFO, gsi):
+        self.CONNECTION_INFO = CONNECTION_INFO
+        self.gsi = gsi
+
+    def connectionMade(self):
+        self.user_login()
+        self.gsi.connectProtocol(self)
+
+    def connectionLost(self, reason):
+        log.err("Connection lost")
+        log.err(reason)
+        self.gsi.disconnectProtocol()
+        # res = yield self.callRemote(EndRemote)
+
+    @inlineCallbacks
+    def user_login(self):        
+        try:
+            res = yield self.callRemote(Login,\
+             sUsername=self.CONNECTION_INFO['username'],\
+              sPassword=self.CONNECTION_INFO['password'])
+            res = yield self.callRemote(StartRemote,\
+             iSlotId=self.CONNECTION_INFO['slot_id'])
+        except Exception as e:
+            log.err(e)
+            reactor.stop()
+
+    def vNotifyMsg(self, sMsg):
+        log.msg("(" + self.CONNECTION_INFO['username'] +\
+         ") --------- Notify Message ---------")
+        log.msg(sMsg)
+        if self.CONNECTION_INFO['connection'] == 'serial':        
+            self.kissTNC.write(sMsg)
+        # Only serial communications are needed.
+        """
+        elif self.CONNECTION_INFO['connection'] == 'udp':
+            self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
+             self.CONNECTION_INFO['udpport']))
+        """
+        return {}
+    NotifyMsg.responder(vNotifyMsg)
+
+    # @inlineCallbacks
+    def processFrame(self, frame):
+        log.msg('Received frame: ' + frame)
+        res = self.callRemote(SendMsg, sMsg=frame,\
+         iTimestamp=misc.get_utc_timestamp())
+        log.msg(res)
+
+    def vNotifyEvent(self, iEvent, sDetails):
+        log.msg("(" + self.CONNECTION_INFO['username'] +\
+         ") --------- Notify Event ---------")
+        if iEvent == NotifyEvent.SLOT_END:
+            log.msg("Disconnection because the slot has ended")
+        elif iEvent == NotifyEvent.REMOTE_DISCONNECTED:
+            log.msg("Remote client has lost the connection")
+        elif iEvent == NotifyEvent.END_REMOTE:
+            log.msg("The remote client has closed the connection")
+        elif iEvent == NotifyEvent.REMOTE_CONNECTED:
+            log.msg("The remote client has just connected")
+
+        return {}
+    NotifyEvent.responder(vNotifyEvent)
+
+
+class ClientReconnectFactory(ReconnectingClientFactory):
+    """
+    ReconnectingClientFactory inherited object class to handle the 
+    reconnection process.
+
+    """
+    def __init__(self, CONNECTION_INFO, gsi):
+        self.CONNECTION_INFO = CONNECTION_INFO
+        self.gsi = gsi
+        # self.continueTrying = 0
+
+    def startedConnecting(self, connector):
+        log.msg('Starting connection...')
+
+    def buildProtocol(self, addr):
+        log.msg('Building protocol...')
+        self.resetDelay()
+        return ClientProtocol(self.CONNECTION_INFO, self.gsi)
+
+    def clientConnectionLost(self, connector, reason):
+        """
+        self.CONNECTION_INFO ok
+        """
+        self.continueTrying = None
+
+        log.msg('Lost connection. Reason: ', reason)
+        ReconnectingClientFactory.clientConnectionLost(self,\
+         connector, reason)
+
+    def clientConnectionFailed(self, connector, reason):
+        """
+        self.CONNECTION_INFO ok
+        """
+        self.continueTrying = None
+
+        log.msg('Connection failed. Reason: ', reason)
+        ReconnectingClientFactory.clientConnectionFailed(self,\
+         connector, reason)
 
 class Client():
     """
@@ -57,7 +175,8 @@ class Client():
         """
         New interface
         """
-        gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo")
+        gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",\
+         ClientProtocol)
 
         global connector
 
@@ -69,6 +188,7 @@ class Client():
 
 
 """
+TO-DO
 QDialog, QWidget or QMainWindow, which is better in this situation?
 """
 class SATNetGUI(QWidget):
@@ -213,16 +333,12 @@ class SATNetGUI(QWidget):
         ButtonCancel = QtGui.QPushButton("Disconnect")
         ButtonCancel.setToolTip("End current connection")
         ButtonCancel.setFixedWidth(145)
-        """
         ButtonCancel.clicked.connect(self.CloseConnection)
-        """
         # Load parameters from file
         ButtonLoad = QtGui.QPushButton("Load parameters from file")
         ButtonLoad.setToolTip("Load parameters from <i>config.ini</i> file")
         ButtonLoad.setFixedWidth(298)
-        """
         ButtonLoad.clicked.connect(self.LoadParameters)
-        """
         # Configuration
         ButtonConfiguration = QtGui.QPushButton("Configuration")
         ButtonConfiguration.setToolTip("Set configuration")
@@ -348,6 +464,147 @@ class SATNetGUI(QWidget):
         # elif parameters == 'no':
         #     self.LoadDefaultSettings.setChecked(False)
 
+    # To-do. Not closed properly.
+    def CloseConnection(self):
+        """
+        Closes the connection in a fancy way.
+        """
+        try:
+            self.c.disconnect()
+        except Exception:
+            log.msg('Already stopped.')
+
+    def LoadSettings(self):
+        """
+        Load settings from .settings file.
+        """
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        config.read(".settings")
+
+        reconnection = config.get('Connection', 'reconnection')
+        parameters = config.get('Connection', 'parameters')
+
+        return reconnection, parameters
+
+    def LoadParameters(self):
+        """
+        Load connection parameters from config.ini file.
+        """
+        self.CONNECTION_INFO = {}
+
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        config.read("config.ini")
+
+        self.CONNECTION_INFO['username'] = config.get('User', 'username')
+        self.LabelUsername.setText(self.CONNECTION_INFO['username'])
+        self.CONNECTION_INFO['password'] = config.get('User', 'password')
+        self.LabelPassword.setText(self.CONNECTION_INFO['password'])
+        self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
+        self.LabelSlotID.setValue(int(self.CONNECTION_INFO['slot_id']))        
+        self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
+        index = self.LabelConnection.findText(self.CONNECTION_INFO['connection'])
+        self.LabelConnection.setCurrentIndex(index)
+
+        if self.CONNECTION_INFO['connection'] == 'serial':
+            self.LabelSerialPort.setEnabled(True)
+            self.LabelBaudrate.setEnabled(True)
+            self.LabelUDP.setEnabled(False)
+            self.LabelUDPPort.setEnabled(False)
+            self.CONNECTION_INFO['serialport'] = config.get('Serial',\
+             'serialport')
+            index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
+            self.LabelSerialPort.setCurrentIndex(index)
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial',\
+             'baudrate')
+            self.LabelBaudrate.setText(self.CONNECTION_INFO['baudrate'])
+
+        elif self.CONNECTION_INFO['connection'] == 'udp':
+            self.LabelSerialPort.setEnabled(False)
+            self.LabelBaudrate.setEnabled(False)
+            self.LabelUDP.setEnabled(True)
+            self.LabelUDPPort.setEnabled(True)
+            self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
+            self.LabelUDP.setText(self.CONNECTION_INFO['ip'])
+            self.CONNECTION_INFO['udpport'] = int(config.get('UDP',\
+             'udpport'))
+            self.LabelUDPPort.setText(config.get('UDP', 'udpport'))
+
+    def SetConfiguration(self):
+        self.ConfigurationWindow = ConfigurationWindow()
+        self.ConfigurationWindow.show()
+
+    def CheckConnection(self):
+        Connection = str(self.LabelConnection.currentText())
+
+        if Connection == 'serial':
+            self.LabelSerialPort.setEnabled(True)
+            self.LabelBaudrate.setEnabled(True)
+            self.LabelUDP.setEnabled(False)
+            self.LabelUDPPort.setEnabled(False)
+        elif Connection == 'udp':
+            self.LabelSerialPort.setEnabled(False)
+            self.LabelBaudrate.setEnabled(False)
+            self.LabelUDP.setEnabled(True)
+            self.LabelUDPPort.setEnabled(True)
+
+    def paramValidation(self):
+        # Parameters validation
+        if 'username' not in self.CONNECTION_INFO:
+            log.err('Missing username parameter [-u username]')
+            exit()
+        if 'password' not in self.CONNECTION_INFO:
+            log.err('Missing username parameter [-p password]')
+            exit()
+        if 'connection' not in self.CONNECTION_INFO:
+            log.err('Missing connection parameter [-c serial] or [-c udp]')
+            exit()
+        if self.CONNECTION_INFO['connection'] == 'serial':
+            log.msg('Using a serial interface with the GS')
+            if 'serialport' not in self.CONNECTION_INFO or 'baudrate' not in self.CONNECTION_INFO:
+                log.msg('Missing some client configurations (serialport [-s] or baudrate [-b])')
+                exit()
+        if self.CONNECTION_INFO['connection'] == 'udp':
+            log.msg('Using an UDP interface with the GS')
+            if 'ip' not in self.CONNECTION_INFO or 'udpport' not in self.CONNECTION_INFO:
+                log.msg('Missing some client configurations (ip [-i] or udpport [-u])')
+                exit()
+
+    def usage(self):
+        print ("\n"
+                "USAGE of client_amp.py\n"               
+                "Usage: python client_amp.py [-u <username>] # Set SATNET username to login\n"
+                "Usage: python client_amp.py [-p <password>] # Set SATNET user password to login\n"
+                "Usage: python client_amp.py [-t <slot_ID>] # Set the slot id corresponding to the pass you will track\n"
+                "Usage: python client_amp.py [-c <connection>] # Set the type of interface with the GS (serial or udp)\n"
+                "Usage: python client_amp.py [-s <serialport>] # Set serial port\n"
+                "Usage: python client_amp.py [-b <baudrate>] # Set serial port baudrate\n"
+                "Usage: python client_amp.py [-i <ip>] # Set ip direction\n"
+                "Usage: python client_amp.py [-u <udpport>] # Set udp port\n"
+                "\n"
+                "Example for serial config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c serial -s /dev/ttyS1 -b 115200\n"
+                "Example for udp config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c udp -i 127.0.0.1 -u 5001\n"
+                "\n"
+                "[User]\n"
+                "username: crespo\n"
+                "password: cre.spo\n"
+                "slot_id: 2\n"
+                "connection: udp\n"
+                "[Serial]\n"
+                "serialport: /dev/ttyUSB0\n"
+                "baudrate: 9600\n"
+                "[UDP]\n"
+                "ip: 127.0.0.1\n"
+                "udpport: 5005")
+
+    def center(self):
+        frameGm = self.frameGeometry()
+        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
+        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        frameGm.moveCenter(centerPoint)
+        self.move(frameGm.topLeft())
+
     """
     Functions designed to output information
     """
@@ -426,9 +683,8 @@ class OperativeKISSThread(KISSThread):
         return True
 
     def catchValue(self, frame):
-        print "hola"
-        print frame
-        log.msg(frame)
+        log.msg(type(frame))
+        return frame
 
 
 # """
@@ -524,6 +780,7 @@ if __name__ == '__main__':
     app.setWindowIcon(QIcon('logo.png'))
 
     app.show()
+    # Start threads
     app.run()
 
     # Create thread that will listen on the other end of the queue, and 
@@ -532,13 +789,10 @@ if __name__ == '__main__':
     my_receiver.mysignal.connect(app.append_text)
     my_receiver.start()
 
+    from qtreactor import pyqt4reactor
+    pyqt4reactor.install()
+
+    from twisted.internet import reactor
+    reactor.run()
+
     qapp.exec_()
-
-    # from qtreactor import pyqt4reactor
-    # pyqt4reactor.install()
-
-    # from twisted.internet import reactor
-    # reactor.run()
-
-    # TO-DO system freezes.
-    # sys.exit(app.exec_())

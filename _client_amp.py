@@ -28,10 +28,13 @@ import sys
 import getopt
 import os
 
+from Queue import Queue
+
 from twisted.python import log
 
-from gs_interface import GroundStationInterface
+import logging
 
+from gs_interface import GroundStationInterface
 
 
 class Client():
@@ -65,9 +68,12 @@ class Client():
         return connector
 
 
-class SATNetGUI(QDialog):
-    def __init__( self, parent = None):
-        QDialog.__init__( self, parent)
+"""
+QDialog, QWidget or QMainWindow, which is better in this situation?
+"""
+class SATNetGUI(QWidget):
+    def __init__(self, parent = None):
+        QWidget.__init__(self, parent)
 
         self.initUI()
 
@@ -77,7 +83,6 @@ class SATNetGUI(QDialog):
     def run(self):
         self.runKISSThread()
         # self.runClientThread()
-        self.exec_()
 
     """
     Run threads associated to KISS protocol
@@ -93,6 +98,12 @@ class SATNetGUI(QDialog):
         
         # KISSTNC thread
         self.workerKISSThread.start()
+
+    """
+    Run threads associated to information output
+    """
+    def runStdoutThread(self):
+        self.workerStdoutThread.start()
 
     # """
     # Run threads associated to UI interface
@@ -150,36 +161,36 @@ class SATNetGUI(QDialog):
 
         self.c = Client(self.CONNECTION_INFO).createConnection()
 
-    """
-    Stops all the thread associated to the KISS protocol
-    """
-    def cancelThread( self ):
-        self.workerKISSThread.stop()
+    # """
+    # Stops all the thread associated to the KISS protocol
+    # """
+    # def cancelThread( self ):
+    #     self.workerKISSThread.stop()
 
-    def jobFinishedFromThread( self, success ):
-        self.workerKISSThread.stop()
-        self.primaryBar.setValue(self.primaryBar.maximum())
-        self.secondaryBar.setValue(self.secondaryBar.maximum())
-        self.emit( SIGNAL( "jobFinished( PyQt_PyObject )" ), success )
-        self.closeButton.setEnabled( True )
+    # def jobFinishedFromThread( self, success ):
+    #     self.workerKISSThread.stop()
+    #     self.primaryBar.setValue(self.primaryBar.maximum())
+    #     self.secondaryBar.setValue(self.secondaryBar.maximum())
+    #     self.emit( SIGNAL( "jobFinished( PyQt_PyObject )" ), success )
+    #     self.closeButton.setEnabled( True )
 
-    def primaryValueFromThread( self, value ):
-        self.primaryBar.setValue(value)
+    # def primaryValueFromThread( self, value ):
+    #     self.primaryBar.setValue(value)
 
-    def primaryRangeFromThread( self, range_vals ):
-        self.primaryBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
+    # def primaryRangeFromThread( self, range_vals ):
+    #     self.primaryBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
 
-    def primaryTextFromThread( self, value ):
-        self.primaryLabel.setText(value)
+    # def primaryTextFromThread( self, value ):
+    #     self.primaryLabel.setText(value)
 
-    def secondaryValueFromThread( self, value ):
-        self.secondaryBar.setValue(value)
+    # def secondaryValueFromThread( self, value ):
+    #     self.secondaryBar.setValue(value)
 
-    def secondaryRangeFromThread( self, range_vals ):
-        self.secondaryBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
+    # def secondaryRangeFromThread( self, range_vals ):
+    #     self.secondaryBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
 
-    def secondaryTextFromThread( self, value ):
-        self.secondaryLabel.setText(value)
+    # def secondaryTextFromThread( self, value ):
+    #     self.secondaryLabel.setText(value)
 
     def initUI(self):
 
@@ -226,7 +237,6 @@ class SATNetGUI(QDialog):
         """
         ButtonHelp.clicked.connect(self.usage)
         """
-
         grid.addWidget(ButtonNew, 0, 0, 1, 1)
         grid.addWidget(ButtonCancel, 0, 1, 1, 1)
         grid.addWidget(ButtonLoad, 1, 0, 1, 2)
@@ -294,13 +304,10 @@ class SATNetGUI(QDialog):
         self.LabelLogo.show()
 
         # Console
-        console = QtGui.QTextBrowser(self)
-        console.move(340, 10)
-        console.resize(950, 780)
-        console.setFont(QtGui.QFont('SansSerif', 10))
-
-        XStream.stdout().messageWritten.connect(console.insertPlainText)
-        XStream.stderr().messageWritten.connect(console.insertPlainText)
+        self.console = QtGui.QTextBrowser(self)
+        self.console.move(340, 10)
+        self.console.resize(950, 780)
+        self.console.setFont(QtGui.QFont('SansSerif', 10))
 
         try:
             opts = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
@@ -341,6 +348,14 @@ class SATNetGUI(QDialog):
         # elif parameters == 'no':
         #     self.LoadDefaultSettings.setChecked(False)
 
+    """
+    Functions designed to output information
+    """
+    @pyqtSlot(str)
+    def append_text(self,text):
+        self.console.moveCursor(QTextCursor.End)
+        self.console.insertPlainText(text)
+
     def closeEvent(self, event):       
         reply = QtGui.QMessageBox.question(self, 'Exit confirmation',
             "Are you sure to quit?", QtGui.QMessageBox.Yes | 
@@ -359,50 +374,13 @@ class SATNetGUI(QDialog):
             event.ignore()  
 
 
-class XStream(QtCore.QObject):
-    """
-
-    This class creates an object of class QtCore.QObject to 
-    display announcements.
-
-    """
-    _stdout = None
-    _stderr = None
-
-    messageWritten = QtCore.pyqtSignal(str)
-
-    def flush( self ):
-        pass
-
-    def fileno( self ):
-        return -1
-
-    def write( self, msg ):
-        if ( not self.signalsBlocked() ):
-            self.messageWritten.emit(unicode(msg))
-
-    @staticmethod
-    def stdout():
-        if ( not XStream._stdout ):
-            XStream._stdout = XStream()
-            sys.stdout = XStream._stdout
-        return XStream._stdout
-
-    @staticmethod
-    def stderr():
-        if ( not XStream._stderr ):
-            XStream._stderr = XStream()
-            sys.stderr = XStream._stderr
-        return XStream._stderr
-
-
 """
-Classes associated to KISS protocol
+Class associated to KISS protocol
 """
 class KISSThread(QThread):
     
-    def __init__( self, parent = None):
-        QThread.__init__( self, parent )
+    def __init__(self, parent = None):
+        QThread.__init__(self, parent)
 
         """
         Opening port
@@ -411,10 +389,14 @@ class KISSThread(QThread):
         try:
             log.msg('Opening serial port')
             self.kissTNC = kiss.KISS('/dev/ttyS1', '9000')
-            # Inits the TNC, optinonally passes KISS config flags
+        except Exception as e:
+            log.err('Error opening port')
+            log.err(e)
+
+        try:
             self.kissTNC.start()
         except Exception as e:
-            log.err('error en kissTNC')
+            log.err('Error starting KISS protocol')
             log.err(e)
 
     def run(self):
@@ -423,15 +405,15 @@ class KISSThread(QThread):
         success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
     
-    def stop( self ):
+    def stop(self):
         log.msg('Stopping serial port')
         self.running = False
         pass
     
-    def doWork( self ):
+    def doWork(self):
         return True
     
-    def cleanUp( self):
+    def cleanUp(self):
         pass
 
 
@@ -444,23 +426,113 @@ class OperativeKISSThread(KISSThread):
         return True
 
     def catchValue(self, frame):
+        print "hola"
+        print frame
         log.msg(frame)
+
+
+# """
+# Class associated to output information
+# """
+# class StdoutThread(QThread):
+#     def __init__(self, parent = None):
+#         QThread.__init__(self, parent)
+
+#     def run(self):
+#         log.msg('Streaming text to text widget')
+#         self.running = True
+#         success = self.doWork()
+
+#     def stop(self):
+#         self.running = False
+#         pass
+
+#     def doWork(self):
+#         return True
+
+#     def cleanup(self):
+#         pass
+
+
+# class OperativeStdoutThread(StdoutThread):
+#     def __init__(self, parent = None):
+#         StdoutThread.__init__(self, parent)
+
+#     def doWork(self):
+#         """
+#         Insert work actions
+#         """
+#         my_receiver = MyReceiver(queue)
+#         my_receiver.mysignal.connect
+#         return True 
+
+
+"""
+Objects designed for output the information
+"""
+class WriteStream(object):
+    def __init__(self,queue):
+        print "abierto WriteStream"
+        self.queue = queue
+
+    def write(self, text):
+        self.queue.put(text)
+
+    def flush(self):
+        pass
+
+
+"""
+A QObject (to be run in a QThread) which sits waiting for data to come 
+through a Queue.Queue().
+It blocks until data is available, and one it has got something from the 
+queue, it sends it to the "MainThread" by emitting a Qt Signal 
+"""
+class MyReceiver(QThread):
+    mysignal = pyqtSignal(str)
+
+    def __init__(self,queue,*args,**kwargs):
+        QThread.__init__(self,*args,**kwargs)
+        self.queue = queue
+
+    @pyqtSlot()
+    def run(self):
+        while True:
+            text = self.queue.get()
+            self.mysignal.emit(text)
 
 
 if __name__ == '__main__':
 
-    log.PythonLoggingObserver()
+    # Create Queue and redirect sys.stdout to this queue
+    queue = Queue()
+    sys.stdout = WriteStream(queue)
 
-    app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon('logo.png'))
+    log.startLogging(sys.stdout)
 
-    d = SATNetGUI()
+    # log.PythonLoggingObserver()
+    # logging.basicConfig(stream=WriteStream(queue), level=logging.DEBUG)
+
+    qapp = QApplication(sys.argv)
+    app = SATNetGUI()
     """
     Threads
     """
-    d.workerKISSThread = OperativeKISSThread()
+    app.workerKISSThread = OperativeKISSThread()
+    # app.workerStdoutThread = OperativeStdoutThread()
     # d.workerClientThread = OperativeClientThread()
-    d.run()
+    app.setWindowIcon(QIcon('logo.png'))
+
+    app.show()
+    app.run()
+
+    # Create thread that will listen on the other end of the queue, and 
+    # send the text to the textedit in our application
+    my_receiver = MyReceiver(queue)
+    my_receiver.mysignal.connect(app.append_text)
+    my_receiver.start()
+
+    qapp.exec_()
 
     # from qtreactor import pyqt4reactor
     # pyqt4reactor.install()
@@ -468,4 +540,5 @@ if __name__ == '__main__':
     # from twisted.internet import reactor
     # reactor.run()
 
-    sys.exit(app.exec_())
+    # TO-DO system freezes.
+    # sys.exit(app.exec_())

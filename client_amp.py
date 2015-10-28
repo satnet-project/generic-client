@@ -69,13 +69,8 @@ class ClientProtocol(AMP):
             res = yield self.callRemote(Login,\
              sUsername=self.CONNECTION_INFO['username'],\
               sPassword=self.CONNECTION_INFO['password'])
-            log.msg(res)
             res = yield self.callRemote(StartRemote,\
              iSlotId=self.CONNECTION_INFO['slot_id'])
-            log.msg(res)
-            # res = yield self.callRemote(SendMsg, sMsg='hola',\
-            #  iTimestamp=misc.get_utc_timestamp())
-            log.msg(res)
         except Exception as e:
             log.err(e)
             reactor.stop()
@@ -85,12 +80,10 @@ class ClientProtocol(AMP):
          ") --------- Notify Message ---------")
         log.msg(sMsg)
         if self.CONNECTION_INFO['connection'] == 'serial':        
-            self.kissTNC.write(sMsg)
-        # Only serial communications are needed.
-        # 
-        # elif self.CONNECTION_INFO['connection'] == 'udp':
-        #    self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
-        #     self.CONNECTION_INFO['udpport']))
+            self.kissTNC.write(sMsg)        
+        elif self.CONNECTION_INFO['connection'] == 'udp':
+           self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
+            self.CONNECTION_INFO['udpport']))
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
@@ -98,15 +91,12 @@ class ClientProtocol(AMP):
     def _processframe(self, frame):
         self.processFrame(frame)
 
-    # @staticmethod
     @inlineCallbacks
     def processFrame(self, frame):
 
         log.msg('Received frame: ' + frame)
         res = yield self.callRemote(SendMsg, sMsg=frame,\
          iTimestamp=misc.get_utc_timestamp())
-        
-        log.msg(res)
 
     # def vNotifyEvent(self, iEvent, sDetails):
     def vNotifyEvent(self, iEvent, sDetails):

@@ -548,8 +548,10 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelUDPPort.setText(config.get('UDP', 'udpport'))
 
     def SetConfiguration(self):
-        self.ConfigurationWindow = ConfigurationWindow()
-        self.ConfigurationWindow.show()
+        # Not implemented yet
+        return True
+        # self.ConfigurationWindow = ConfigurationWindow()
+        # self.ConfigurationWindow.show()
 
     def CheckConnection(self):
         Connection = str(self.LabelConnection.currentText())
@@ -757,11 +759,11 @@ if __name__ == '__main__':
 
     log.startLogging(sys.stdout)
 
-    qapp = QApplication(sys.argv)
+    qapp = QtGui.QApplication(sys.argv)
     app = SATNetGUI()
     # Threads
     app.workerKISSThread = OperativeKISSThread(serial_queue, app.sendData)
-    app.setWindowIcon(QIcon('logo.png'))
+    app.setWindowIcon(QtGui.QIcon('logo.png'))
     app.show()
     
     # Start threads

@@ -54,8 +54,6 @@ class ClientProtocol(AMP):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
 
-        log.msg('he pasado por el __init_- de ClientProtocol')
-
     def connectionMade(self):
         self.user_login()
         self.gsi.connectProtocol(self)
@@ -110,6 +108,7 @@ class ClientProtocol(AMP):
         
         log.msg(res)
 
+    # def vNotifyEvent(self, iEvent, sDetails):
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] +\
          ") --------- Notify Event ---------")
@@ -204,10 +203,7 @@ class Client(object):
         return gsi, connector
 
 
-"""
-TO-DO
-QDialog, QWidget or QMainWindow, which is better in this situation?
-"""
+# QDialog, QWidget or QMainWindow, which is better in this situation? TO-DO
 class SATNetGUI(QtGui.QWidget):
     def __init__(self, parent = None):
         QtGui.QWidget.__init__(self, parent)
@@ -642,13 +638,13 @@ class KISSThread(QtCore.QThread):
     def run(self):
         log.msg('Listening')
         self.running = True
-        success = self.doWork(self.kissTNC)
+        self.doWork(self.kissTNC)
+        # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
     
     def stop(self):
         log.msg('Stopping serial port')
         self.running = False
-        pass
     
     def doWork(self):
         return True
@@ -687,12 +683,11 @@ class WriteStream(object):
         pass
 
 
-"""
-A QObject (to be run in a QThread) which sits waiting for data to come 
-through a Queue.Queue().
-It blocks until data is available, and one it has got something from the 
-queue, it sends it to the "MainThread" by emitting a Qt Signal 
-"""
+
+# A QObject (to be run in a QThread) which sits waiting for data to come 
+# through a Queue.Queue().
+# It blocks until data is available, and one it has got something from the 
+# queue, it sends it to the "MainThread" by emitting a Qt Signal 
 class MyReceiver(QtCore.QThread):
     mysignal = QtCore.pyqtSignal(str)
 

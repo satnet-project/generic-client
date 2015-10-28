@@ -75,8 +75,8 @@ class ClientProtocol(AMP):
             res = yield self.callRemote(StartRemote,\
              iSlotId=self.CONNECTION_INFO['slot_id'])
             log.msg(res)
-            res = yield self.callRemote(SendMsg, sMsg='hola',\
-             iTimestamp=misc.get_utc_timestamp())
+            # res = yield self.callRemote(SendMsg, sMsg='hola',\
+            #  iTimestamp=misc.get_utc_timestamp())
             log.msg(res)
         except Exception as e:
             log.err(e)
@@ -96,7 +96,12 @@ class ClientProtocol(AMP):
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
+    # Rutines associated to frame processing
+    def _processframe(self, frame):
+        self.processFrame(frame)
+
     # @staticmethod
+    @inlineCallbacks
     def processFrame(self, frame):
 
         log.msg('Received frame: ' + frame)
@@ -125,47 +130,32 @@ class ClientReconnectFactory(ReconnectingClientFactory):
     """
     ReconnectingClientFactory inherited object class to handle the 
     reconnection process.
-
     """
     def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
         # self.continueTrying = 0
 
-    """
-    Called when a connection has been started
-    """
+    # Called when a connection has been started
     def startedConnecting(self, connector):
         log.msg('Starting connection...')
 
-    """
-    Create an instance of a subclass of Protocol
-    """
+    # Create an instance of a subclass of Protocol
     def buildProtocol(self, addr):
         log.msg('Building protocol...')
         self.resetDelay()
         return ClientProtocol(self.CONNECTION_INFO, self.gsi)
 
-    """
-    Called when an established connection is lost
-    """
+    # Called when an established connection is lost
     def clientConnectionLost(self, connector, reason):
-        """
-        self.CONNECTION_INFO ok
-        """
         self.continueTrying = None
 
         log.msg('Lost connection. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionLost(self,\
          connector, reason)
 
-    """
-    Called when a connection has failed to connect
-    """
+    # Called when a connection has failed to connect
     def clientConnectionFailed(self, connector, reason):
-        """
-        self.CONNECTION_INFO ok
-        """
         self.continueTrying = None
 
         log.msg('Connection failed. Reason: ', reason)
@@ -201,9 +191,7 @@ class Client(object):
         self.CONNECTION_INFO = CONNECTION_INFO
 
     def createConnection(self):
-        """
-        New interface
-        """
+        # New interface
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",\
          ClientProtocol)
 
@@ -213,11 +201,7 @@ class Client(object):
          ClientReconnectFactory(self.CONNECTION_INFO, gsi),\
           CtxFactory())
 
-        return connector
-
-        """
-        Puedo retornar dos valores en vez de uno!!
-        """
+        return gsi, connector
 
 
 """
@@ -233,24 +217,15 @@ class SATNetGUI(QtGui.QWidget):
     def run(self):
         self.runKISSThread()
 
-    """
-    Run threads associated to KISS protocol
-    """
+    # Run threads associated to KISS protocol
     def runKISSThread(self):
         self.workerKISSThread.start()
 
-    """
-    Gets a string but can't format it!
-    """
+    # Gets a string but can't format it! TO-DO
     def sendData(self, result):
-        log.msg('sendData')
-        log.msg(type(result))
 
-        # self.gsi._manageFrame(result)
-    
-        # print gsi
-        # val = result.val
-        # print("got val {}".format(val))
+        result = 'sample_frame'
+        self.gsi._manageFrame(result)
 
     def NewConnection(self):
         """
@@ -300,10 +275,10 @@ class SATNetGUI(QtGui.QWidget):
             print self.LabelUDPPort.text()
             # self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
 
-        self.gsi = GroundStationInterface(self.CONNECTION_INFO, 'Vigo',\
-         ClientProtocol)
+        # self.gsi = GroundStationInterface(self.CONNECTION_INFO, 'Vigo',\
+        #  ClientProtocol)
 
-        self.c = Client(self.CONNECTION_INFO).createConnection()
+        self.gsi, self.c = Client(self.CONNECTION_INFO).createConnection()
 
     # """
     # Stops all the thread associated to the KISS protocol
@@ -367,16 +342,12 @@ class SATNetGUI(QtGui.QWidget):
         ButtonConfiguration = QtGui.QPushButton("Configuration")
         ButtonConfiguration.setToolTip("Set configuration")
         ButtonConfiguration.setFixedWidth(145)
-        """
-        ButtonConfiguration.clicked.connect(self.SetConfiguration)
-        """
+        # ButtonConfiguration.clicked.connect(self.SetConfiguration)
         # Help.
         ButtonHelp = QtGui.QPushButton("Help")
         ButtonHelp.setToolTip("Click for help")
         ButtonHelp.setFixedWidth(145)
-        """
         ButtonHelp.clicked.connect(self.usage)
-        """
         grid.addWidget(ButtonNew, 0, 0, 1, 1)
         grid.addWidget(ButtonCancel, 0, 1, 1, 1)
         grid.addWidget(ButtonLoad, 1, 0, 1, 2)
@@ -402,9 +373,7 @@ class SATNetGUI(QtGui.QWidget):
 
         self.LabelConnection = QtGui.QComboBox()
         self.LabelConnection.addItems(['serial', 'udp'])
-        """
         self.LabelConnection.activated.connect(self.CheckConnection)
-        """
         layout.addRow(QtGui.QLabel("Connection:     "), self.LabelConnection)
         self.LabelSerialPort = QtGui.QComboBox()
         from glob import glob
@@ -477,31 +446,26 @@ class SATNetGUI(QtGui.QWidget):
                 elif opt == "-u":
                     self.LabelUDPPort.setText(arg)
 
-        # reconnection, parameters = self.LoadSettings()
-        # if reconnection == 'yes':
-        #     self.AutomaticReconnection.setChecked(True)
-        # elif reconnection == 'no':
-        #     self.AutomaticReconnection.setChecked(False)
-        # if parameters == 'yes':
-        #     self.LoadDefaultSettings.setChecked(True)
-        #     self.LoadParameters()
-        # elif parameters == 'no':
-        #     self.LoadDefaultSettings.setChecked(False)
+        reconnection, parameters = self.LoadSettings()
+        if reconnection == 'yes':
+            self.AutomaticReconnection.setChecked(True)
+        elif reconnection == 'no':
+            self.AutomaticReconnection.setChecked(False)
+        if parameters == 'yes':
+            self.LoadDefaultSettings.setChecked(True)
+            self.LoadParameters()
+        elif parameters == 'no':
+            self.LoadDefaultSettings.setChecked(False)
 
     # To-do. Not closed properly.
     def CloseConnection(self):
-        """
-        Closes the connection in a fancy way.
-        """
         try:
             self.c.disconnect()
         except Exception:
             log.msg('Already stopped.')
 
+    # Load settings from .settings file.
     def LoadSettings(self):
-        """
-        Load settings from .settings file.
-        """
         import ConfigParser
         config = ConfigParser.ConfigParser()
         config.read(".settings")
@@ -511,10 +475,8 @@ class SATNetGUI(QtGui.QWidget):
 
         return reconnection, parameters
 
+    # Load connection parameters from config.ini file.
     def LoadParameters(self):
-        """
-        Load connection parameters from config.ini file.
-        """
         self.CONNECTION_INFO = {}
 
         import ConfigParser
@@ -575,8 +537,8 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelUDP.setEnabled(True)
             self.LabelUDPPort.setEnabled(True)
 
+    # Parameters validation.
     def paramValidation(self):
-        # Parameters validation
         if 'username' not in self.CONNECTION_INFO:
             log.err('Missing username parameter [-u username]')
             exit()
@@ -631,9 +593,7 @@ class SATNetGUI(QtGui.QWidget):
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-    """
-    Functions designed to output information
-    """
+    # Functions designed to output information
     @QtCore.pyqtSlot(str)
     def append_text(self,text):
         self.console.moveCursor(QtGui.QTextCursor.End)
@@ -657,17 +617,14 @@ class SATNetGUI(QtGui.QWidget):
             event.ignore()  
 
 
-"""
-Class associated to KISS protocol
-"""
+
+# Class associated to KISS protocol
 class KISSThread(QtCore.QThread):
     
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
-        """
-        Opening port
-        """
+        # Opening port
         import kiss
         try:
             log.msg('Opening serial port')
@@ -717,9 +674,8 @@ class OperativeKISSThread(KISSThread):
         self.finished.emit(frame)
         
 
-"""
-Objects designed for output the information
-"""
+
+# Objects designed for output the information
 class WriteStream(object):
     def __init__(self,queue):
         self.queue = queue

@@ -26,9 +26,12 @@ from twisted.internet.defer import inlineCallbacks
 
 import aprs
 
+import misc
+
 from PyQt4 import QtCore
 
-# from client_amp import KISSThread
+from protocol.ampCommands import SendMsg
+
 
 class GroundStationInterface():
     """
@@ -37,23 +40,11 @@ class GroundStationInterface():
     the SATNET server fails fails, received frames will be stored inside a csv 
     file named ESEO-gs-yyy.mm.dd.csv.
 
-    :ivar kissTNC:
-        This object is in charge of communicating with a TNC which shall 
-        support KISS protocol.
-    :type kissTNC:
-        L{KISS}
-
     :ivar UDPSocket:
         This object is in charge of sending and receiving frames through an 
         UDP connection.
     :type UDPSocket:
         L{Socket}
-
-    :ivar thread:
-        This thread will constantly receive frames from the serial port or the 
-        UDP socket.
-    :type thread:
-        L{Thread}
 
     :ivar frameBuffer:
         Contains the received frames that has not been sent to the server.
@@ -79,9 +70,7 @@ class GroundStationInterface():
         L{String}
     """
 
-    kissTNC = None
     UDPSocket = None
-    thread = None
     frameBuffer = None
     CONNECTION_INFO = {}
     AMP = None
@@ -92,63 +81,6 @@ class GroundStationInterface():
         self.CONNECTION_INFO = CONNECTION_INFO
         self.AMP = AMP
         self.GS = GS
-
-    #     if CONNECTION_INFO['connection'] == 'serial':
-    #         self._open_serial()
-    #     elif CONNECTION_INFO['connection'] == 'udp':
-    #         self._open_socket()
-    #     else:
-    #         log.err('GS interface must be either "serial" or "udp"')
-
-    # def _open_serial(self):
-    #     import kiss
-    #     # TO-DO Improve try-except process isolating functions.
-    #     # try:
-    #     #     log.msg('Opening serial port (' +\
-    #     #      self.CONNECTION_INFO['serialport'] + ',' +\
-    #     #       self.CONNECTION_INFO['baudrate'] + ')')
-    #     #     self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],\
-    #     #      self.CONNECTION_INFO['baudrate'])
-    #     #     # Inits the TNC, optinonally passes KISS config flags
-    #     #     self.kissTNC.start()
-    #     #     # KISSThread is an implementation of QThread class adapted for
-    #     #     # KISS module.
-    #     #     # self.thread = KISSThread(self.kissTNC)
-    #     #     self.thread = KISSThread(self.kissTNC.read(callback=self._frameFromSerialport))
-    #     #     self.thread.start()
-    #     #     # self.thread = threading.Thread(target=self.kissTNC.read, args=(self._frameFromSerialport,))
-    #     #     # self.thread.daemon = True # This thread will be close if the reactor stops
-    #     #     # self.thread.start()
-    #     # except Exception as e:            
-    #     #     log.err('Serial port unavailable')
-    #     #     log.err(e)
-
-
-    #     try:
-    #         log.msg('Opening serial port (' +\
-    #          self.CONNECTION_INFO['serialport'] + ',' +\
-    #           self.CONNECTION_INFO['baudrate'] + ')')
-    #         self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],\
-    #          self.CONNECTION_INFO['baudrate'])
-    #         # Inits the TNC, optinonally passes KISS config flags
-    #         self.kissTNC.start()
-    #     except Exception as e:
-    #         log.err('error en kissTNC')
-    #         log.err(e)
-    #     # KISSThread is an implementation of QThread class adapted for
-    #     # KISS module.
-    #     # self.thread = KISSThread(self.kissTNC)
-    #     try:
-    #         self.thread = KISSThread(self.kissTNC.read(callback=self._frameFromSerialport))
-    #         self.thread.start()
-    #     except Exception as e:
-    #         log.err('error en Thread')
-    #         log.err(e)
-    #     # self.thread = threading.Thread(target=self.kissTNC.read, args=(self._frameFromSerialport,))
-    #     # self.thread.daemon = True # This thread will be close if the reactor stops
-    #     # self.thread.start()
-
-
 
     # def _open_socket(self):
     #     import socket
@@ -165,29 +97,23 @@ class GroundStationInterface():
     #         log.err('UDP port unavailable')
     #         log.err(e)
 
-    # """
     # Call the AMP function.
-    # """
-    # def _manageFrame(self, frame):
-    #     log.msg('ey _manageFrame log')
-    #     print "ey _manageFrame"
-    #     if self.AMP is not None:
-    #         self.AMP.processFrame(frame)
-    #     else:
-    #         self._updateLocalFile(frame)
+    def _manageFrame(self, result):
+        log.msg('--------- Message from Serial port ---------')
 
-    # def _updateLocalFile(self, frame):
-    #     log.msg('Saving message to local file')
-    #     filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
-    #     with open(filename,"a+") as f:
-    #         f.write(frame + ",\n")
+        if self.AMP is not None:
+            try:
+                self.AMP._processframe(result)
+            except:
+                log.msg('Error processing frame')
+        else:
+            self._updateLocalFile(result)
 
-    # def _frameFromSerialport(self, frame):
-    #     log.msg('ey frame log')
-    #     print "ey frame"
-    #     # print frame
-    #     log.msg('--------- Message from Serial port ---------')
-    #     # self._manageFrame(frame)
+    def _updateLocalFile(self, frame):
+        log.msg('Saving message to local file')
+        filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
+        with open(filename,"a+") as f:
+            f.write(frame + ",\n")
 
     # def _frameFromUDPSocket(self):
     #     log.msg("--------- Message from UDP socket ---------")        

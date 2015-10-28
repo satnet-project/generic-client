@@ -29,8 +29,11 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 
 from Queue import Queue
+from OpenSSL import SSL
 
 from twisted.python import log
+from twisted.internet import ssl
+
 from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
@@ -86,11 +89,10 @@ class ClientProtocol(AMP):
         if self.CONNECTION_INFO['connection'] == 'serial':        
             self.kissTNC.write(sMsg)
         # Only serial communications are needed.
-        """
-        elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
-             self.CONNECTION_INFO['udpport']))
-        """
+        # 
+        # elif self.CONNECTION_INFO['connection'] == 'udp':
+        #    self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
+        #     self.CONNECTION_INFO['udpport']))
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
@@ -170,6 +172,18 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         ReconnectingClientFactory.clientConnectionFailed(self,\
          connector, reason)
 
+
+class CtxFactory(ClientContextFactory):
+
+    def getContext(self):
+        self.method = SSL.SSLv23_METHOD
+        ctx = ssl.ClientContextFactory.getContext(self)
+        ctx.use_certificate_file('protocol/key/public.pem')
+        # ctx.use_privatekey_file('protocol/key/test.key')
+
+        return ctx
+
+
 class Client(object):
     """
     This class starts the client using the data provided by user interface.
@@ -197,7 +211,7 @@ class Client(object):
 
         connector = reactor.connectSSL('localhost', 1234,\
          ClientReconnectFactory(self.CONNECTION_INFO, gsi),\
-          ClientContextFactory())
+          CtxFactory())
 
         return connector
 
@@ -216,7 +230,6 @@ class SATNetGUI(QtGui.QWidget):
 
         self.initUI()
 
-
     def run(self):
         self.runKISSThread()
 
@@ -233,14 +246,9 @@ class SATNetGUI(QtGui.QWidget):
         log.msg('sendData')
         log.msg(type(result))
 
-
-
         # self.gsi._manageFrame(result)
-        
-
-
+    
         # print gsi
-
         # val = result.val
         # print("got val {}".format(val))
 

@@ -21,8 +21,6 @@ __author__ = 'xabicrespog@gmail.com'
 
 
 from twisted.python import log
-import time
-import threading
 import sys
 from twisted.internet.defer import inlineCallbacks
 

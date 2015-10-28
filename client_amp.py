@@ -66,10 +66,10 @@ class ClientProtocol(AMP):
     @inlineCallbacks
     def user_login(self):        
         try:
-            res = yield self.callRemote(Login,\
+            yield self.callRemote(Login,\
              sUsername=self.CONNECTION_INFO['username'],\
               sPassword=self.CONNECTION_INFO['password'])
-            res = yield self.callRemote(StartRemote,\
+            yield self.callRemote(StartRemote,\
              iSlotId=self.CONNECTION_INFO['slot_id'])
         except Exception as e:
             log.err(e)
@@ -82,8 +82,8 @@ class ClientProtocol(AMP):
         if self.CONNECTION_INFO['connection'] == 'serial':        
             self.kissTNC.write(sMsg)        
         elif self.CONNECTION_INFO['connection'] == 'udp':
-           self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
-            self.CONNECTION_INFO['udpport']))
+            self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
+             self.CONNECTION_INFO['udpport']))
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
@@ -95,7 +95,7 @@ class ClientProtocol(AMP):
     def processFrame(self, frame):
 
         log.msg('Received frame: ' + frame)
-        res = yield self.callRemote(SendMsg, sMsg=frame,\
+        yield self.callRemote(SendMsg, sMsg=frame,\
          iTimestamp=misc.get_utc_timestamp())
 
     # def vNotifyEvent(self, iEvent, sDetails):

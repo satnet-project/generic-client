@@ -19,8 +19,6 @@
 """
 __author__ = 's.gongoragarcia@gmail.com'
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
 import sys
 import getopt
@@ -44,7 +42,7 @@ from protocol.ampCommands import NotifyMsg
 from protocol.ampCommands import NotifyEvent
 from protocol.ampCommands import SendMsg
 
-from _gs_interface import GroundStationInterface
+from gs_interface import GroundStationInterface
 
 
 class ClientProtocol(AMP):
@@ -626,9 +624,9 @@ class SATNetGUI(QtGui.QWidget):
     """
     Functions designed to output information
     """
-    @pyqtSlot(str)
+    @QtCore.pyqtSlot(str)
     def append_text(self,text):
-        self.console.moveCursor(QTextCursor.End)
+        self.console.moveCursor(QtGui.QTextCursor.End)
         self.console.insertPlainText(text)
 
     def closeEvent(self, event):       
@@ -652,10 +650,10 @@ class SATNetGUI(QtGui.QWidget):
 """
 Class associated to KISS protocol
 """
-class KISSThread(QThread):
+class KISSThread(QtCore.QThread):
     
     def __init__(self, parent = None):
-        QThread.__init__(self, parent)
+        QtCore.QThread.__init__(self, parent)
 
         """
         Opening port
@@ -729,14 +727,14 @@ through a Queue.Queue().
 It blocks until data is available, and one it has got something from the 
 queue, it sends it to the "MainThread" by emitting a Qt Signal 
 """
-class MyReceiver(QThread):
-    mysignal = pyqtSignal(str)
+class MyReceiver(QtCore.QThread):
+    mysignal = QtCore.pyqtSignal(str)
 
     def __init__(self,queue,*args,**kwargs):
-        QThread.__init__(self,*args,**kwargs)
+        QtCore.QThread.__init__(self,*args,**kwargs)
         self.queue = queue
 
-    @pyqtSlot()
+    @QtCore.pyqtSlot()
     def run(self):
         while True:
             text = self.queue.get()

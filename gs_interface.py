@@ -25,12 +25,9 @@ import sys
 from twisted.internet.defer import inlineCallbacks
 
 import aprs
+import time
 
 import misc
-
-from PyQt4 import QtCore
-
-from protocol.ampCommands import SendMsg
 
 
 class GroundStationInterface():
@@ -104,8 +101,9 @@ class GroundStationInterface():
         if self.AMP is not None:
             try:
                 self.AMP._processframe(result)
-            except:
-                log.msg('Error processing frame')
+            except Exception as e:
+                log.err('Error processing frame')
+                log.err(e)
         else:
             self._updateLocalFile(result)
 

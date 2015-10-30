@@ -94,11 +94,6 @@ class ClientProtocol(AMP):
         else:
             log.msg('No data')
 
-
-
-
-
-
         # try:
         #     res = yield self.callRemote(Login,\
         #      sUsername=self.CONNECTION_INFO['username'],\
@@ -164,21 +159,23 @@ class ClientReconnectFactory(ReconnectingClientFactory):
     def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
-        # self.continueTrying = 0
 
     # Called when a connection has been started
     def startedConnecting(self, connector):
-        log.msg('Starting connection...')
+        log.msg("Starting connection..........................." +\
+         "..........................." + "..........................." +\
+          "........................")
 
     # Create an instance of a subclass of Protocol
     def buildProtocol(self, addr):
-        log.msg('Building protocol...')
+        log.msg("Building protocol.............................." +\
+         "................................................................")
         self.resetDelay()
         return ClientProtocol(self.CONNECTION_INFO, self.gsi)
 
     # Called when an established connection is lost
     def clientConnectionLost(self, connector, reason):
-        self.continueTrying = None
+        self.continueTrying = None # Reconnection disabled
 
         log.msg('Lost connection. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionLost(self,\
@@ -186,7 +183,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     # Called when a connection has failed to connect
     def clientConnectionFailed(self, connector, reason):
-        self.continueTrying = None
+        self.continueTrying = None # Reconnection disabled
 
         log.msg('Connection failed. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionFailed(self,\
@@ -240,14 +237,22 @@ class SATNetGUI(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
 
         self.initUI()
-        self.serialSignal = False
-        self.UDPSignal = False
+        self.serialSignal = True
+        self.UDPSignal = True
+
+        self.serial_queue = Queue()
+        self.udp_queue = Queue()
 
     # Run threads associated to KISS protocol
     def runKISSThread(self):
+        self.workerKISSThread = OperativeKISSThread(self.serial_queue, self.sendData,\
+         self.serialSignal)
         self.workerKISSThread.start()
 
+    # Run threads associated to UPD protocol
     def runUDPThread(self):
+        self.workerUDPThread = OperativeUDPThread(self.udp_queue, self.sendData,\
+         self.UDPSignal)
         self.workerUDPThread.start()
 
     # Gets a string but can't format it! TO-DO
@@ -255,20 +260,17 @@ class SATNetGUI(QtGui.QWidget):
         result = 'sample_frame'
         self.gsi._manageFrame(result)
 
+    # Create a new connection by loading the connection parameters from
+    # the command line of from the interface window
     def NewConnection(self):
-        """
-        Create a new connection by loading the connection parameters from 
-        the command line or from the interface window.
-        """
         self.CONNECTION_INFO = {}
 
         try:
-            # was opts, args
             opts= getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
              ["username=", "password=", "slot=", "connection=", "serialport=",\
               "baudrate=", "ip=", "udpport="])
         except getopt.GetoptError:
-            print "error"
+            log.err("Error loading parameters from command line")
 
         if ('-g','') in opts:
             for opt, arg in opts:
@@ -288,6 +290,7 @@ class SATNetGUI(QtGui.QWidget):
                     self.CONNECTION_INFO['ip']  = arg
                 elif opt in ("-u", "--udpport"):
                     self.CONNECTION_INFO['udpport']  = int(arg)
+            # Check if all the parameters given are valid
             self.paramValidation()
 
         else:
@@ -305,14 +308,11 @@ class SATNetGUI(QtGui.QWidget):
 
         self.gsi, self.c = Client(self.CONNECTION_INFO).createConnection()
 
+        # Start the selected connection
         connectionkind = self.CheckConnection()
-        log.msg(connectionkind)
-
         if connectionkind == 'serial':
-            log.msg('do serial')
             self.runKISSThread()
         elif connectionkind == 'udp':
-            log.msg('do udp')
             self.runUDPThread()
         else:
             log.err('error')
@@ -658,9 +658,16 @@ class SATNetGUI(QtGui.QWidget):
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop serial thread")
+                # UDP thread stopped
+            try:
+                self.workerUDPThread.stop()
+            except Exception as e:
+                log.err(e)
+                log.err("Can't stop UDP thread")
                 # Reactor stopped
             try:
                 reactor.stop()
+                log.msg("Reactor stoppee")
             except Exception as e:
                 log.err(e)
                 log.err("Reactor not running.")
@@ -676,26 +683,30 @@ class UDPThread(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
-        self.CONNECTION_INFO = {'ip':'ippp', 'udpport':'udddppport'}
+        self.CONNECTION_INFO = {'ip':'127.0.0.1', 'udpport':'5001'}
+        server_address = (str(self.CONNECTION_INFO['ip']),\
+         int(self.CONNECTION_INFO['udpport']))
 
-        # Opening port
-        import socket
+        from socket import socket, AF_INET, SOCK_DGRAM
         try:
-            log.msg('Opening UPD socket')
-            self.UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            log.msg("Opening UPD socket" + ".........................." +\
+         '...........................' + '...........................' +\
+          '............................')
+
+            self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
         except Exception as e:
             log.err('Error opening UPD socket')
             log.err(e)
 
         try:
-            self.UDPSocket.bind(self.CONNECTION_INFO['ip'],\
-             self.CONNECTION_INFO['udpport'])
+            self.UDPSocket.bind(server_address)
         except Exception as e:
             log.err('Error starting UPD protocol')
             log.err(e)
 
     def run(self):
-        log.msg('Listening')
+        log.msg('Listening on ' + str(self.CONNECTION_INFO['ip']) +\
+         " port: " + str(self.CONNECTION_INFO['udpport']))
         self.running = True
         self.doWork(self.UDPSocket)
         # success = self.doWork(self.kissTNC)
@@ -724,15 +735,15 @@ class OperativeUDPThread(UDPThread):
     def doWork(self, UDPSocket):
         if self.UDPSignal:
             while True:
-                frame = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-                self.catchValue(frame)
-        # kissTNC.read(callback=self.catchValue)
-        # return True
+                frame, address = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
+                self.catchValue(frame, address)
 
-    def catchValue(self, frame):
+    def catchValue(self, frame, address):
         # self.finished.emit(ResultObj(frame))
 
-        log.msg("--------- Message from UDP socket ---------")        
+        log.msg("--------- Message from UDP socket ---------")
+        log.msg("--------- Received from ip: " + str(address[0]) + " port: " +\
+         str(address[1]) +  "---------")      
         self.finished.emit(frame)
 
 
@@ -834,22 +845,17 @@ class ResultObj(QtCore.QObject):
 
 if __name__ == '__main__':
 
-    serial_queue = Queue()
-    udp_queue = Queue()
-
     # Create Queue and redirect sys.stdout to this queue
     queue = Queue()
     sys.stdout = WriteStream(queue)
 
     log.startLogging(sys.stdout)
+    log.msg('--------------------------------------------------- ' + \
+     'SATNet - Generic client' +\
+      ' ---------------------------------------------------')
 
     qapp = QtGui.QApplication(sys.argv)
     app = SATNetGUI()
-    # Threads
-    app.workerKISSThread = OperativeKISSThread(serial_queue, app.sendData,\
-     app.serialSignal)
-    app.workerUDPThread = OperativeUDPThread(udp_queue, app.sendData,\
-     app.UDPSignal)
     app.setWindowIcon(QtGui.QIcon('logo.png'))
     app.show()
 

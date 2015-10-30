@@ -317,13 +317,13 @@ class SATNetGUI(QtGui.QWidget):
         self.gsi, self.c = Client(self.CONNECTION_INFO).createConnection()
 
         # Start the selected connection
-        connectionkind = self.CheckConnection()
-        if connectionkind == 'serial':
+        self.connectionkind = self.CheckConnection()
+        if self.connectionkind == 'serial':
             self.runKISSThread()
-        elif connectionkind == 'udp':
+        elif self.connectionkind == 'udp':
             self.runUDPThread()
         else:
-            log.err('error')
+            log.err('Error choosing connection type')
 
     def initUI(self):
 
@@ -474,28 +474,22 @@ class SATNetGUI(QtGui.QWidget):
     # To-do. Not closed properly.
     def CloseConnection(self):
 
-        if self.workerKISSThread in locals():
-
-        # if self.workerKISSThread:         
-            try:
-                self.stopKISSThread()
-            except Exception as e:
-                log.err(e)
-                log.err("Can't stop KISS thread")
-
-        if self.workerUDPThread:
+        if self.connectionkind == 'udp':
             try:
                 self.stopUDPThread()
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop UDP thread")
 
-        if self.c:
+        elif self.connectionkind == 'serial':
             try:
-                self.c.disconnect()
+                self.stopKISSThread()
             except Exception as e:
                 log.err(e)
-                log.err('Already stopped.')
+                log.err("Can't stop KISS thread")
+
+        else:
+            raise Exception
 
     # Load settings from .settings file.
     def LoadSettings(self):
@@ -649,18 +643,24 @@ class SATNetGUI(QtGui.QWidget):
                 log.err(e)
                 log.err("Can't disconnected connector", self.c)
                 # Serial thread stopped
-            try:
-                self.stopKISSThread()
-            except Exception as e:
-                log.err(e)
-                log.err("Can't stop serial thread")
-                # UDP thread stopped
+
+        if self.connectionkind == 'udp':
             try:
                 self.stopUDPThread()
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop UDP thread")
-                # Reactor stopped
+
+        elif self.connectionkind == 'serial':
+            try:
+                self.stopKISSThread()
+            except Exception as e:
+                log.err(e)
+                log.err("Can't stop KISS thread")
+
+        else:
+            raise Exception
+
             try:
                 reactor.stop()
                 log.msg("Reactor stoppee")

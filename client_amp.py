@@ -255,6 +255,14 @@ class SATNetGUI(QtGui.QWidget):
          self.UDPSignal)
         self.workerUDPThread.start()
 
+    # Stop KISS thread
+    def stopKISSThread(self):
+        self.workerKISSThread.stop()
+
+    # Stop UDP thread
+    def stopUDPThread(self):
+        self.workerUDPThread.stop()
+
     # Gets a string but can't format it! TO-DO
     def sendData(self, result):
         result = 'sample_frame'
@@ -316,37 +324,6 @@ class SATNetGUI(QtGui.QWidget):
             self.runUDPThread()
         else:
             log.err('error')
-
-    # """
-    # Stops all the thread associated to the KISS protocol
-    # """
-    # def cancelThread( self ):
-    #     self.workerKISSThread.stop()
-
-    # def jobFinishedFromThread( self, success ):
-    #     self.workerKISSThread.stop()
-    #     self.primaryBar.setValue(self.primaryBar.maximum())
-    #     self.secondaryBar.setValue(self.secondaryBar.maximum())
-    #     self.emit( SIGNAL( "jobFinished( PyQt_PyObject )" ), success )
-    #     self.closeButton.setEnabled( True )
-
-    # def primaryValueFromThread( self, value ):
-    #     self.primaryBar.setValue(value)
-
-    # def primaryRangeFromThread( self, range_vals ):
-    #     self.primaryBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
-
-    # def primaryTextFromThread( self, value ):
-    #     self.primaryLabel.setText(value)
-
-    # def secondaryValueFromThread( self, value ):
-    #     self.secondaryBar.setValue(value)
-
-    # def secondaryRangeFromThread( self, range_vals ):
-    #     self.secondaryBar.setRange( range_vals[ 0 ], range_vals[ 1 ] )
-
-    # def secondaryTextFromThread( self, value ):
-    #     self.secondaryLabel.setText(value)
 
     def initUI(self):
 
@@ -496,11 +473,29 @@ class SATNetGUI(QtGui.QWidget):
 
     # To-do. Not closed properly.
     def CloseConnection(self):
-        try:
-            self.workerKISSThread.stop()
-            self.c.disconnect()
-        except Exception:
-            log.msg('Already stopped.')
+
+        if self.workerKISSThread in locals():
+
+        # if self.workerKISSThread:         
+            try:
+                self.stopKISSThread()
+            except Exception as e:
+                log.err(e)
+                log.err("Can't stop KISS thread")
+
+        if self.workerUDPThread:
+            try:
+                self.stopUDPThread()
+            except Exception as e:
+                log.err(e)
+                log.err("Can't stop UDP thread")
+
+        if self.c:
+            try:
+                self.c.disconnect()
+            except Exception as e:
+                log.err(e)
+                log.err('Already stopped.')
 
     # Load settings from .settings file.
     def LoadSettings(self):
@@ -628,7 +623,8 @@ class SATNetGUI(QtGui.QWidget):
 
     def center(self):
         frameGm = self.frameGeometry()
-        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
+        screen_pos = QtGui.QApplication.desktop().cursor().pos()
+        screen = QtGui.QApplication.desktop().screenNumber(screen_pos)
         centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
@@ -654,13 +650,13 @@ class SATNetGUI(QtGui.QWidget):
                 log.err("Can't disconnected connector", self.c)
                 # Serial thread stopped
             try:
-                self.workerKISSThread.stop()
+                self.stopKISSThread()
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop serial thread")
                 # UDP thread stopped
             try:
-                self.workerUDPThread.stop()
+                self.stopUDPThread()
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop UDP thread")
@@ -691,7 +687,7 @@ class UDPThread(QtCore.QThread):
         try:
             log.msg("Opening UPD socket" + ".........................." +\
          '...........................' + '...........................' +\
-          '............................')
+          '........................')
 
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
         except Exception as e:
@@ -713,7 +709,11 @@ class UDPThread(QtCore.QThread):
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
     
     def stop(self):
-        log.msg('Stopping UDPSocket')
+        log.msg('Stopping UDPSocket' +\
+         "..................................." +\
+         "................................" +\
+          "....................................")
+        self.UDPSocket.close()
         self.running = False
     
     def doWork(self):
@@ -741,9 +741,10 @@ class OperativeUDPThread(UDPThread):
     def catchValue(self, frame, address):
         # self.finished.emit(ResultObj(frame))
 
-        log.msg("--------- Message from UDP socket ---------")
-        log.msg("--------- Received from ip: " + str(address[0]) + " port: " +\
-         str(address[1]) +  "---------")      
+        log.msg("----------------------------- " + "Message from UDP socket" +\
+         " -----------------------------")
+        log.msg("------------------ Received from ip: " + str(address[0]) +\
+         " port: " + str(address[1]) +  " ------------------")      
         self.finished.emit(frame)
 
 
@@ -850,9 +851,9 @@ if __name__ == '__main__':
     sys.stdout = WriteStream(queue)
 
     log.startLogging(sys.stdout)
-    log.msg('--------------------------------------------------- ' + \
+    log.msg('------------------------------------------------- ' + \
      'SATNet - Generic client' +\
-      ' ---------------------------------------------------')
+      ' -------------------------------------------------')
 
     qapp = QtGui.QApplication(sys.argv)
     app = SATNetGUI()

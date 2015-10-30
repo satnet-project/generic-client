@@ -1,9 +1,4 @@
 doc-warnings: yes
-test-warnings: yes
+test-warnings: no
 strictness: veryhigh
 max-line-length: 80
-autodetect: yes
-requirements:
-    - requirements.txt
-ignore-paths:
-    - scripts

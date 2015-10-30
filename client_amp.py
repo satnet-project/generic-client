@@ -38,6 +38,7 @@ from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
 from twisted.internet.defer import inlineCallbacks
+from twisted.internet.defer import Deferred
 
 from protocol.ampauth.login import Login
 from protocol.ampCommands import StartRemote
@@ -63,17 +64,58 @@ class ClientProtocol(AMP):
         log.err(reason)
         self.gsi.disconnectProtocol()
 
+
+    # d = Deferred()
+
+    # def test():
+    #     log.msg("a simple function")
+    # d.addCallback(test())
+
+
+
     @inlineCallbacks
-    def user_login(self):        
-        try:
-            yield self.callRemote(Login,\
-             sUsername=self.CONNECTION_INFO['username'],\
-              sPassword=self.CONNECTION_INFO['password'])
-            yield self.callRemote(StartRemote,\
+    def user_login(self):
+        # d = Deferred()
+
+
+        log.msg(self.user_login)
+
+        res = yield self.callRemote(Login,\
+         sUsername=self.CONNECTION_INFO['username'],\
+          sPassword=self.CONNECTION_INFO['password'])
+
+        if res['bAuthenticated'] == True:
+            log.msg('bAuthenticated True')
+            res = yield self.callRemote(StartRemote,\
              iSlotId=self.CONNECTION_INFO['slot_id'])
-        except Exception as e:
-            log.err(e)
-            reactor.stop()
+
+        elif res['bAuthenticated'] == False:
+            log.msg('False')
+
+        else:
+            log.msg('No data')
+
+
+
+
+
+
+        # try:
+        #     res = yield self.callRemote(Login,\
+        #      sUsername=self.CONNECTION_INFO['username'],\
+        #       sPassword=self.CONNECTION_INFO['password'])
+
+        #     if res['bAuthenticated'] == True:
+        #         log.msg('bAuthenticated True')
+
+
+        #     res = yield self.callRemote(StartRemote,\
+        #      iSlotId=self.CONNECTION_INFO['slot_id'])
+        #     log.msg(res)
+            
+        # except Exception as e:
+        #     log.err(e)
+        #     reactor.stop()
 
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] +\
@@ -200,16 +242,15 @@ class SATNetGUI(QtGui.QWidget):
 
         self.initUI()
 
-    def run(self):
-        self.runKISSThread()
-
     # Run threads associated to KISS protocol
     def runKISSThread(self):
         self.workerKISSThread.start()
 
+    def runUDPThread(self):
+        self.workerUDPThread.start()
+
     # Gets a string but can't format it! TO-DO
     def sendData(self, result):
-
         result = 'sample_frame'
         self.gsi._manageFrame(result)
 
@@ -261,10 +302,19 @@ class SATNetGUI(QtGui.QWidget):
             print self.LabelUDPPort.text()
             # self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
 
-        # self.gsi = GroundStationInterface(self.CONNECTION_INFO, 'Vigo',\
-        #  ClientProtocol)
-
         self.gsi, self.c = Client(self.CONNECTION_INFO).createConnection()
+
+        connectionkind = self.CheckConnection()
+        log.msg(connectionkind)
+
+        if connectionkind == 'serial':
+            log.msg('do serial')
+            self.runKISSThread()
+        elif connectionking == 'udp':
+            log.msg('do udp')
+            self.runUDPThread()
+        else:
+            log.err('error')
 
     # """
     # Stops all the thread associated to the KISS protocol
@@ -446,6 +496,7 @@ class SATNetGUI(QtGui.QWidget):
     # To-do. Not closed properly.
     def CloseConnection(self):
         try:
+            self.workerKISSThread.stop()
             self.c.disconnect()
         except Exception:
             log.msg('Already stopped.')
@@ -523,6 +574,8 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelUDP.setEnabled(True)
             self.LabelUDPPort.setEnabled(True)
 
+        return Connection
+
     # Parameters validation.
     def paramValidation(self):
         if 'username' not in self.CONNECTION_INFO:
@@ -590,18 +643,92 @@ class SATNetGUI(QtGui.QWidget):
             "Are you sure to quit?", QtGui.QMessageBox.Yes | 
             QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 
+        # Non asynchronous way. Need to re implement this. TO-DO
         if reply == QtGui.QMessageBox.Yes:
             try:
-                #self.c.disconnect()
+                # Connector disconnected
+                self.c.disconnect()
+            except Exception as e:
+                log.err(e)
+                log.err("Can't disconnected connector", self.c)
+                # Serial thread stopped
+            try:
                 self.workerKISSThread.stop()
+            except Exception as e:
+                log.err(e)
+                log.err("Can't stop serial thread")
+                # Reactor stopped
+            try:
                 reactor.stop()
-            except Exception:
-                log.msg("Reactor not running.")
+            except Exception as e:
+                log.err(e)
+                log.err("Reactor not running.")
 
             event.accept()
         else:
             event.ignore()  
 
+
+# Class associated to UDP protocol
+class UDPThread(QtCore.QThread):
+    
+    def __init__(self, parent = None):
+        QtCore.QThread.__init__(self, parent)
+
+        self.CONNECTION_INFO = {'ip':'ippp', 'udpport':'udddppport'}
+
+        # Opening port
+        import socket
+        try:
+            log.msg('Opening UPD socket')
+            self.UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        except Exception as e:
+            log.err('Error opening UPD socket')
+            log.err(e)
+
+        try:
+            self.UDPSocket.bind(self.CONNECTION_INFO['ip'],\
+             self.CONNECTION_INFO['udpport'])
+        except Exception as e:
+            log.err('Error starting UPD protocol')
+            log.err(e)
+
+    def run(self):
+        log.msg('Listening')
+        self.running = True
+        self.doWork(self.UDPSocket)
+        # success = self.doWork(self.kissTNC)
+        # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
+    
+    def stop(self):
+        log.msg('Stopping UDPSocket')
+        self.running = False
+    
+    def doWork(self):
+        return True
+    
+    def cleanUp(self):
+        pass
+
+
+class OperativeUDPThread(UDPThread):
+    finished = QtCore.pyqtSignal(object)
+
+    def __init__(self, queue, callback, parent = None):
+        KISSThread.__init__(self, parent)
+        self.queue = queue
+        self.finished.connect(callback)
+    
+    def doWork(self, UDPSocket):
+        frame, addr = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
+        # kissTNC.read(callback=self.catchValue)
+        return True
+
+    def catchValue(self, frame):
+        # self.finished.emit(ResultObj(frame))
+
+        log.msg("--------- Message from UDP socket ---------")        
+        self.finished.emit(frame)
 
 
 # Class associated to KISS protocol
@@ -657,9 +784,10 @@ class OperativeKISSThread(KISSThread):
 
     def catchValue(self, frame):
         # self.finished.emit(ResultObj(frame))
+
+        log.msg('---- Message from Serial port ----')
         self.finished.emit(frame)
         
-
 
 # Objects designed for output the information
 class WriteStream(object):
@@ -671,7 +799,6 @@ class WriteStream(object):
 
     def flush(self):
         pass
-
 
 
 # A QObject (to be run in a QThread) which sits waiting for data to come 
@@ -699,8 +826,8 @@ class ResultObj(QtCore.QObject):
 
 if __name__ == '__main__':
 
-
     serial_queue = Queue()
+    upd_queue = Queue()
 
     # Create Queue and redirect sys.stdout to this queue
     queue = Queue()
@@ -712,11 +839,9 @@ if __name__ == '__main__':
     app = SATNetGUI()
     # Threads
     app.workerKISSThread = OperativeKISSThread(serial_queue, app.sendData)
+    app.workerUDPThread = OperativeUDPThread(udp_queue, app.sendData)
     app.setWindowIcon(QtGui.QIcon('logo.png'))
     app.show()
-    
-    # Start threads
-    app.run()
 
     # Create thread that will listen on the other end of the queue, and 
     # send the text to the textedit in our application

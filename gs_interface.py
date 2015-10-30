@@ -28,8 +28,8 @@ class GroundStationInterface():
     """
     This class contains the interface between the GS and the SATNET protocol.
     It supports either a UDP or a serial connection. In case the connection to 
-    the SATNET server fails fails, received frames will be stored inside a csv 
-    file named ESEO-gs-yyy.mm.dd.csv.
+    the SATNET server fails, received frames will be stored inside a csv file
+    named ESEO-gs-yyy.mm.dd.csv.
 
     :ivar UDPSocket:
         This object is in charge of sending and receiving frames through an 
@@ -68,29 +68,11 @@ class GroundStationInterface():
     GS = None
 
     def __init__(self, CONNECTION_INFO, GS, AMP):
-        # log.startLogging(sys.stdout)
         self.CONNECTION_INFO = CONNECTION_INFO
         self.AMP = AMP
         self.GS = GS
 
-    # def _open_socket(self):
-    #     import socket
-    #     try:
-    #         log.msg('Opening UDP socket (' + self.CONNECTION_INFO['ip'] + ',' + str(self.CONNECTION_INFO['udpport']) + ')')
-    #         self.UDPSocket = socket.socket(socket.AF_INET,\
-    #          socket.SOCK_DGRAM) # UDP
-    #         self.UDPSocket.bind((self.CONNECTION_INFO['ip'],\
-    #          self.CONNECTION_INFO['udpport']))
-    #         self.thread = threading.Thread(target=self._frameFromUDPSocket)
-    #         self.thread.daemon = True # This thread will be close if the reactor stops
-    #         self.thread.start()
-    #     except Exception as e:            
-    #         log.err('UDP port unavailable')
-    #         log.err(e)
-
-    # Call the AMP function.
     def _manageFrame(self, result):
-        log.msg('--------- Message from Serial port ---------')
 
         if self.AMP is not None:
             try:
@@ -102,19 +84,10 @@ class GroundStationInterface():
             self._updateLocalFile(result)
 
     def _updateLocalFile(self, frame):
-        log.msg('Saving message to local file')
+        log.msg('---- Saving message to local file ----')
         filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
         with open(filename,"a+") as f:
             f.write(frame + ",\n")
-
-    # def _frameFromUDPSocket(self):
-    #     log.msg("--------- Message from UDP socket ---------")        
-    #     while True:
-    #         frame, addr = self.UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-    #         self._manageFrame(frame)
-
-    # Pass to this class a reference to the protocol, which is the class in
-    # charge of talking to the SATNET server.
 
     # :ivar AMP:
     #     Client protocol to which received frames will be sent to be 

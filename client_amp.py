@@ -240,6 +240,8 @@ class SATNetGUI(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
 
         self.initUI()
+        self.serialSignal = False
+        self.UDPSignal = False
 
     # Run threads associated to KISS protocol
     def runKISSThread(self):
@@ -713,15 +715,17 @@ class UDPThread(QtCore.QThread):
 class OperativeUDPThread(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, parent = None):
+    def __init__(self, queue, callback, UDPSignal, parent = None):
         UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
+        self.UDPSignal = UDPSignal
     
     def doWork(self, UDPSocket):
-        while True:
-            frame, addr = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-            self.catchValue(frame)
+        if self.UDPSignal:
+            while True:
+                frame = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
+                self.catchValue(frame)
         # kissTNC.read(callback=self.catchValue)
         # return True
 
@@ -774,14 +778,17 @@ class KISSThread(QtCore.QThread):
 class OperativeKISSThread(KISSThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, parent = None):
+    def __init__(self, queue, callback, serialSignal, parent = None):
         KISSThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
-    
+        self.serialSignal = serialSignal
+
     def doWork(self, kissTNC):
-        kissTNC.read(callback=self.catchValue)
-        return True
+        if self.serialSignal:
+            # Only needs to be initialized one time.
+            kissTNC.read(callback=self.catchValue)
+            return True
 
     def catchValue(self, frame):
         # self.finished.emit(ResultObj(frame))
@@ -839,8 +846,10 @@ if __name__ == '__main__':
     qapp = QtGui.QApplication(sys.argv)
     app = SATNetGUI()
     # Threads
-    app.workerKISSThread = OperativeKISSThread(serial_queue, app.sendData)
-    app.workerUDPThread = OperativeUDPThread(udp_queue, app.sendData)
+    app.workerKISSThread = OperativeKISSThread(serial_queue, app.sendData,\
+     app.serialSignal)
+    app.workerUDPThread = OperativeUDPThread(udp_queue, app.sendData,\
+     app.UDPSignal)
     app.setWindowIcon(QtGui.QIcon('logo.png'))
     app.show()
 

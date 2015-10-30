@@ -38,7 +38,6 @@ from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
 from twisted.internet.defer import inlineCallbacks
-from twisted.internet.defer import Deferred
 
 from protocol.ampauth.login import Login
 from protocol.ampCommands import StartRemote
@@ -310,7 +309,7 @@ class SATNetGUI(QtGui.QWidget):
         if connectionkind == 'serial':
             log.msg('do serial')
             self.runKISSThread()
-        elif connectionking == 'udp':
+        elif connectionkind == 'udp':
             log.msg('do udp')
             self.runUDPThread()
         else:
@@ -715,14 +714,16 @@ class OperativeUDPThread(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
     def __init__(self, queue, callback, parent = None):
-        KISSThread.__init__(self, parent)
+        UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
     
     def doWork(self, UDPSocket):
-        frame, addr = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
+        while True:
+            frame, addr = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
+            self.catchValue(frame)
         # kissTNC.read(callback=self.catchValue)
-        return True
+        # return True
 
     def catchValue(self, frame):
         # self.finished.emit(ResultObj(frame))
@@ -827,7 +828,7 @@ class ResultObj(QtCore.QObject):
 if __name__ == '__main__':
 
     serial_queue = Queue()
-    upd_queue = Queue()
+    udp_queue = Queue()
 
     # Create Queue and redirect sys.stdout to this queue
     queue = Queue()

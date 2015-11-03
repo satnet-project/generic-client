@@ -316,6 +316,9 @@ class SATNetGUI(QtGui.QWidget):
             print self.LabelUDPPort.text()
             # self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
 
+
+        # Mientras que no desconecte no tengo que iniciar una conexion nueva
+
         self.gsi, self.c = Client(self.CONNECTION_INFO).createConnection()
 
         # Start the selected connection
@@ -326,6 +329,12 @@ class SATNetGUI(QtGui.QWidget):
             self.runUDPThread()
         else:
             log.err('Error choosing connection type')
+
+        self.ButtonNew.setEnabled(False)
+        self.ButtonCancel.setEnabled(True)
+
+
+        # Disable button
 
     def initUI(self):
 
@@ -339,16 +348,18 @@ class SATNetGUI(QtGui.QWidget):
         buttons.setLayout(grid)
 
         # New connection.
-        ButtonNew = QtGui.QPushButton("Connect")
-        ButtonNew.setToolTip("Start a new connection")
-        ButtonNew.setFixedWidth(145)
-        # ButtonNew.setCheckable(True)
-        ButtonNew.clicked.connect(self.NewConnection)
+        self.ButtonNew = QtGui.QPushButton("Connect")
+        self.ButtonNew.setToolTip("Start a new connection using the " +\
+         "selected connection")
+        self.ButtonNew.setFixedWidth(145)
+        self.ButtonNew.clicked.connect(self.NewConnection)
         # Close connection.
-        ButtonCancel = QtGui.QPushButton("Disconnect")
-        ButtonCancel.setToolTip("End current connection")
-        ButtonCancel.setFixedWidth(145)
-        ButtonCancel.clicked.connect(self.CloseConnection)
+        self.ButtonCancel = QtGui.QPushButton("Disconnection")
+        self.ButtonCancel.setToolTip("End current connection and close " +\
+         "the application")
+        self.ButtonCancel.setFixedWidth(145)
+        self.ButtonCancel.clicked.connect(self.CloseConnection)
+        self.ButtonCancel.setEnabled(False)
         # Load parameters from file
         ButtonLoad = QtGui.QPushButton("Load parameters from file")
         ButtonLoad.setToolTip("Load parameters from <i>config.ini</i> file")
@@ -364,8 +375,8 @@ class SATNetGUI(QtGui.QWidget):
         ButtonHelp.setToolTip("Click for help")
         ButtonHelp.setFixedWidth(145)
         ButtonHelp.clicked.connect(self.usage)
-        grid.addWidget(ButtonNew, 0, 0, 1, 1)
-        grid.addWidget(ButtonCancel, 0, 1, 1, 1)
+        grid.addWidget(self.ButtonNew, 0, 0, 1, 1)
+        grid.addWidget(self.ButtonCancel, 0, 1, 1, 1)
         grid.addWidget(ButtonLoad, 1, 0, 1, 2)
         grid.addWidget(ButtonConfiguration, 2, 0, 1, 1)
         grid.addWidget(ButtonHelp, 2, 1, 1, 1)
@@ -492,6 +503,9 @@ class SATNetGUI(QtGui.QWidget):
 
         else:
             raise Exception
+
+        self.ButtonNew.setEnabled(True)
+        self.ButtonCancel.setEnabled(False)
 
     # Load settings from .settings file.
     def LoadSettings(self):

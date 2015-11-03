@@ -197,7 +197,7 @@ class CtxFactory(ClientContextFactory):
     def getContext(self):
         self.method = SSL.SSLv23_METHOD
         ctx = ssl.ClientContextFactory.getContext(self)
-        ctx.use_certificate_file('protocol/key/public.pem')
+        # ctx.use_certificate_file('protocol/key/public.pem')
         # ctx.use_privatekey_file('protocol/key/test.key')
 
         return ctx

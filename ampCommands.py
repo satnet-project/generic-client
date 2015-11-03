@@ -27,9 +27,6 @@ from twisted.protocols import amp
 from twisted.cred.error import UnauthorizedLogin
 from errors import BadCredentials
 
-# Commandes implemented by the N-server which will be invoked by a
-# G- or M- clients.
-
 
 class StartRemote(amp.Command):
     arguments = [('iSlotId', amp.Integer())]
@@ -109,9 +106,11 @@ class SendMsg(amp.Command):
 # by a N-server.
 
 class NotifyEvent(amp.Command):
+
     arguments = [('iEvent', amp.Integer()),
                  ('sDetails', amp.String(optional=True))]
     requiresAnswer = False
+
     """
     Used to inform a client about an event in the network. 
     
@@ -131,6 +130,7 @@ class NotifyEvent(amp.Command):
     :type sDetails:
         L{String} or None
     """
+
     # Remote user not connected
     REMOTE_DISCONNECTED = -1
     # Both MCC and GSS belong to the same client
@@ -142,8 +142,10 @@ class NotifyEvent(amp.Command):
 
 
 class NotifyMsg(amp.Command):
+
     arguments = [('sMsg', amp.String())]
     requiresAnswer = False
+
     """
     Used to send a message to a remote client.
     
@@ -154,6 +156,14 @@ class NotifyMsg(amp.Command):
     """
 
 class Login(amp.Command):
+
+    arguments = [('sUsername', amp.String()),
+                 ('sPassword', amp.String())]
+    response = [('bAuthenticated', amp.Boolean())]
+    errors = {
+        UnauthorizedLogin: 'UNAUTHORIZED_LOGIN',
+        BadCredentials: 'BAD_CREDENTIALS',
+        NotImplementedError: 'NOT_IMPLEMENTED_ERROR'}
 
     """
     Command to authenticate an user.  The server response is a boolean
@@ -175,11 +185,5 @@ class Login(amp.Command):
         boolean or L{UnauthorizedLogin}
     """
 
-    arguments = [('sUsername', amp.String()),
-                 ('sPassword', amp.String())]
-    response = [('bAuthenticated', amp.Boolean())]
-    errors = {
-        UnauthorizedLogin: 'UNAUTHORIZED_LOGIN',
-        BadCredentials: 'BAD_CREDENTIALS',
-        NotImplementedError: 'NOT_IMPLEMENTED_ERROR'}
+
 

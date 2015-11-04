@@ -61,18 +61,14 @@ class ClientProtocol(AMP):
         self.gsi.connectProtocol(self)
 
     def connectionLost(self, reason):
-        log.err("Connection lost")
-        log.err(reason)
+        log.msg("Connection lost")
+        #
+        # ¿Es un error desconectar asi? No tiene sentido mostrar un error como
+        # reason cuando la desconexion es normal
+        #
+        # log.err("Connection lost")
+        # log.err(reason)
         self.gsi.disconnectProtocol()
-
-
-    # d = Deferred()
-
-    # def test():
-    #     log.msg("a simple function")
-    # d.addCallback(test())
-
-
 
     @inlineCallbacks
     def user_login(self):
@@ -162,6 +158,11 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
 
+        if self.CONNECTION_INFO['reconnection'] == 'yes':
+            self.continueTrying = True
+        elif self.CONNECTION_INFO['reconnection'] == 'no':
+            self.continueTrying = None
+
     # Called when a connection has been started
     def startedConnecting(self, connector):
         log.msg("Starting connection..........................." +\
@@ -177,7 +178,6 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     # Called when an established connection is lost
     def clientConnectionLost(self, connector, reason):
-        self.continueTrying = None # Reconnection disabled
 
         log.msg('Lost connection. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionLost(self,\
@@ -185,7 +185,6 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     # Called when a connection has failed to connect
     def clientConnectionFailed(self, connector, reason):
-        self.continueTrying = None # Reconnection disabled
 
         log.msg('Connection failed. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionFailed(self,\
@@ -197,8 +196,6 @@ class CtxFactory(ClientContextFactory):
     def getContext(self):
         self.method = SSL.SSLv23_METHOD
         ctx = ssl.ClientContextFactory.getContext(self)
-        # ctx.use_certificate_file('protocol/key/public.pem')
-        # ctx.use_privatekey_file('protocol/key/test.key')
 
         return ctx
 
@@ -316,8 +313,8 @@ class SATNetGUI(QtGui.QWidget):
             print self.LabelUDPPort.text()
             # self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
 
-
-        # Mientras que no desconecte no tengo que iniciar una conexion nueva
+            self.CONNECTION_INFO['reconnection'],\
+             self.CONNECTION_INFO['parameters'] = self.LoadSettings()
 
         self.gsi, self.c = Client(self.CONNECTION_INFO).createConnection()
 
@@ -332,9 +329,6 @@ class SATNetGUI(QtGui.QWidget):
 
         self.ButtonNew.setEnabled(False)
         self.ButtonCancel.setEnabled(True)
-
-
-        # Disable button
 
     def initUI(self):
 
@@ -486,10 +480,10 @@ class SATNetGUI(QtGui.QWidget):
 
     # To-do. Not closed properly.
     def CloseConnection(self):
-
         if self.connectionkind == 'udp':
             try:
                 self.stopUDPThread()
+                log.msg("Stopping UDP connection")
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop UDP thread")
@@ -497,12 +491,15 @@ class SATNetGUI(QtGui.QWidget):
         elif self.connectionkind == 'serial':
             try:
                 self.stopKISSThread()
+                log.msg("Stopping KISS connection")
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop KISS thread")
 
         else:
             raise Exception
+
+        self.c.disconnect()
 
         self.ButtonNew.setEnabled(True)
         self.ButtonCancel.setEnabled(False)

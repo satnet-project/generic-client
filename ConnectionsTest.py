@@ -24,7 +24,6 @@ class TestUDPConnection(object):
 
 	def __init__(self, ip, port):
 		from socket import socket, AF_INET, SOCK_DGRAM
-		from sys import stderr
 
 		ip = str(ip)
 		port = int(port)
@@ -38,7 +37,7 @@ class TestUDPConnection(object):
 
 	def sendData(self, sock, message, server_address):
 		print "Sending message"
-		sent = sock.sendto(message, server_address)
+		sock.sendto(message, server_address)
 
 		sock.close()
 

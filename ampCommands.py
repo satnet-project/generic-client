@@ -21,10 +21,10 @@ __author__ = 'xabicrespog@gmail.com'
 
 
 from twisted.protocols import amp
+from twisted.cred.error import UnauthorizedLogin
+
 from clientErrors import SlotErrorNotification
 
-from twisted.protocols import amp
-from twisted.cred.error import UnauthorizedLogin
 from errors import BadCredentials
 
 

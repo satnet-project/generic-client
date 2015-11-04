@@ -190,7 +190,9 @@ class KISSThread(QtCore.QThread):
         # Opening port
         import kiss
         try:
-            log.msg('Opening serial port')
+            log.msg('Opening serial port' + '.............................' +\
+             '................................................' +\
+              '............................')
             self.kissTNC = kiss.KISS('/dev/ttyS1', '9000')
         except Exception as e:
             log.err('Error opening port')

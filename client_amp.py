@@ -220,6 +220,9 @@ class SATNetGUI(QtGui.QWidget):
         self.initUI()
         self.initButtons()
         self.initFields()
+        self.initLogo()
+        self.initData()
+        self.initConsole()
         self.serialSignal = True
         self.UDPSignal = True
 
@@ -413,6 +416,7 @@ class SATNetGUI(QtGui.QWidget):
         configuration.setTitle("Basic configuration")
         configuration.move(10, 400)
 
+    def initLogo(self):
         # Logo.
         self.LabelLogo = QtGui.QLabel(self)
         self.LabelLogo.move(20, 490)
@@ -420,12 +424,7 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelLogo.setPixmap(pic)
         self.LabelLogo.show()
 
-        # Console
-        self.console = QtGui.QTextBrowser(self)
-        self.console.move(340, 10)
-        self.console.resize(950, 780)
-        self.console.setFont(QtGui.QFont('SansSerif', 10))
-
+    def initData(self):
         try:
             opts = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
              ["username=", "password=", "slot=", "connection=", "serialport=",\
@@ -464,6 +463,13 @@ class SATNetGUI(QtGui.QWidget):
             self.LoadParameters()
         elif parameters == 'no':
             self.LoadDefaultSettings.setChecked(False)
+
+    def initConsole(self):
+        # Console
+        console = QtGui.QTextBrowser(self)
+        console.move(340, 10)
+        console.resize(950, 780)
+        console.setFont(QtGui.QFont('SansSerif', 10))
 
     # To-do. Not closed properly.
     def CloseConnection(self):
@@ -698,7 +704,7 @@ class DateDialog(QtGui.QDialog):
     @staticmethod
     def buildWindow(parent = None):
         dialog = DateDialog(parent)
-        result = dialog.exec_()
+        dialog.exec_()
         configuration = dialog.getConfiguration()
 
         return (configuration[0], configuration[1])

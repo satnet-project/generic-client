@@ -72,17 +72,13 @@ class ClientProtocol(AMP):
 
     @inlineCallbacks
     def user_login(self):
-        # d = Deferred()
-
-
-        log.msg(self.user_login)
 
         res = yield self.callRemote(Login,\
          sUsername=self.CONNECTION_INFO['username'],\
           sPassword=self.CONNECTION_INFO['password'])
 
         if res['bAuthenticated'] == True:
-            log.msg('bAuthenticated True')
+            # log.msg('bAuthenticated True')
             res = yield self.callRemote(StartRemote,\
              iSlotId=self.CONNECTION_INFO['slot_id'])
 
@@ -91,23 +87,6 @@ class ClientProtocol(AMP):
 
         else:
             log.msg('No data')
-
-        # try:
-        #     res = yield self.callRemote(Login,\
-        #      sUsername=self.CONNECTION_INFO['username'],\
-        #       sPassword=self.CONNECTION_INFO['password'])
-
-        #     if res['bAuthenticated'] == True:
-        #         log.msg('bAuthenticated True')
-
-
-        #     res = yield self.callRemote(StartRemote,\
-        #      iSlotId=self.CONNECTION_INFO['slot_id'])
-        #     log.msg(res)
-            
-        # except Exception as e:
-        #     log.err(e)
-        #     reactor.stop()
 
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] +\
@@ -158,11 +137,6 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
 
-        if self.CONNECTION_INFO['reconnection'] == 'yes':
-            self.continueTrying = True
-        elif self.CONNECTION_INFO['reconnection'] == 'no':
-            self.continueTrying = None
-
     # Called when a connection has been started
     def startedConnecting(self, connector):
         log.msg("Starting connection..........................." +\
@@ -178,6 +152,10 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     # Called when an established connection is lost
     def clientConnectionLost(self, connector, reason):
+        if self.CONNECTION_INFO['reconnection'] == 'yes':
+            self.continueTrying = True
+        elif self.CONNECTION_INFO['reconnection'] == 'no':
+            self.continueTrying = None
 
         log.msg('Lost connection. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionLost(self,\
@@ -185,6 +163,10 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     # Called when a connection has failed to connect
     def clientConnectionFailed(self, connector, reason):
+        if self.CONNECTION_INFO['reconnection'] == 'yes':
+            self.continueTrying = True
+        elif self.CONNECTION_INFO['reconnection'] == 'no':
+            self.continueTrying = None
 
         log.msg('Connection failed. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionFailed(self,\
@@ -236,6 +218,8 @@ class SATNetGUI(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
 
         self.initUI()
+        self.initButtons()
+        self.initFields()
         self.serialSignal = True
         self.UDPSignal = True
 
@@ -330,27 +314,29 @@ class SATNetGUI(QtGui.QWidget):
         self.ButtonNew.setEnabled(False)
         self.ButtonCancel.setEnabled(True)
 
-    def initUI(self):
+        self.LoadDefaultSettings.setEnabled(False)
+        self.AutomaticReconnection.setEnabled(False)
 
+    def initUI(self):
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         self.setFixedSize(1300, 800)
-        self.setWindowTitle("SATNet client - Generic") 
+        self.setWindowTitle("SATNet client - Generic")
 
+    def initButtons(self):
         # Control buttons.
         buttons = QtGui.QGroupBox(self)
         grid = QtGui.QGridLayout(buttons)
         buttons.setLayout(grid)
 
         # New connection.
-        self.ButtonNew = QtGui.QPushButton("Connect")
+        self.ButtonNew = QtGui.QPushButton("Connection")
         self.ButtonNew.setToolTip("Start a new connection using the " +\
          "selected connection")
         self.ButtonNew.setFixedWidth(145)
         self.ButtonNew.clicked.connect(self.NewConnection)
         # Close connection.
         self.ButtonCancel = QtGui.QPushButton("Disconnection")
-        self.ButtonCancel.setToolTip("End current connection and close " +\
-         "the application")
+        self.ButtonCancel.setToolTip("End current connection")
         self.ButtonCancel.setFixedWidth(145)
         self.ButtonCancel.clicked.connect(self.CloseConnection)
         self.ButtonCancel.setEnabled(False)
@@ -361,9 +347,9 @@ class SATNetGUI(QtGui.QWidget):
         ButtonLoad.clicked.connect(self.LoadParameters)
         # Configuration
         ButtonConfiguration = QtGui.QPushButton("Configuration")
-        ButtonConfiguration.setToolTip("Set configuration")
+        ButtonConfiguration.setToolTip("Open configuration window")
         ButtonConfiguration.setFixedWidth(145)
-        # ButtonConfiguration.clicked.connect(self.SetConfiguration)
+        ButtonConfiguration.clicked.connect(self.SetConfiguration)
         # Help.
         ButtonHelp = QtGui.QPushButton("Help")
         ButtonHelp.setToolTip("Click for help")
@@ -377,6 +363,7 @@ class SATNetGUI(QtGui.QWidget):
         buttons.setTitle("Connection")
         buttons.move(10, 10)
 
+    def initFields(self):
         # Parameters group.
         parameters = QtGui.QGroupBox(self)
         layout = QtGui.QFormLayout()
@@ -558,10 +545,10 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelUDPPort.setText(config.get('UDP', 'udpport'))
 
     def SetConfiguration(self):
-        # Not implemented yet
-        return True
-        # self.ConfigurationWindow = ConfigurationWindow()
-        # self.ConfigurationWindow.show()
+        # First draft
+        client, attempts = DateDialog.buildWindow()
+        log.msg("Client name", client)
+        log.msg("Attemps", attempts)
 
     def CheckConnection(self):
         Connection = str(self.LabelConnection.currentText())
@@ -682,6 +669,39 @@ class SATNetGUI(QtGui.QWidget):
             log.err(e)
             log.err("Reactor not running.")
             event.ignore()
+
+
+class DateDialog(QtGui.QDialog):
+    def __init__(self, parent = None):
+        super(DateDialog, self).__init__(parent)
+
+        parameters = QtGui.QGroupBox(self)
+        layout_parameters = QtGui.QFormLayout()
+        parameters.setLayout(layout_parameters)
+
+        self.LabelClientname = QtGui.QLineEdit()
+        self.LabelClientname.setFixedWidth(190)
+        layout_parameters.addRow(QtGui.QLabel("Client name:           "),\
+         self.LabelClientname)
+        self.LabelPassword = QtGui.QLineEdit()
+        self.LabelPassword.setFixedWidth(190)
+        layout_parameters.addRow(QtGui.QLabel("Reconnection attempts: "),\
+         self.LabelPassword)
+
+    def getConfiguration(self):
+        configuration = [str(self.LabelClientname.text()),\
+         str(self.LabelPassword.text())]
+
+        return configuration
+
+    # static method to create the dialog and return (client, attempts)
+    @staticmethod
+    def buildWindow(parent = None):
+        dialog = DateDialog(parent)
+        result = dialog.exec_()
+        configuration = dialog.getConfiguration()
+
+        return (configuration[0], configuration[1])
 
 
 # Objects designed for output the information

@@ -259,49 +259,21 @@ class SATNetGUI(QtGui.QWidget):
     def NewConnection(self):
         self.CONNECTION_INFO = {}
 
-        try:
-            opts= getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
-             ["username=", "password=", "slot=", "connection=", "serialport=",\
-              "baudrate=", "ip=", "udpport="])
-        except getopt.GetoptError:
-            log.err("Error loading parameters from command line")
+        self.CONNECTION_INFO['username'] = str(self.LabelUsername.text())
+        self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
+        self.CONNECTION_INFO['slot_id'] = int(self.LabelSlotID.text())
+        self.CONNECTION_INFO['connection'] =\
+         str(self.LabelConnection.currentText())
+        self.CONNECTION_INFO['serialport'] =\
+         str(self.LabelSerialPort.currentText())
+        self.CONNECTION_INFO['baudrate'] = str(self.LabelBaudrate.text())
+        self.CONNECTION_INFO['ip'] = self.LabelUDP.text()
+        # print self.LabelUDPPort.text()
+        self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
 
-        if ('-g','') in opts:
-            for opt, arg in opts:
-                if opt in ("-u", "--username"):
-                    self.CONNECTION_INFO['username']  = arg
-                elif opt in ("-p", "--password"):
-                    self.CONNECTION_INFO['password']  = arg
-                elif opt in ("-t", "--slot"):
-                    self.CONNECTION_INFO['slot_id']  = arg
-                elif opt in ("-c", "--connection"):
-                    self.CONNECTION_INFO['connection'] = arg
-                elif opt in ("-s", "--serialport"):
-                    self.CONNECTION_INFO['serialport']  = arg
-                elif opt in ("-b", "--baudrate"):
-                    self.CONNECTION_INFO['baudrate']  = arg
-                elif opt in ("-i", "--ip"):
-                    self.CONNECTION_INFO['ip']  = arg
-                elif opt in ("-u", "--udpport"):
-                    self.CONNECTION_INFO['udpport']  = int(arg)
-            # Check if all the parameters given are valid
-            self.paramValidation()
 
-        else:
-            self.CONNECTION_INFO['username'] = str(self.LabelUsername.text())
-            self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
-            self.CONNECTION_INFO['slot_id'] = int(self.LabelSlotID.text())
-            self.CONNECTION_INFO['connection'] =\
-             str(self.LabelConnection.currentText())
-            self.CONNECTION_INFO['serialport'] =\
-             str(self.LabelSerialPort.currentText())
-            self.CONNECTION_INFO['baudrate'] = str(self.LabelBaudrate.text())
-            self.CONNECTION_INFO['ip'] = self.LabelUDP.text()
-            print self.LabelUDPPort.text()
-            # self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
-
-            self.CONNECTION_INFO['reconnection'],\
-             self.CONNECTION_INFO['parameters'] = self.LoadSettings()
+        self.CONNECTION_INFO['reconnection'],\
+         self.CONNECTION_INFO['parameters'] = self.LoadSettings()
 
         self.gsi, self.c = Client(self.CONNECTION_INFO).createConnection()
 
@@ -425,34 +397,6 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelLogo.show()
 
     def initData(self):
-        try:
-            opts = getopt.getopt(sys.argv[1:],"hfgu:p:t:c:s:b:i:u:",\
-             ["username=", "password=", "slot=", "connection=", "serialport=",\
-              "baudrate=", "ip=", "udpport="])
-        except getopt.GetoptError:
-            print "error"
-
-        if ('-g', '') in opts:
-            for opt, arg in opts:
-                if opt == "-u":
-                    self.LabelUsername.setText(arg)
-                elif opt == "-p":
-                    self.LabelPassword.setText(arg)
-                elif opt == "-t":
-                    self.LabelSlotID.setValue(arg)
-                elif opt == "-c":
-                    index = self.LabelConnection.findText(arg)
-                    self.LabelConnection.setCurrentIndex(index)
-                elif opt == "-s":
-                    index = self.LabelSerialPort.findText(arg)
-                    self.LabelSerialPort.setCurrentIndex(index)
-                elif opt == "-b":
-                    self.LabelBaudrate.setText(arg)
-                elif opt == "-i":
-                    self.LabelUDP.setText(arg)
-                elif opt == "-u":
-                    self.LabelUDPPort.setText(arg)
-
         reconnection, parameters = self.LoadSettings()
         if reconnection == 'yes':
             self.AutomaticReconnection.setChecked(True)
@@ -466,10 +410,10 @@ class SATNetGUI(QtGui.QWidget):
 
     def initConsole(self):
         # Console
-        console = QtGui.QTextBrowser(self)
-        console.move(340, 10)
-        console.resize(950, 780)
-        console.setFont(QtGui.QFont('SansSerif', 10))
+        self.console = QtGui.QTextBrowser(self)
+        self.console.move(340, 10)
+        self.console.resize(950, 780)
+        self.console.setFont(QtGui.QFont('SansSerif', 10))
 
     # To-do. Not closed properly.
     def CloseConnection(self):
@@ -526,29 +470,30 @@ class SATNetGUI(QtGui.QWidget):
         index = self.LabelConnection.findText(self.CONNECTION_INFO['connection'])
         self.LabelConnection.setCurrentIndex(index)
 
+        self.CONNECTION_INFO['serialport'] = config.get('Serial',\
+         'serialport')
+        index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
+        self.LabelSerialPort.setCurrentIndex(index)
+        self.CONNECTION_INFO['baudrate'] = config.get('Serial',\
+         'baudrate')
+        self.LabelBaudrate.setText(self.CONNECTION_INFO['baudrate'])
+        self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
+        self.LabelUDP.setText(self.CONNECTION_INFO['ip'])
+        self.CONNECTION_INFO['udpport'] = int(config.get('UDP',\
+         'udpport'))
+        self.LabelUDPPort.setText(config.get('UDP', 'udpport'))
+
         if self.CONNECTION_INFO['connection'] == 'serial':
             self.LabelSerialPort.setEnabled(True)
             self.LabelBaudrate.setEnabled(True)
             self.LabelUDP.setEnabled(False)
             self.LabelUDPPort.setEnabled(False)
-            self.CONNECTION_INFO['serialport'] = config.get('Serial',\
-             'serialport')
-            index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
-            self.LabelSerialPort.setCurrentIndex(index)
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial',\
-             'baudrate')
-            self.LabelBaudrate.setText(self.CONNECTION_INFO['baudrate'])
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
             self.LabelSerialPort.setEnabled(False)
             self.LabelBaudrate.setEnabled(False)
             self.LabelUDP.setEnabled(True)
             self.LabelUDPPort.setEnabled(True)
-            self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
-            self.LabelUDP.setText(self.CONNECTION_INFO['ip'])
-            self.CONNECTION_INFO['udpport'] = int(config.get('UDP',\
-             'udpport'))
-            self.LabelUDPPort.setText(config.get('UDP', 'udpport'))
 
     def SetConfiguration(self):
         # First draft
@@ -571,28 +516,6 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelUDPPort.setEnabled(True)
 
         return Connection
-
-    # Parameters validation.
-    def paramValidation(self):
-        if 'username' not in self.CONNECTION_INFO:
-            log.err('Missing username parameter [-u username]')
-            exit()
-        if 'password' not in self.CONNECTION_INFO:
-            log.err('Missing username parameter [-p password]')
-            exit()
-        if 'connection' not in self.CONNECTION_INFO:
-            log.err('Missing connection parameter [-c serial] or [-c udp]')
-            exit()
-        if self.CONNECTION_INFO['connection'] == 'serial':
-            log.msg('Using a serial interface with the GS')
-            if 'serialport' not in self.CONNECTION_INFO or 'baudrate' not in self.CONNECTION_INFO:
-                log.msg('Missing some client configurations (serialport [-s] or baudrate [-b])')
-                exit()
-        if self.CONNECTION_INFO['connection'] == 'udp':
-            log.msg('Using an UDP interface with the GS')
-            if 'ip' not in self.CONNECTION_INFO or 'udpport' not in self.CONNECTION_INFO:
-                log.msg('Missing some client configurations (ip [-i] or udpport [-u])')
-                exit()
 
     def usage(self):
         print ("\n"

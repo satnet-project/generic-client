@@ -188,12 +188,23 @@ class KISSThread(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
 
         # Opening port
+        import logging
         import kiss
+        import kiss.constants
         try:
             log.msg('Opening serial port' + '.............................' +\
              '................................................' +\
-              '............................')
+              '.............................')
+
             self.kissTNC = kiss.KISS('/dev/ttyS1', '9000')
+            formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+            self.kissTNC.console_handler.setFormatter(formatter)
+
+            # log.msg(kiss.constants.LOG_FORMAT)
+            # kiss.constants.LOG_FORMAT = ('%(name)s.%(funcName)s:%(lineno)d'
+            #   ' - %(message)s')
+            # self.kissTNC.constants.LOG_FORMAT = '...'
+
         except Exception as e:
             log.err('Error opening port')
             log.err(e)

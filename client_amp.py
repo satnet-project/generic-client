@@ -1,19 +1,15 @@
 # coding=utf-8
 """
    Copyright 2015 Samuel Góngora García
-
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
-
        http://www.apache.org/licenses/LICENSE-2.0
-
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
 :Author:
     Samuel Góngora García (s.gongoragarcia@gmail.com)
 """
@@ -47,6 +43,7 @@ from ampCommands import SendMsg
 
 from gs_interface import GroundStationInterface
 from gs_interface import OperativeUDPThread
+from gs_interface import OperativeTCPThread
 from gs_interface import OperativeKISSThread
 
 
@@ -97,6 +94,9 @@ class ClientProtocol(AMP):
         elif self.CONNECTION_INFO['connection'] == 'udp':
             self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
              self.CONNECTION_INFO['udpport']))
+        elif self.CONNECTION_INFO['connection'] == 'tcp':
+            self.TCPSocket.send(sMsg)
+
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
@@ -185,15 +185,12 @@ class CtxFactory(ClientContextFactory):
 class Client(object):
     """
     This class starts the client using the data provided by user interface.
-
     :ivar CONNECTION_INFO:
         This variable contains the following data: username, password, slot_id, 
         connection (either 'serial' or 'udp'), serialport, baudrate, ip, port.
     :type CONNECTION_INFO:
         L{Dictionary}
-
     :ivar
-
     """
     def __init__(self, CONNECTION_INFO):
         self.CONNECTION_INFO = CONNECTION_INFO
@@ -225,9 +222,11 @@ class SATNetGUI(QtGui.QWidget):
         self.initConsole()
         self.serialSignal = True
         self.UDPSignal = True
+        self.TCPSignal = True
 
         self.serial_queue = Queue()
         self.udp_queue = Queue()
+        self.tcp_queue = Queue()
 
     # Run threads associated to KISS protocol
     def runKISSThread(self):
@@ -240,6 +239,13 @@ class SATNetGUI(QtGui.QWidget):
         self.workerUDPThread = OperativeUDPThread(self.udp_queue, self.sendData,\
          self.UDPSignal)
         self.workerUDPThread.start()
+        
+    # Run threads associated to TCP protocol
+    def runTCPThread(self):
+        self.workerTCPThread = OperativeTCPThread(self.tcp_queue, self.sendData,\
+         self.TCPSignal)
+        self.workerTCPThread.start()
+    
 
     # Stop KISS thread
     def stopKISSThread(self):
@@ -248,10 +254,15 @@ class SATNetGUI(QtGui.QWidget):
     # Stop UDP thread
     def stopUDPThread(self):
         self.workerUDPThread.stop()
+        
+    # Stop TCP thread
+    def stopTCPThread(self):
+        self.workerTCPThread.stop()
+        
 
     # Gets a string but can't format it! TO-DO
     def sendData(self, result):
-        result = 'sample_frame'
+        #result = 'sample_frame'
         self.gsi._manageFrame(result)
 
     # Create a new connection by loading the connection parameters from
@@ -270,6 +281,7 @@ class SATNetGUI(QtGui.QWidget):
         self.CONNECTION_INFO['ip'] = self.LabelUDP.text()
         # print self.LabelUDPPort.text()
         self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
+        self.CONNECTION_INFO['tcpport'] = int(self.LabelUDPPort.text())
 
 
         self.CONNECTION_INFO['reconnection'],\
@@ -283,6 +295,9 @@ class SATNetGUI(QtGui.QWidget):
             self.runKISSThread()
         elif self.connectionkind == 'udp':
             self.runUDPThread()
+        elif self.connectionkind == 'tcp':
+            self.runTCPThread()
+            
         else:
             log.err('Error choosing connection type')
 
@@ -355,7 +370,7 @@ class SATNetGUI(QtGui.QWidget):
         layout.addRow(QtGui.QLabel("slot_id:        "), self.LabelSlotID)
 
         self.LabelConnection = QtGui.QComboBox()
-        self.LabelConnection.addItems(['serial', 'udp'])
+        self.LabelConnection.addItems(['serial', 'udp', 'tcp'])
         self.LabelConnection.activated.connect(self.CheckConnection)
         layout.addRow(QtGui.QLabel("Connection:     "), self.LabelConnection)
         self.LabelSerialPort = QtGui.QComboBox()
@@ -366,9 +381,9 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelBaudrate = QtGui.QLineEdit()
         layout.addRow(QtGui.QLabel("Baudrate:       "), self.LabelBaudrate)
         self.LabelUDP = QtGui.QLineEdit()
-        layout.addRow(QtGui.QLabel("UDP:            "), self.LabelUDP)
+        layout.addRow(QtGui.QLabel("Host:            "), self.LabelUDP)
         self.LabelUDPPort = QtGui.QLineEdit()
-        layout.addRow(QtGui.QLabel("UDP port:       "), self.LabelUDPPort)
+        layout.addRow(QtGui.QLabel("Port:       "), self.LabelUDPPort)
 
         parameters.setTitle("User data")
         parameters.move(10, 145)
@@ -415,7 +430,7 @@ class SATNetGUI(QtGui.QWidget):
         self.console.resize(950, 780)
         self.console.setFont(QtGui.QFont('SansSerif', 10))
 
-    # To-do. Not closed properly.
+    # To-do Not closed properly.
     def CloseConnection(self):
         if self.connectionkind == 'udp':
             try:
@@ -424,6 +439,13 @@ class SATNetGUI(QtGui.QWidget):
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop UDP thread")
+        if self.connectionkind == 'tcp':
+            try:
+                self.stopTCPThread()
+                log.msg("Stopping TCP connection")
+            except Exception as e:
+                log.err(e)
+                log.err("Can't stop TCP thread")
 
         elif self.connectionkind == 'serial':
             try:
@@ -489,7 +511,7 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelUDP.setEnabled(False)
             self.LabelUDPPort.setEnabled(False)
 
-        elif self.CONNECTION_INFO['connection'] == 'udp':
+        else:
             self.LabelSerialPort.setEnabled(False)
             self.LabelBaudrate.setEnabled(False)
             self.LabelUDP.setEnabled(True)
@@ -509,7 +531,7 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelBaudrate.setEnabled(True)
             self.LabelUDP.setEnabled(False)
             self.LabelUDPPort.setEnabled(False)
-        elif Connection == 'udp':
+        else:
             self.LabelSerialPort.setEnabled(False)
             self.LabelBaudrate.setEnabled(False)
             self.LabelUDP.setEnabled(True)
@@ -579,6 +601,13 @@ class SATNetGUI(QtGui.QWidget):
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop UDP thread")
+
+        elif self.connectionkind == 'tcp':
+            try:
+                self.stopTCPThread()
+            except Exception as e:
+                log.err(e)
+                log.err("Can't stop TCP thread")
 
         elif self.connectionkind == 'serial':
             try:

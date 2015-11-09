@@ -63,6 +63,7 @@ class GroundStationInterface():
     """
 
     UDPSocket = None
+    TCPSocket = None
     frameBuffer = None
     CONNECTION_INFO = {}
     AMP = None
@@ -77,7 +78,7 @@ class GroundStationInterface():
 
         if self.AMP is not None:
             try:
-                self.AMP._processframe(result)
+                self.AMP._processframe(self,result)
             except Exception as e:
                 log.err('Error processing frame')
                 log.err(e)
@@ -155,6 +156,94 @@ class UDPThread(QtCore.QThread):
     def cleanUp(self):
         pass
 
+# Class associated to TCP protocol
+class TCPThread(QtCore.QThread):
+    
+    def __init__(self, parent = None):
+        QtCore.QThread.__init__(self, parent)
+
+        self.CONNECTION_INFO = {'ip':'127.0.0.1', 'tcpport':'5001'}
+        server_address = (str(self.CONNECTION_INFO['ip']),\
+         int(self.CONNECTION_INFO['tcpport']))
+
+        from socket import socket, AF_INET, SOCK_STREAM
+        try:
+            log.msg("Opening TCP socket" + ".........................." +\
+         '...........................' + '...........................' +\
+          '........................')
+
+            self.TCPSocket = socket(AF_INET, SOCK_STREAM)
+        except Exception as e:
+            log.err('Error opening TCP socket')
+            log.err(e)
+
+        try:
+            self.TCPSocket.bind(server_address)
+        except Exception as e:
+            log.err('Error starting TCP protocol')
+            log.err(e)
+
+    def run(self):
+        
+        log.msg('Listening on ' + str(self.CONNECTION_INFO['ip']) +\
+         " port: " + str(self.CONNECTION_INFO['tcpport']))
+        try:
+            self.running = True
+            self.TCPSocket.listen(1)
+            self.doWork(self.TCPSocket)
+            
+        except Exception as e:
+            log.err('Error Listening TCP protocol')
+            log.err(e)
+        # success = self.doWork(self.kissTNC)
+        # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
+    
+    def stop(self):
+        log.msg('Stopping TCPSocket' +\
+         "..................................." +\
+         "................................" +\
+          "....................................")
+        self.TCPSocket.close()
+        self.running = False
+    
+    def doWork(self):
+        return True
+    
+    def cleanUp(self):
+        pass
+
+
+
+class OperativeTCPThread(TCPThread):
+    finished = QtCore.pyqtSignal(object)
+
+    def __init__(self, queue, callback, TCPSignal, parent = None):
+        TCPThread.__init__(self, parent)
+        self.queue = queue
+        self.finished.connect(callback)
+        self.TCPSignal = TCPSignal
+    
+    def doWork(self, TCPSocket):
+        if self.TCPSignal:
+            while True:
+                try:
+                    con, address= TCPSocket.accept()
+                    frame= con.recv(1024) # buffer size is 1024 bytes
+                    self.catchValue(frame, address)
+                except Exception as e:
+                    log.err('ErrorOperative TCP protocol')
+                    log.err(e)
+
+    def catchValue(self, frame, address):
+        # self.finished.emit(ResultObj(frame))
+
+        log.msg("----------------------------- " + "Message from TCP socket" +\
+         " -----------------------------")
+        log.msg("------------------ Received from ip: " + str(address[0]) +\
+         " port: " + str(address[1]) +  " ------------------")      
+        self.finished.emit(frame)
+    
+    
 
 class OperativeUDPThread(UDPThread):
     finished = QtCore.pyqtSignal(object)

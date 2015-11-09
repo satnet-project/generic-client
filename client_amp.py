@@ -59,31 +59,35 @@ class ClientProtocol(AMP):
 
     def connectionLost(self, reason):
         log.msg("Connection lost")
-        #
-        # ¿Es un error desconectar asi? No tiene sentido mostrar un error como
-        # reason cuando la desconexion es normal
-        #
-        # log.err("Connection lost")
-        # log.err(reason)
         self.gsi.disconnectProtocol()
 
     @inlineCallbacks
     def user_login(self):
+        # res = yield self.callRemote(Login,\
+        #  sUsername=self.CONNECTION_INFO['username'],\
+        #   sPassword=self.CONNECTION_INFO['password'])
 
-        res = yield self.callRemote(Login,\
-         sUsername=self.CONNECTION_INFO['username'],\
-          sPassword=self.CONNECTION_INFO['password'])
+        # if res['bAuthenticated'] == True:
+        #     # log.msg('bAuthenticated True')
+        #     res = yield self.callRemote(StartRemote,\
+        #      iSlotId=self.CONNECTION_INFO['slot_id'])
 
-        if res['bAuthenticated'] == True:
-            # log.msg('bAuthenticated True')
-            res = yield self.callRemote(StartRemote,\
+        # elif res['bAuthenticated'] == False:
+        #     log.msg('False')
+
+        # else:
+        #     log.msg('No data')
+
+        d = self.callRemote(Login, sUsername=self.CONNECTION_INFO['username'],\
+         sPassword=self.CONNECTION_INFO['password'] )
+        def connected(self):
+            self.callRemote(StartRemote,\
              iSlotId=self.CONNECTION_INFO['slot_id'])
-
-        elif res['bAuthenticated'] == False:
-            log.msg('False')
-
-        else:
-            log.msg('No data')
+        d.addCallback(connected, self)
+        def notConnected(failure):
+            log.err("Error during connection")
+        d.addErrback(notConnected)
+        return d
 
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] +\
@@ -230,23 +234,22 @@ class SATNetGUI(QtGui.QWidget):
 
     # Run threads associated to KISS protocol
     def runKISSThread(self):
-        self.workerKISSThread = OperativeKISSThread(self.serial_queue, self.sendData,\
-         self.serialSignal)
+        self.workerKISSThread = OperativeKISSThread(self.serial_queue,\
+            self.sendData, self.serialSignal)
         self.workerKISSThread.start()
 
     # Run threads associated to UPD protocol
     def runUDPThread(self):
-        self.workerUDPThread = OperativeUDPThread(self.udp_queue, self.sendData,\
-         self.UDPSignal)
+        self.workerUDPThread = OperativeUDPThread(self.udp_queue,\
+         self.sendData, self.UDPSignal)
         self.workerUDPThread.start()
         
     # Run threads associated to TCP protocol
     def runTCPThread(self):
-        self.workerTCPThread = OperativeTCPThread(self.tcp_queue, self.sendData,\
-         self.TCPSignal)
+        self.workerTCPThread = OperativeTCPThread(self.tcp_queue,\
+         self.sendData, self.TCPSignal)
         self.workerTCPThread.start()
     
-
     # Stop KISS thread
     def stopKISSThread(self):
         self.workerKISSThread.stop()
@@ -259,10 +262,8 @@ class SATNetGUI(QtGui.QWidget):
     def stopTCPThread(self):
         self.workerTCPThread.stop()
         
-
-    # Gets a string but can't format it! TO-DO
+    # Gets a string but can't format it! To-do
     def sendData(self, result):
-        #result = 'sample_frame'
         self.gsi._manageFrame(result)
 
     # Create a new connection by loading the connection parameters from
@@ -699,30 +700,36 @@ class ResultObj(QtCore.QObject):
 
 if __name__ == '__main__':
 
-    # Create Queue and redirect sys.stdout to this queue
-    queue = Queue()
-    sys.stdout = WriteStream(queue)
+    try:
+        if sys.argv[1] == '--help':
+            import subprocess
+            subprocess.call(["man", "satnetclient.1"])
 
-    log.startLogging(sys.stdout)
-    log.msg('------------------------------------------------- ' + \
-     'SATNet - Generic client' +\
-      ' -------------------------------------------------')
+    except IndexError:
+        # Create Queue and redirect sys.stdout to this queue
+        queue = Queue()
+        sys.stdout = WriteStream(queue)
 
-    qapp = QtGui.QApplication(sys.argv)
-    app = SATNetGUI()
-    app.setWindowIcon(QtGui.QIcon('logo.png'))
-    app.show()
+        log.startLogging(sys.stdout)
+        log.msg('------------------------------------------------- ' + \
+         'SATNet - Generic client' +\
+          ' -------------------------------------------------')
 
-    # Create thread that will listen on the other end of the queue, and 
-    # send the text to the textedit in our application
-    my_receiver = MyReceiver(queue)
-    my_receiver.mysignal.connect(app.append_text)
-    my_receiver.start()
+        qapp = QtGui.QApplication(sys.argv)
+        app = SATNetGUI()
+        app.setWindowIcon(QtGui.QIcon('logo.png'))
+        app.show()
 
-    from qtreactor import pyqt4reactor
-    pyqt4reactor.install()
+        # Create thread that will listen on the other end of the queue, and 
+        # send the text to the textedit in our application
+        my_receiver = MyReceiver(queue)
+        my_receiver.mysignal.connect(app.append_text)
+        my_receiver.start()
 
-    from twisted.internet import reactor
-    reactor.run()
+        from qtreactor import pyqt4reactor
+        pyqt4reactor.install()
 
-    qapp.exec_()
+        from twisted.internet import reactor
+        reactor.run()
+
+        qapp.exec_()

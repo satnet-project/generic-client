@@ -213,63 +213,6 @@ class TCPThread(QtCore.QThread):
         pass
 
 
-
-class OperativeTCPThread(TCPThread):
-    finished = QtCore.pyqtSignal(object)
-
-    def __init__(self, queue, callback, TCPSignal, parent = None):
-        TCPThread.__init__(self, parent)
-        self.queue = queue
-        self.finished.connect(callback)
-        self.TCPSignal = TCPSignal
-    
-    def doWork(self, TCPSocket):
-        if self.TCPSignal:
-            while True:
-                try:
-                    con, address= TCPSocket.accept()
-                    frame= con.recv(1024) # buffer size is 1024 bytes
-                    self.catchValue(frame, address)
-                except Exception as e:
-                    log.err('ErrorOperative TCP protocol')
-                    log.err(e)
-
-    def catchValue(self, frame, address):
-        # self.finished.emit(ResultObj(frame))
-
-        log.msg("----------------------------- " + "Message from TCP socket" +\
-         " -----------------------------")
-        log.msg("------------------ Received from ip: " + str(address[0]) +\
-         " port: " + str(address[1]) +  " ------------------")      
-        self.finished.emit(frame)
-    
-    
-
-class OperativeUDPThread(UDPThread):
-    finished = QtCore.pyqtSignal(object)
-
-    def __init__(self, queue, callback, UDPSignal, parent = None):
-        UDPThread.__init__(self, parent)
-        self.queue = queue
-        self.finished.connect(callback)
-        self.UDPSignal = UDPSignal
-    
-    def doWork(self, UDPSocket):
-        if self.UDPSignal:
-            while True:
-                frame, address = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-                self.catchValue(frame, address)
-
-    def catchValue(self, frame, address):
-        # self.finished.emit(ResultObj(frame))
-
-        log.msg("----------------------------- " + "Message from UDP socket" +\
-         " -----------------------------")
-        log.msg("------------------ Received from ip: " + str(address[0]) +\
-         " port: " + str(address[1]) +  " ------------------")      
-        self.finished.emit(frame)
-
-
 # Class associated to KISS protocol
 class KISSThread(QtCore.QThread):
     
@@ -320,6 +263,61 @@ class KISSThread(QtCore.QThread):
     
     def cleanUp(self):
         pass
+
+
+class OperativeTCPThread(TCPThread):
+    finished = QtCore.pyqtSignal(object)
+
+    def __init__(self, queue, callback, TCPSignal, parent = None):
+        TCPThread.__init__(self, parent)
+        self.queue = queue
+        self.finished.connect(callback)
+        self.TCPSignal = TCPSignal
+    
+    def doWork(self, TCPSocket):
+        if self.TCPSignal:
+            while True:
+                try:
+                    con, address= TCPSocket.accept()
+                    frame= con.recv(1024) # buffer size is 1024 bytes
+                    self.catchValue(frame, address)
+                except Exception as e:
+                    log.err('ErrorOperative TCP protocol')
+                    log.err(e)
+
+    def catchValue(self, frame, address):
+        # self.finished.emit(ResultObj(frame))
+
+        log.msg("----------------------------- " + "Message from TCP socket" +\
+         " -----------------------------")
+        log.msg("------------------ Received from ip: " + str(address[0]) +\
+         " port: " + str(address[1]) +  " ------------------")      
+        self.finished.emit(frame)
+    
+    
+class OperativeUDPThread(UDPThread):
+    finished = QtCore.pyqtSignal(object)
+
+    def __init__(self, queue, callback, UDPSignal, parent = None):
+        UDPThread.__init__(self, parent)
+        self.queue = queue
+        self.finished.connect(callback)
+        self.UDPSignal = UDPSignal
+    
+    def doWork(self, UDPSocket):
+        if self.UDPSignal:
+            while True:
+                frame, address = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
+                self.catchValue(frame, address)
+
+    def catchValue(self, frame, address):
+        # self.finished.emit(ResultObj(frame))
+
+        log.msg("----------------------------- " + "Message from UDP socket" +\
+         " -----------------------------")
+        log.msg("------------------ Received from ip: " + str(address[0]) +\
+         " port: " + str(address[1]) +  " ------------------")      
+        self.finished.emit(frame)
 
 
 class OperativeKISSThread(KISSThread):

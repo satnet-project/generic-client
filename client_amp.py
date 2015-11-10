@@ -104,7 +104,7 @@ class ClientProtocol(AMP):
         return {}
     NotifyMsg.responder(vNotifyMsg)
 
-    # Rutines associated to frame processing
+    # Method associated to frame processing.
     def _processframe(self, frame):
         self.processFrame(frame)
 
@@ -115,7 +115,6 @@ class ClientProtocol(AMP):
         yield self.callRemote(SendMsg, sMsg=frame,\
          iTimestamp=misc.get_utc_timestamp())
 
-    # def vNotifyEvent(self, iEvent, sDetails):
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] +\
          ") --------- Notify Event ---------")

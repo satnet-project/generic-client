@@ -15,19 +15,11 @@ Here are summarized the different operating modes of the client.
 The latest version of this development can be found at:
 <https://github.com/satnet-project/generic-client>
 
+
 .. toctree::
    :maxdepth: 2
 
    installation.rst
    usage.rst
-   functions.rst
-
-...
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   structureClient.rst
+   structureProtocol.rst

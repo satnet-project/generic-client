@@ -1,57 +1,19 @@
-============
+=========================================
 Installation
-============
+=========================================
 
+Installation of required dependencies.
+*****************************************
 Steps to install the generic client for the SATNet network:
 
-1. To install the dependencies run, from the Scripts folder:
+| 1. To install the dependencies run, from the Scripts folder:
+| `bash ./setup.sh`
 
-`./setup.sh`
+During installation this script asks for sudo permissions.
 
-**You** will need root privileges.
+Enabling dependencies
+*****************************************
+| To run the the client you have to activate the virtual enviroment created by the installation script.
 
-
-========
-Cookbook
-========
-
-Crawl a web page
-----------------
-
-The most simple way to use our program is with no arguments.
-Simply run::
-
-        crawler <url>
-
-to crawl a webpage.
-
-Crawl a page slowly
--------------------
-
-To add a delay to your crawler,
-use :option:`-d`::
-
-        crawler -d 10 <url>
-
-This will wait 10 seconds between page fetches.
-
-Crawl only your blog
---------------------
-
-You will want to use the :option:`-i` flag,
-which while ignore URLs matching the passed regex::
-
-        crawler -i "^blog/" <url>
-
-This will only crawl pages that contain your blog URL.
-
-
-        Only crawl certain pages
-        ------------------------
-
-        You will want to use the :option:`-i` flag,
-        which while ignore URLs matching the passed regex::
-
-                crawler -i "pdf$" <url>
-
-        This will ignore URLs that end in PDF.
+| To do this we must execute from the root directory. 
+| source .venv/bin/activate`

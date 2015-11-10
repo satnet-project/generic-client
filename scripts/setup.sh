@@ -42,3 +42,8 @@ cp /sbin/ldconfig ../../bin/
 sudo ldconfig
 sudo make install
 cd ../ && rm -r -f PyQt*
+
+# man page creation
+cd "$project_path/docs"
+make man
+cp _build/man/satnetclient.1 ../

@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "SATNETCLIENT" "1" "November 09, 2015" "0.1" "SATNet Client"
+.TH "SATNETCLIENT" "1" "November 10, 2015" "0.1" "SATNet Client"
 .SH NAME
 satnetclient \- SATNet Client Documentation
 .
@@ -32,14 +32,1123 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 ..
 .sp
 Contents:
+.sp
+This is the documentation of the client of the SATNet network.
+.sp
+Here are summarized the different operating modes of the client.
+.sp
+The latest version of this development can be found at:
+<\fI\%https://github.com/satnet\-project/generic\-client\fP>
+.SH INSTALLATION
+.SS Installation of required dependencies.
+.sp
+Steps to install the generic client for the SATNet network:
+.nf
+1. To install the dependencies run, from the Scripts folder:
+\fIbash ./setup.sh\fP
+.fi
+.sp
+.sp
+During installation this script asks for sudo permissions.
+.SS Enabling dependencies
+.nf
+To run the the client you have to activate the virtual enviroment created by the installation script.
+.fi
+.sp
+.nf
+To do this we must execute from the root directory.
+source .venv/bin/activate\(ga
+.fi
+.sp
+.SH HOW TO USE THE CLIENT'S APPLICATION.
+.nf
+The program setup process can be done in three different ways.
+1. Passing settings through the command line.
+2. Entering the values directly in the application interface.
+3. Loading values from an external configuration file.
+.fi
+.sp
+.SS Through command line.
+.nf
+The configuration settings are established using these arguments.
+All of these arguments must be set, otherwise the program could raise an error.
+.fi
+.sp
+.nf
+* [\-u <username>] # Set SATNET username to login
+* [\-p <password>] # Set SATNET user password to login
+* [\-t <slot_ID>] # Set the slot id corresponding to the pass.
+* [\-c <connection>] # Set the type of interface with the GS.
+* [\-s <serialport>] # Set serial port.
+* [\-b <baudrate>] # Set serial port baudrate
+* [\-i <ip>] # Set ip direction.
+* [\-u <udpport>] # Set udp port.
+.fi
+.sp
+.SS Examples.
+.nf
+To clarify the previous point we will show several examples.
+.fi
+.sp
+.nf
+Example for serial config:
+* Python client_amp.py \-g \-u crespo \-p cre.spo \-t 2
+.in +2
+\-c serial \-s /dev/ttyS1 \-b 115200
+.in -2
+Example for udp config:
+* python client_amp.py \-g \-u crespo \-p cre.spo \-t 2
+.in +2
+\-c udp \-i 127.0.0.1 \-u 5001
+.in -2
+.fi
+.sp
+.SS Directly user interface
+.nf
+In the menu on the left of the screen, you can enter all values needed to establish the connection.
+.fi
+.sp
+.SS Using an external file.
+.nf
+As previously mentioned configuration values can be stored in a configuration file called config.ini. By selecting the appropriate option in the program will be loaded at the beginning of each ruqn.
+.fi
+.sp
+.nf
+[User]
+username: crespo
+password: cre.spo
+slot_id: 2
+connection: udp
+[Serial]
+serialport: /dev/ttyUSB0
+baudrate: 9600
+[UDP]
+ip: 127.0.0.1
+udpport: 5005
+.fi
+.sp
+.nf
+This file should be at the root filesystem of the client.
+.fi
+.sp
+.SH ESTRUCTURA DE LOS FICHEROS
+.SS Cliente
+.sp
+Los modulos del cliente son los siguientes.
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+ClientProtocol
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+connectionMade
+T}
+_
+T{
+T}	T{
+T}	T{
+connectionLost
+T}
+_
+T{
+T}	T{
+T}	T{
+user_login
+T}
+_
+T{
+T}	T{
+T}	T{
+vNotifyMsg
+T}
+_
+T{
+T}	T{
+T}	T{
+_processframe
+T}
+_
+T{
+T}	T{
+T}	T{
+processframe
+T}
+_
+T{
+T}	T{
+T}	T{
+vNotifyEvent
+T}
+_
+.TE
 .INDENT 0.0
-.IP \(bu 2
-genindex
-.IP \(bu 2
-modindex
-.IP \(bu 2
-search
+.TP
+.B __init__(self)
 .UNINDENT
+.INDENT 0.0
+.TP
+.B connectionMade(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B connectionLost(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B user_login(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B vNotifyMsg(self, sMsg)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B _processframe(self, frame)
+Method associated to frame processing.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B processFrame(self, frame)
+@inlineCallbacks
+.UNINDENT
+.INDENT 0.0
+.TP
+.B vNotifyEvent(self, iEvent, sDetails)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+ClientReconnectedFactory
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+startedConnecting
+T}
+_
+T{
+T}	T{
+T}	T{
+buildProtocol
+T}
+_
+T{
+T}	T{
+T}	T{
+clientConnectionLost
+T}
+_
+T{
+T}	T{
+T}	T{
+clientConnectionFailed
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B startedConnecting(self, connector)
+Called when a connection has been started.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B buildProtocol(self, addr)
+Create an instance of a subclass of Protocol.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B clientConnectionLost(self, connector, reason)
+Called when a established connection is lost.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B clientConnectionFailed(self, connector, reason)
+Called when a connection has failed to connect.
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+CtxFactory
+T}	T{
+getContext
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B getContext(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+Client
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+createConnection
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B createConnection(self)
+Create a new interface.
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+SATNetGUI
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+runKISSThread
+T}
+_
+T{
+T}	T{
+T}	T{
+runUDPThread
+T}
+_
+T{
+T}	T{
+T}	T{
+runTCPThread
+T}
+_
+T{
+T}	T{
+T}	T{
+stopKISSThread
+T}
+_
+T{
+T}	T{
+T}	T{
+stopUDPThread
+T}
+_
+T{
+T}	T{
+T}	T{
+stopTCPThread
+T}
+_
+T{
+T}	T{
+T}	T{
+sendData
+T}
+_
+T{
+T}	T{
+T}	T{
+NewConnection
+T}
+_
+T{
+T}	T{
+T}	T{
+initUI
+T}
+_
+T{
+T}	T{
+T}	T{
+initFields
+T}
+_
+T{
+T}	T{
+T}	T{
+initLogo
+T}
+_
+T{
+T}	T{
+T}	T{
+initData
+T}
+_
+T{
+T}	T{
+T}	T{
+initConsole
+T}
+_
+T{
+T}	T{
+T}	T{
+CloseConnection
+T}
+_
+T{
+T}	T{
+T}	T{
+LoadSettings
+T}
+_
+T{
+T}	T{
+T}	T{
+LoadParameters
+T}
+_
+T{
+T}	T{
+T}	T{
+SetConfiguration
+T}
+_
+T{
+T}	T{
+T}	T{
+CheckConnection
+T}
+_
+T{
+T}	T{
+T}	T{
+usage
+T}
+_
+T{
+T}	T{
+T}	T{
+center
+T}
+_
+T{
+T}	T{
+T}	T{
+append_text
+T}
+_
+T{
+T}	T{
+T}	T{
+closeEvent
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B runKISSThread(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B runUDPThread(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B runTCPThread(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B stopKISSThread(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B stopUDPThread(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B stopTCPThread(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B sendData(self, result)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B NewConnection(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B initUI(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B initButtons(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B initFields(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B initLogo(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B initData(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B initConsole(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CloseConnection(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B LoadSettings(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B LoadParameters(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B SetConfiguration(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B CheckConnection(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B usage(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B center(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B append_text(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B closeEvent(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+DateDialog
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+getConfiguration
+T}
+_
+T{
+T}	T{
+T}	T{
+buildWindow
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B getConfiguration(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B buildWindow(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+WriteStream
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+write
+T}
+_
+T{
+T}	T{
+T}	T{
+flush
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B write(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B flush(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+MyReceiver
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+run
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B run(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+ResultObj
+T}	T{
+__init__
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+gs_interface.py
+T}	T{
+GroundStationInterface
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+_manageFrame
+T}
+_
+T{
+T}	T{
+T}	T{
+_updateLocalFile
+T}
+_
+T{
+T}	T{
+T}	T{
+connectProtocol
+T}
+_
+T{
+T}	T{
+T}	T{
+disconnectedProtocol
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self, CONNECTION_INFO, GS, AMP)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B _manageFrame(self, result)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B _updateLocalFile(self, frame)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B connectedProtocol(self, AMP)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B disconnectedProtocol(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+gs_interface.py
+T}	T{
+UDPThread
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+run
+T}
+_
+T{
+T}	T{
+T}	T{
+stop
+T}
+_
+T{
+T}	T{
+T}	T{
+doWork
+T}
+_
+T{
+T}	T{
+T}	T{
+cleanUp
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self, parent = None)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B run(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B stop(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B doWork(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B cleanUp(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+gs_interface.py
+T}	T{
+TCPThread
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+run
+T}
+_
+T{
+T}	T{
+T}	T{
+stop
+T}
+_
+T{
+T}	T{
+T}	T{
+doWork
+T}
+_
+T{
+T}	T{
+T}	T{
+cleanUp
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self, parent = None)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B run(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B stop(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B doWork(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B cleanUp(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+gs_interface.py
+T}	T{
+KISSThread
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+run
+T}
+_
+T{
+T}	T{
+T}	T{
+stop
+T}
+_
+T{
+T}	T{
+T}	T{
+doWork
+T}
+_
+T{
+T}	T{
+T}	T{
+cleanUp
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self, parent = None)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B run(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B stop(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B doWork(self)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B cleanUp(self)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+gs_interface.py
+T}	T{
+OperativeUDPThread
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+doWork
+T}
+_
+T{
+T}	T{
+T}	T{
+catchValue
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self, queue, callback, UDPSignal, parent = None)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B doWork(self, UDPSocket)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B catchValue(self, frame, address)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+gs_interface.py
+T}	T{
+OperativeTCPThread
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+doWork
+T}
+_
+T{
+T}	T{
+T}	T{
+catchValue
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self, queue, callback, TCPSignal, parent = None)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B doWork(self, TCPSocket)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B catchValue(self, frame, address)
+.UNINDENT
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+gs_interface.py
+T}	T{
+OperativeKISSThread
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+doWork
+T}
+_
+T{
+T}	T{
+T}	T{
+catchValue
+T}
+_
+.TE
+.INDENT 0.0
+.TP
+.B __init__(self, queue, callback, serialSignal, parent = None)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B doWork(self, kissTNC)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B catchValue(self, frame)
+.UNINDENT
+.SH PROTOCOLO
+.sp
+Por parte del protocolo tendremos los siguientes ficheros
+.sp
+JRPC calls
 .SH AUTHOR
 Ricardo Tubio-Pardavila - Samuel Gongora-Garcia
 .SH COPYRIGHT

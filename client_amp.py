@@ -539,7 +539,7 @@ class SATNetGUI(QtGui.QWidget):
 
         return Connection
 
-    def usage(self):
+    def usage(self):        
         print ("\n"
                 "USAGE of client_amp.py\n"               
                 "Usage: python client_amp.py [-u <username>] # Set SATNET username to login\n"

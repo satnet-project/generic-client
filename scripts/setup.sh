@@ -44,6 +44,8 @@ sudo make install
 cd ../ && rm -r -f PyQt*
 
 # man page creation
+source "$venv_path/bin/activate"
 cd "$project_path/docs"
 make man
 cp _build/man/satnetclient.1 ../
+deactivate

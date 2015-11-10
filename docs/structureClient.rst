@@ -1,10 +1,10 @@
 =========================================
-Estructura de los ficheros
+File structure
 =========================================
 
-Cliente
+Client
 *****************************************
-Los modulos del cliente son los siguientes.
+Customer classes are as follows. Each class is detailed with its corresponding methods.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -26,15 +26,27 @@ Los modulos del cliente son los siguientes.
 |               |                          | vNotifyEvent           |
 +---------------+--------------------------+------------------------+
 
-.. py:function:: __init__(self)
+The ClientProtocol class is responsible for creating the connection protocol client.
+
+.. py:function:: __init__(self, CONNECTION_INFO, gsi)
+    
+    ClientProtocol class initialization through the CONNECTION_INFO variable and the gsi object.
 
 .. py:function:: connectionMade(self)
+    
+    Method belonging to the protocol responsible for starting the user's connection.
 
 .. py:function:: connectionLost(self)
+    
+    When the connection is lost this method is executed.
 
 .. py:function:: user_login(self)
+    
+    This method is responsible for making the AMP calls that initiate the connection.
 
 .. py:function:: vNotifyMsg(self, sMsg)
+
+    AMP call responsible for notifying the user of reception of a message.
 
 .. py:function:: _processframe(self, frame)
 
@@ -42,9 +54,11 @@ Los modulos del cliente son los siguientes.
 
 .. py:function:: processFrame(self, frame)
 
-    @inlineCallbacks
+    Responsible method of get the frames through the serial port, or through an UPD/TCP connection, and send them using an AMP call.
 
 .. py:function:: vNotifyEvent(self, iEvent, sDetails)
+
+    AMP call responsible for notifying the user of any event related to the remote client or the connection slots.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -60,9 +74,14 @@ Los modulos del cliente son los siguientes.
 |               |                          | clientConnectionFailed |
 +---------------+--------------------------+------------------------+
 
+The ClientReconnectedFactory class is responsible for managing user logon when this is lost for any reason.
+
+.. py:function:: __init__(
+
+
 .. py:function:: startedConnecting(self, connector)
 
-    Called when a connection has been started.
+    Method called when a connection has been started.
 
 .. py:function:: buildProtocol(self, addr)
 
@@ -82,7 +101,11 @@ Los modulos del cliente son los siguientes.
 | client_amp.py | CtxFactory               | getContext             |
 +---------------+--------------------------+------------------------+
 
+The CtxFactory class handles the defining method to be used in SSL connection.
+
 .. py:function:: getContext(self)
+
+    Setting the connection method.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -91,6 +114,11 @@ Los modulos del cliente son los siguientes.
 +---------------+--------------------------+------------------------+  
 |               |                          | createConnection       |
 +---------------+--------------------------+------------------------+
+
+The "Client" class starts the connection using Twisted. For this purpose uses the ClientReconnectedFactory class and the ClientProtocol class.
+
+.. py:function:: __init__(
+
 
 .. py:function:: createConnection(self)
 

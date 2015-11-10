@@ -131,10 +131,10 @@ udpport: 5005
 This file should be at the root filesystem of the client.
 .fi
 .sp
-.SH ESTRUCTURA DE LOS FICHEROS
-.SS Cliente
+.SH FILE STRUCTURE
+.SS Client
 .sp
-Los modulos del cliente son los siguientes.
+Customer classes are as follows. Each class is detailed with its corresponding methods.
 .TS
 center;
 |l|l|l|.
@@ -198,25 +198,32 @@ vNotifyEvent
 T}
 _
 .TE
+.sp
+The ClientProtocol class is responsible for creating the connection protocol client.
 .INDENT 0.0
 .TP
-.B __init__(self)
+.B __init__(self, CONNECTION_INFO, gsi)
+ClientProtocol class initialization through the CONNECTION_INFO variable and the gsi object.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B connectionMade(self)
+Method belonging to the protocol responsible for starting the user\(aqs connection.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B connectionLost(self)
+When the connection is lost this method is executed.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B user_login(self)
+This method is responsible for making the AMP calls that initiate the connection.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B vNotifyMsg(self, sMsg)
+Llamada AMP encargada de notificar al usuario de la recepción de un mensaje.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -226,11 +233,12 @@ Method associated to frame processing.
 .INDENT 0.0
 .TP
 .B processFrame(self, frame)
-@inlineCallbacks
+Método encargado de recepcionar un frame recibido por el puerto serie, o por una conexión UDP/TCP y enviarlo al servidor mediante una llamada AMP.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B vNotifyEvent(self, iEvent, sDetails)
+Llamada AMP encargada de notificar al usuario de cualquier evento relacionado con el cliente remoto o los slots.
 .UNINDENT
 .TS
 center;
@@ -277,10 +285,12 @@ clientConnectionFailed
 T}
 _
 .TE
+.sp
+La clase ClientReconnectedFactory es la encargada de gestionar la conexión del usuario cuando esta se pierde por cualquier motivo.
 .INDENT 0.0
 .TP
 .B startedConnecting(self, connector)
-Called when a connection has been started.
+Method called when a connection has been started.
 .UNINDENT
 .INDENT 0.0
 .TP

@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "SATNETCLIENT" "1" "November 10, 2015" "0.1" "SATNet Client"
+.TH "SATNETCLIENT" "1" "November 11, 2015" "0.1" "SATNet Client"
 .SH NAME
 satnetclient \- SATNet Client Documentation
 .
@@ -223,7 +223,7 @@ This method is responsible for making the AMP calls that initiate the connection
 .INDENT 0.0
 .TP
 .B vNotifyMsg(self, sMsg)
-Llamada AMP encargada de notificar al usuario de la recepción de un mensaje.
+AMP call responsible for notifying the user of reception of a message.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -233,12 +233,12 @@ Method associated to frame processing.
 .INDENT 0.0
 .TP
 .B processFrame(self, frame)
-Método encargado de recepcionar un frame recibido por el puerto serie, o por una conexión UDP/TCP y enviarlo al servidor mediante una llamada AMP.
+Responsible method of get the frames through the serial port, or through an UPD/TCP connection, and send them using an AMP call.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B vNotifyEvent(self, iEvent, sDetails)
-Llamada AMP encargada de notificar al usuario de cualquier evento relacionado con el cliente remoto o los slots.
+AMP call responsible for notifying the user of any event related to the remote client or the connection slots.
 .UNINDENT
 .TS
 center;
@@ -286,7 +286,11 @@ T}
 _
 .TE
 .sp
-La clase ClientReconnectedFactory es la encargada de gestionar la conexión del usuario cuando esta se pierde por cualquier motivo.
+The ClientReconnectedFactory class is responsible for managing user logon when this is lost for any reason.
+.INDENT 0.0
+.TP
+.B __init__(
+.UNINDENT
 .INDENT 0.0
 .TP
 .B startedConnecting(self, connector)
@@ -328,9 +332,12 @@ getContext
 T}
 _
 .TE
+.sp
+The CtxFactory class handles the defining method to be used in SSL connection.
 .INDENT 0.0
 .TP
 .B getContext(self)
+Setting the connection method.
 .UNINDENT
 .TS
 center;
@@ -359,6 +366,12 @@ createConnection
 T}
 _
 .TE
+.sp
+The "Client" class starts the connection using Twisted. For this purpose uses the ClientReconnectedFactory class and the ClientProtocol class.
+.INDENT 0.0
+.TP
+.B __init__(
+.UNINDENT
 .INDENT 0.0
 .TP
 .B createConnection(self)
@@ -519,75 +532,102 @@ _
 .TE
 .INDENT 0.0
 .TP
+.B __init__(self, parent = None)
+Inicia la intefaz gráfica, las señales necesarias para los hilos y las colas para los hilos.
+.UNINDENT
+.INDENT 0.0
+.TP
 .B runKISSThread(self)
+Crea un objeto de la clase OperativeKISSThread e inicia el hilo.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B runUDPThread(self)
+Crea un objeto de la clase OperativeUDPThread e inicia el hilo.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B runTCPThread(self)
+Crea un objeto de la clase OperativeTCPThread e inicia el hilo
 .UNINDENT
 .INDENT 0.0
 .TP
 .B stopKISSThread(self)
+Detiene el hilo correspondiente a la comunicación serial invocando el método stop del objeto workerKISSThread.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B stopUDPThread(self)
+Detiene el hilo correspondiente a la comunicación UDP invocando el método stop del objeto workerUDPThread.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B stopTCPThread(self)
+Detiene el hilo correspondiente a la comunicación TCP invocando el método stop del objeto workerTCPThread.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B sendData(self, result)
+Invoca el metódo _manageframe del protocolo groundfdasfsadfs
 .UNINDENT
 .INDENT 0.0
 .TP
 .B NewConnection(self)
+Create a new connection by loading the connection parameters from the interface window.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initUI(self)
+Inicia la ventana de la interfaz pasandole los valores básicos.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initButtons(self)
+Inicia los botones de control de la interfaz del usuario.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initFields(self)
+Inicia los campos de introducción de datos de la interfaz del usuario.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initLogo(self)
+Metodo que coloca el logo en la interfaz gráfica del usuario.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initData(self)
+Lee los valores de configuración del programa del fichero .settings y modifica lo correspondiente.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initConsole(self)
+Inicia la consola, donde se mostrarán los mensajes de aviso.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B CloseConnection(self)
+Termina la conexión actual sin terminar el programa.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B LoadSettings(self)
+.nf
+Carga la configuración del fichero .settings y los devuelve.
+Metodo con funcionalidad duplicada.
+.fi
+.sp
 .UNINDENT
 .INDENT 0.0
 .TP
 .B LoadParameters(self)
+Carga los parametros del usuario del fichero config.ini.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B SetConfiguration(self)
+Metodo encargado de crear la ventana de configuración avanzada del usuario.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -1154,11 +1194,6 @@ _
 .TP
 .B catchValue(self, frame)
 .UNINDENT
-.SH PROTOCOLO
-.sp
-Por parte del protocolo tendremos los siguientes ficheros
-.sp
-JRPC calls
 .SH AUTHOR
 Ricardo Tubio-Pardavila - Samuel Gongora-Garcia
 .SH COPYRIGHT

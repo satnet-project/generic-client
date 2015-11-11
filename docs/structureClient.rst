@@ -174,51 +174,104 @@ The "Client" class starts the connection using Twisted. For this purpose uses th
 |               |                          | closeEvent             |
 +---------------+--------------------------+------------------------+
 
+SATNetGUI class contains the methods necessary for the creation of the main user interface.
+
+.. py:function:: __init__(self, parent = None)
+
+    This initial method starts the user interface and the signals and queues required for QThreads.
+
 .. py:function:: runKISSThread(self)
+
+    Create an object of class OperativeKISSThread and starts the QThread calling the start method.
 
 .. py:function:: runUDPThread(self)
 
+    Create an object of class OperativeUDPThread and starts the QThread calling the start method.
+
 .. py:function:: runTCPThread(self)
+
+    Create an object of class OperativeTCPThread and starts the QThread calling the start method.
 
 .. py:function:: stopKISSThread(self)
 
+    Stops the QThread that handles serial communication calling the stop method. 
+
 .. py:function:: stopUDPThread(self)
+
+    Stops the QThread that handles UDP communication calling the stop method.
 
 .. py:function:: stopTCPThread(self)
 
+    Stops the QThread that handles TCP communication calling the stop method.
+
 .. py:function:: sendData(self, result)
+
+    Invokes the _manageframe method of protocol GroundStationInterface.
 
 .. py:function:: NewConnection(self)
 
+    Create a new connection by loading the connection parameters from the interface window.
+
 .. py:function:: initUI(self)
+
+    UI starts by passing the basic values such as size and name.
 
 .. py:function:: initButtons(self)
 
+    Starts the control buttons panel of user interface.
+
 .. py:function:: initFields(self)
+
+    Starts the data entry field.
 
 .. py:function:: initLogo(self)
 
+    Method which defines the logo of the main window.
+
 .. py:function:: initData(self)
+
+    Reads the program settings from .settings file and edit them accordingly.
 
 .. py:function:: initConsole(self)
 
+    Starts the console where the status messages will be shown.
+
 .. py:function:: CloseConnection(self)
+
+    Ends the current connection without finishing the program.
 
 .. py:function:: LoadSettings(self)
 
+    | Loads configuration settings from .settings file and get back them to user.
+    | Duplicated function. Must be merged with initData method.
+
 .. py:function:: LoadParameters(self)
+
+    Loads user parameters, as username and password, from config.ini file.
 
 .. py:function:: SetConfiguration(self)
 
+    Method responsible to create advanced user settings window.
+
 .. py:function:: CheckConnection(self)
+
+    Method which changes the UI according to the connection selected.
 
 .. py:function:: usage(self)
 
+    Method which show on screen a tiny text help.
+
 .. py:function:: center(self)
 
-.. py:function:: append_text(self)
+    Method which centers the main window on screen.
 
-.. py:function:: closeEvent(self)
+.. py:function:: append_text(self, text)
+
+    Method responsible to add the messages to the user console.
+
+.. py:function:: closeEvent(self, text)
+
+    Método responsable de, cuando el programa se cierra, termina la comunicación.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -230,11 +283,19 @@ The "Client" class starts the connection using Twisted. For this purpose uses th
 |               |                          | buildWindow            |
 +---------------+--------------------------+------------------------+
 
+The DateDialog class contains the methods needed to display the user configuration advanced settings.
+
 .. py:function:: __init__(self)
+
+    Method needed to start the window.
 
 .. py:function:: getConfiguration(self)
 
+    Method responsible of reading the settings available on screen.
+
 .. py:function:: buildWindow(self)
+
+    Static method in charge of creating the configuration window through a call from the SATNetGUI class. This method will get back the configuration values.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -245,6 +306,8 @@ The "Client" class starts the connection using Twisted. For this purpose uses th
 +---------------+--------------------------+------------------------+
 |               |                          | flush                  |
 +---------------+--------------------------+------------------------+
+
+The WriteStream class create the queue needed 
 
 .. py:function:: __init__(self)
 

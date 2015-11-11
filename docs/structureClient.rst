@@ -247,7 +247,7 @@ SATNetGUI class contains the methods necessary for the creation of the main user
 
 .. py:function:: LoadParameters(self)
 
-    Loads user parameters, as username and password, from config.ini file.
+    It loads user parameters, as username and password, from config.ini file.
 
 .. py:function:: SetConfiguration(self)
 
@@ -271,7 +271,7 @@ SATNetGUI class contains the methods necessary for the creation of the main user
 
 .. py:function:: closeEvent(self, text)
 
-    Método responsable de, cuando el programa se cierra, termina la comunicación.
+    Method responsible of, when the program is closed, the communication ends.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -295,7 +295,7 @@ The DateDialog class contains the methods needed to display the user configurati
 
 .. py:function:: buildWindow(self)
 
-    Static method in charge of creating the configuration window through a call from the SATNetGUI class. This method will get back the configuration values.
+    Static method in charge of creating the configuration window through a call from the SATNetGUI class. This method will return the configuration values.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -307,13 +307,19 @@ The DateDialog class contains the methods needed to display the user configurati
 |               |                          | flush                  |
 +---------------+--------------------------+------------------------+
 
-The WriteStream class create the queue needed 
+The WriteStream class create the queue needs for the console text.
 
 .. py:function:: __init__(self)
 
+    Class initialization. Create the queue required for this class.
+
 .. py:function:: write(self)
 
+    Collect the text and adds it to the queue created.
+
 .. py:function:: flush(self)
+
+    Not docummented.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -323,9 +329,15 @@ The WriteStream class create the queue needed
 |               |                          | run                    |
 +---------------+--------------------------+------------------------+
 
+An object class inherited from the class QThread. Used to manage the thread that handles text console.
+
 .. py:function:: __init__(self)
 
+    Class initialization.
+
 .. py:function:: run(self)
+
+    Method main thread. Collect the text from the queue and output as a signal.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -333,7 +345,11 @@ The WriteStream class create the queue needed
 | client_amp.py | ResultObj                | __init__               |
 +---------------+--------------------------+------------------------+
 
+Class responsible for transforming the value received in an object of the QThread module.
+
 .. py:function:: __init__(self)
+
+    Class initialization.
 
 +-----------------+--------------------------+------------------------+
 | Module          | Class                    | Methods                |
@@ -349,15 +365,27 @@ The WriteStream class create the queue needed
 |                 |                          | disconnectedProtocol   |
 +-----------------+--------------------------+------------------------+
 
+Class responsible for initiating the basic methods of the client connection with the tracking station.
+
 .. py:function:: __init__(self, CONNECTION_INFO, GS, AMP)
+
+    Class initialization. Collect settings of the connection.
 
 .. py:function:: _manageFrame(self, result)
 
+    Checks if the AMP connection is available. If it is not available this method saves the messages in a local file.
+
 .. py:function:: _updateLocalFile(self, frame)
+
+    Method responsible, in the absence of a connection, save the received messages.
 
 .. py:function:: connectedProtocol(self, AMP)
 
+    This method it is call when the protocol gets connected.
+
 .. py:function:: disconnectedProtocol(self)
+
+    This method it is call when the protocol gets disconnected.
 
 +-----------------+--------------------------+------------------------+
 | Module          | Class                    | Methods                |
@@ -373,15 +401,27 @@ The WriteStream class create the queue needed
 |                 |                          | cleanUp                |
 +-----------------+--------------------------+------------------------+
 
+An object class inherited from the class QThread. Used to manage the thread that handles the UDP protocol.
+
 .. py:function:: __init__(self, parent = None)
+
+    It opens the UPD socket.
 
 .. py:function:: run(self)
 
+    Comienza el hilo.
+
 .. py:function:: stop(self)
+
+    Metodo encargado de detener la ejecución del hilo.
 
 .. py:function:: doWork(self)
 
+    Not docummented.
+
 .. py:function:: cleanUp(self)
+
+    Not docummented.
 
 +-----------------+--------------------------+------------------------+
 | Module          | Class                    | Methods                |
@@ -397,7 +437,11 @@ The WriteStream class create the queue needed
 |                 |                          | cleanUp                |
 +-----------------+--------------------------+------------------------+
 
+An object class inherited from the class QThread. Used to manage the thread that handles the TCP protocol.
+
 .. py:function:: __init__(self, parent = None)
+
+    It opens the TCP socket.
 
 .. py:function:: run(self)
 
@@ -405,7 +449,11 @@ The WriteStream class create the queue needed
 
 .. py:function:: doWork(self)
 
+    Not docummented.
+
 .. py:function:: cleanUp(self)
+
+    Not docummented.
 
 +-----------------+--------------------------+------------------------+
 | Module          | Class                    | Methods                |
@@ -421,7 +469,11 @@ The WriteStream class create the queue needed
 |                 |                          | cleanUp                |
 +-----------------+--------------------------+------------------------+
 
+An object class inherited from the class QThread. Used to manage the thread that handles the KISS protocol.
+
 .. py:function:: __init__(self, parent = None)
+
+    It creates the KISS protocol.
 
 .. py:function:: run(self)
 
@@ -429,7 +481,11 @@ The WriteStream class create the queue needed
 
 .. py:function:: doWork(self)
 
+    Not docummented.
+
 .. py:function:: cleanUp(self)
+
+    Not docummented.
 
 +-----------------+--------------------------+------------------------+
 | Module          | Class                    | Methods                |
@@ -441,9 +497,13 @@ The WriteStream class create the queue needed
 |                 |                          | catchValue             |
 +-----------------+--------------------------+------------------------+
 
+An object class inherited from the class OperativeUDPThread. Used to manage the UDP reception.
+
 .. py:function:: __init__(self, queue, callback, UDPSignal, parent = None)
 
 .. py:function:: doWork(self, UDPSocket)
+
+    Método encargado de r
 
 .. py:function:: catchValue(self, frame, address)
 
@@ -456,6 +516,8 @@ The WriteStream class create the queue needed
 +-----------------+--------------------------+------------------------+
 |                 |                          | catchValue             |
 +-----------------+--------------------------+------------------------+
+
+An object class inherited from the class OperativeTCPThread. Used to manage the TCP reception.
 
 .. py:function:: __init__(self, queue, callback, TCPSignal, parent = None)
 
@@ -472,6 +534,8 @@ The WriteStream class create the queue needed
 +-----------------+--------------------------+------------------------+
 |                 |                          | catchValue             |
 +-----------------+--------------------------+------------------------+
+
+An object class inherited from the class OperativeKISSThread. Used to manage the KISS reception.
 
 .. py:function:: __init__(self, queue, callback, serialSignal, parent = None)
 

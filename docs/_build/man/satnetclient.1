@@ -131,10 +131,9 @@ udpport: 5005
 This file should be at the root filesystem of the client.
 .fi
 .sp
-.SH FILE STRUCTURE
-.SS Client
+.SH CLIENT FILE STRUCTURE
 .sp
-Customer classes are as follows. Each class is detailed with its corresponding methods.
+Client classes are as follows. Each class is detailed with its corresponding methods.
 .TS
 center;
 |l|l|l|.
@@ -530,45 +529,47 @@ closeEvent
 T}
 _
 .TE
+.sp
+SATNetGUI class contains the methods necessary for the creation of the main user interface.
 .INDENT 0.0
 .TP
 .B __init__(self, parent = None)
-Inicia la intefaz gráfica, las señales necesarias para los hilos y las colas para los hilos.
+This initial method starts the user interface and the signals and queues required for QThreads.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B runKISSThread(self)
-Crea un objeto de la clase OperativeKISSThread e inicia el hilo.
+Create an object of class OperativeKISSThread and starts the QThread calling the start method.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B runUDPThread(self)
-Crea un objeto de la clase OperativeUDPThread e inicia el hilo.
+Create an object of class OperativeUDPThread and starts the QThread calling the start method.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B runTCPThread(self)
-Crea un objeto de la clase OperativeTCPThread e inicia el hilo
+Create an object of class OperativeTCPThread and starts the QThread calling the start method.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B stopKISSThread(self)
-Detiene el hilo correspondiente a la comunicación serial invocando el método stop del objeto workerKISSThread.
+Stops the QThread that handles serial communication calling the stop method.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B stopUDPThread(self)
-Detiene el hilo correspondiente a la comunicación UDP invocando el método stop del objeto workerUDPThread.
+Stops the QThread that handles UDP communication calling the stop method.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B stopTCPThread(self)
-Detiene el hilo correspondiente a la comunicación TCP invocando el método stop del objeto workerTCPThread.
+Stops the QThread that handles TCP communication calling the stop method.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B sendData(self, result)
-Invoca el metódo _manageframe del protocolo groundfdasfsadfs
+Invokes the _manageframe method of protocol GroundStationInterface.
 .UNINDENT
 .INDENT 0.0
 .TP
@@ -578,76 +579,81 @@ Create a new connection by loading the connection parameters from the interface 
 .INDENT 0.0
 .TP
 .B initUI(self)
-Inicia la ventana de la interfaz pasandole los valores básicos.
+UI starts by passing the basic values such as size and name.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initButtons(self)
-Inicia los botones de control de la interfaz del usuario.
+Starts the control buttons panel of user interface.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initFields(self)
-Inicia los campos de introducción de datos de la interfaz del usuario.
+Starts the data entry field.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initLogo(self)
-Metodo que coloca el logo en la interfaz gráfica del usuario.
+Method which defines the logo of the main window.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initData(self)
-Lee los valores de configuración del programa del fichero .settings y modifica lo correspondiente.
+Reads the program settings from .settings file and edit them accordingly.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B initConsole(self)
-Inicia la consola, donde se mostrarán los mensajes de aviso.
+Starts the console where the status messages will be shown.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B CloseConnection(self)
-Termina la conexión actual sin terminar el programa.
+Ends the current connection without finishing the program.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B LoadSettings(self)
 .nf
-Carga la configuración del fichero .settings y los devuelve.
-Metodo con funcionalidad duplicada.
+Loads configuration settings from .settings file and get back them to user.
+Duplicated function. Must be merged with initData method.
 .fi
 .sp
 .UNINDENT
 .INDENT 0.0
 .TP
 .B LoadParameters(self)
-Carga los parametros del usuario del fichero config.ini.
+It loads user parameters, as username and password, from config.ini file.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B SetConfiguration(self)
-Metodo encargado de crear la ventana de configuración avanzada del usuario.
+Method responsible to create advanced user settings window.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B CheckConnection(self)
+Method which changes the UI according to the connection selected.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B usage(self)
+Method which show on screen a tiny text help.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B center(self)
+Method which centers the main window on screen.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B append_text(self)
+.B append_text(self, text)
+Method responsible to add the messages to the user console.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B closeEvent(self)
+.B closeEvent(self, text)
+Method responsible of, when the program is closed, the communication ends.
 .UNINDENT
 .TS
 center;
@@ -682,17 +688,22 @@ buildWindow
 T}
 _
 .TE
+.sp
+The DateDialog class contains the methods needed to display the user configuration advanced settings.
 .INDENT 0.0
 .TP
 .B __init__(self)
+Method needed to start the window.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B getConfiguration(self)
+Method responsible of reading the settings available on screen.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B buildWindow(self)
+Static method in charge of creating the configuration window through a call from the SATNetGUI class. This method will return the configuration values.
 .UNINDENT
 .TS
 center;
@@ -727,17 +738,22 @@ flush
 T}
 _
 .TE
+.sp
+The WriteStream class create the queue needs for the console text.
 .INDENT 0.0
 .TP
 .B __init__(self)
+Class initialization. Create the queue required for this class.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B write(self)
+Collect the text and adds it to the queue created.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B flush(self)
+Not docummented.
 .UNINDENT
 .TS
 center;
@@ -766,13 +782,17 @@ run
 T}
 _
 .TE
+.sp
+An object class inherited from the class QThread. Used to manage the thread that handles text console.
 .INDENT 0.0
 .TP
 .B __init__(self)
+Class initialization.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B run(self)
+Method main thread. Collect the text from the queue and output as a signal.
 .UNINDENT
 .TS
 center;
@@ -795,9 +815,12 @@ __init__
 T}
 _
 .TE
+.sp
+Class responsible for transforming the value received in an object of the QThread module.
 .INDENT 0.0
 .TP
 .B __init__(self)
+Class initialization.
 .UNINDENT
 .TS
 center;
@@ -844,25 +867,32 @@ disconnectedProtocol
 T}
 _
 .TE
+.sp
+Class responsible for initiating the basic methods of the client connection with the tracking station.
 .INDENT 0.0
 .TP
 .B __init__(self, CONNECTION_INFO, GS, AMP)
+Class initialization. Collect settings of the connection.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B _manageFrame(self, result)
+Checks if the AMP connection is available. If it is not available this method saves the messages in a local file.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B _updateLocalFile(self, frame)
+Method responsible, in the absence of a connection, save the received messages.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B connectedProtocol(self, AMP)
+This method it is call when the protocol gets connected.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B disconnectedProtocol(self)
+This method it is call when the protocol gets disconnected.
 .UNINDENT
 .TS
 center;
@@ -909,25 +939,32 @@ cleanUp
 T}
 _
 .TE
+.sp
+An object class inherited from the class QThread. Used to manage the thread that handles the UDP protocol.
 .INDENT 0.0
 .TP
 .B __init__(self, parent = None)
+It opens the UPD socket.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B run(self)
+It starts the QThread execution.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B stop(self)
+This method stops the thread execution.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B doWork(self)
+Not docummented.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B cleanUp(self)
+Not docummented.
 .UNINDENT
 .TS
 center;
@@ -974,25 +1011,32 @@ cleanUp
 T}
 _
 .TE
+.sp
+An object class inherited from the class QThread. Used to manage the thread that handles the TCP protocol.
 .INDENT 0.0
 .TP
 .B __init__(self, parent = None)
+It opens the TCP socket.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B run(self)
+It starts the QThread execution.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B stop(self)
+This method stops the thread execution.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B doWork(self)
+Not docummented.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B cleanUp(self)
+Not docummented.
 .UNINDENT
 .TS
 center;
@@ -1039,25 +1083,32 @@ cleanUp
 T}
 _
 .TE
+.sp
+An object class inherited from the class QThread. Used to manage the thread that handles the KISS protocol.
 .INDENT 0.0
 .TP
 .B __init__(self, parent = None)
+It creates the KISS protocol.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B run(self)
+It starts the QThread execution.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B stop(self)
+This method stops the thread execution.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B doWork(self)
+Not docummented.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B cleanUp(self)
+Not docummented.
 .UNINDENT
 .TS
 center;
@@ -1092,17 +1143,22 @@ catchValue
 T}
 _
 .TE
+.sp
+An object class inherited from the class OperativeUDPThread. Used to manage the UDP reception.
 .INDENT 0.0
 .TP
 .B __init__(self, queue, callback, UDPSignal, parent = None)
+Connects the thread to the callback function.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B doWork(self, UDPSocket)
+It collects the frames from the UDP connection.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B catchValue(self, frame, address)
+Method that collects the received frame and returns it as a signal.
 .UNINDENT
 .TS
 center;
@@ -1137,17 +1193,22 @@ catchValue
 T}
 _
 .TE
+.sp
+An object class inherited from the class OperativeTCPThread. Used to manage the TCP reception.
 .INDENT 0.0
 .TP
 .B __init__(self, queue, callback, TCPSignal, parent = None)
+Connects the thread to the callback function.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B doWork(self, TCPSocket)
+It collects the frames from the TCP connection.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B catchValue(self, frame, address)
+Method that collects the received frame and returns it as a signal.
 .UNINDENT
 .TS
 center;
@@ -1182,18 +1243,117 @@ catchValue
 T}
 _
 .TE
+.sp
+An object class inherited from the class OperativeKISSThread. Used to manage the KISS reception.
 .INDENT 0.0
 .TP
 .B __init__(self, queue, callback, serialSignal, parent = None)
+Connects the thread to the callback function.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B doWork(self, kissTNC)
+It collects the frames from the serial connection through the KISS protocol.
 .UNINDENT
 .INDENT 0.0
 .TP
 .B catchValue(self, frame)
+Method that collects the received frame and returns it as a signal.
 .UNINDENT
+.SH PROTOCOL FILE STRUCTURE
+.sp
+Customer classes are as follows. Each class is detailed with its corresponding methods.
+.TS
+center;
+|l|l|l|.
+_
+T{
+Module
+T}	T{
+Class
+T}	T{
+Methods
+T}
+_
+T{
+client_amp.py
+T}	T{
+ClientProtocol
+T}	T{
+__init__
+T}
+_
+T{
+T}	T{
+T}	T{
+connectionMade
+T}
+_
+T{
+T}	T{
+T}	T{
+connectionLost
+T}
+_
+T{
+T}	T{
+T}	T{
+user_login
+T}
+_
+T{
+T}	T{
+T}	T{
+vNotifyMsg
+T}
+_
+T{
+T}	T{
+T}	T{
+_processframe
+T}
+_
+T{
+T}	T{
+T}	T{
+processframe
+T}
+_
+T{
+T}	T{
+T}	T{
+vNotifyEvent
+T}
+_
+.TE
+.sp
+The ClientProtocol class is responsible for creating the connection protocol client.
+.INDENT 0.0
+.TP
+.B __init__(self, CONNECTION_INFO, gsi)
+ClientProtocol class initialization through the CONNECTION_INFO variable and the gsi object.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B connectionMade(self)
+Method belonging to the protocol responsible for starting the user\(aqs connection.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B connectionLost(self)
+When the connection is lost this method is executed.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B user_login(self)
+This method is responsible for making the AMP calls that initiate the connection.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B vNotifyMsg(self, sMsg)
+AMP call responsible for notifying the user of reception of a message.
+.UNINDENT
+.SH TREE STRUCTURE
 .SH AUTHOR
 Ricardo Tubio-Pardavila - Samuel Gongora-Garcia
 .SH COPYRIGHT

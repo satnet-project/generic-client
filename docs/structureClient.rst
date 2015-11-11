@@ -1,10 +1,8 @@
 =========================================
-File structure
+CLient file structure
 =========================================
 
-Client
-*****************************************
-Customer classes are as follows. Each class is detailed with its corresponding methods.
+Client classes are as follows. Each class is detailed with its corresponding methods.
 
 +---------------+--------------------------+------------------------+
 | Module        | Class                    | Methods                |
@@ -409,11 +407,11 @@ An object class inherited from the class QThread. Used to manage the thread that
 
 .. py:function:: run(self)
 
-    Comienza el hilo.
+    It starts the QThread execution.
 
 .. py:function:: stop(self)
 
-    Metodo encargado de detener la ejecución del hilo.
+    This method stops the thread execution.
 
 .. py:function:: doWork(self)
 
@@ -445,7 +443,11 @@ An object class inherited from the class QThread. Used to manage the thread that
 
 .. py:function:: run(self)
 
+    It starts the QThread execution.
+
 .. py:function:: stop(self)
+
+    This method stops the thread execution.
 
 .. py:function:: doWork(self)
 
@@ -477,7 +479,11 @@ An object class inherited from the class QThread. Used to manage the thread that
 
 .. py:function:: run(self)
 
+    It starts the QThread execution.
+
 .. py:function:: stop(self)
+
+    This method stops the thread execution.
 
 .. py:function:: doWork(self)
 
@@ -501,11 +507,15 @@ An object class inherited from the class OperativeUDPThread. Used to manage the 
 
 .. py:function:: __init__(self, queue, callback, UDPSignal, parent = None)
 
+    Connects the thread to the callback function.
+
 .. py:function:: doWork(self, UDPSocket)
 
-    Método encargado de r
+    It collects the frames from the UDP connection.
 
 .. py:function:: catchValue(self, frame, address)
+
+    Method that collects the received frame and returns it as a signal.
 
 +-----------------+--------------------------+------------------------+
 | Module          | Class                    | Methods                |
@@ -521,9 +531,15 @@ An object class inherited from the class OperativeTCPThread. Used to manage the 
 
 .. py:function:: __init__(self, queue, callback, TCPSignal, parent = None)
 
+    Connects the thread to the callback function.
+
 .. py:function:: doWork(self, TCPSocket)
 
+    It collects the frames from the TCP connection.
+
 .. py:function:: catchValue(self, frame, address)
+
+    Method that collects the received frame and returns it as a signal.
 
 +-----------------+--------------------------+------------------------+
 | Module          | Class                    | Methods                |
@@ -539,10 +555,15 @@ An object class inherited from the class OperativeKISSThread. Used to manage the
 
 .. py:function:: __init__(self, queue, callback, serialSignal, parent = None)
 
+    Connects the thread to the callback function.
+
 .. py:function:: doWork(self, kissTNC)
+
+    It collects the frames from the serial connection through the KISS protocol.
 
 .. py:function:: catchValue(self, frame)
 
+    Method that collects the received frame and returns it as a signal.
 
 
 

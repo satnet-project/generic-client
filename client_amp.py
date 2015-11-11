@@ -63,31 +63,36 @@ class ClientProtocol(AMP):
 
     @inlineCallbacks
     def user_login(self):
-        # res = yield self.callRemote(Login,\
-        #  sUsername=self.CONNECTION_INFO['username'],\
-        #   sPassword=self.CONNECTION_INFO['password'])
+        res = yield self.callRemote(Login,\
+         sUsername=self.CONNECTION_INFO['username'],\
+          sPassword=self.CONNECTION_INFO['password'])
 
         # if res['bAuthenticated'] == True:
         #     # log.msg('bAuthenticated True')
         #     res = yield self.callRemote(StartRemote,\
         #      iSlotId=self.CONNECTION_INFO['slot_id'])
 
-        # elif res['bAuthenticated'] == False:
-        #     log.msg('False')
+        if res['bAuthenticated'] == True:
+            # log.msg('bAuthenticated True')
+            res = yield self.callRemote(StartRemote,\
+             iSlotId='-1')
 
-        # else:
-        #     log.msg('No data')
+        elif res['bAuthenticated'] == False:
+            log.msg('False')
 
-        d = self.callRemote(Login, sUsername=self.CONNECTION_INFO['username'],\
-         sPassword=self.CONNECTION_INFO['password'] )
-        def connected(self):
-            self.callRemote(StartRemote,\
-             iSlotId=self.CONNECTION_INFO['slot_id'])
-        d.addCallback(connected, self)
-        def notConnected(failure):
-            log.err("Error during connection")
-        d.addErrback(notConnected)
-        return d
+        else:
+            log.msg('No data')
+
+        # d = self.callRemote(Login, sUsername=self.CONNECTION_INFO['username'],\
+        #  sPassword=self.CONNECTION_INFO['password'] )
+        # def connected(self):
+        #     self.callRemote(StartRemote,\
+        #      iSlotId=self.CONNECTION_INFO['slot_id'])
+        # d.addCallback(connected, self)
+        # def notConnected(failure):
+        #     log.err("Error during connection")
+        # d.addErrback(notConnected)
+        # return d
 
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] +\
@@ -265,8 +270,8 @@ class SATNetGUI(QtGui.QWidget):
     def sendData(self, result):
         self.gsi._manageFrame(result)
 
-    # Create a new connection by loading the connection parameters from
-    # the command line of from the interface window
+    # Create a new connection by loading the connection parameters
+    # from the interface window
     def NewConnection(self):
         self.CONNECTION_INFO = {}
 
@@ -306,6 +311,7 @@ class SATNetGUI(QtGui.QWidget):
 
         self.LoadDefaultSettings.setEnabled(False)
         self.AutomaticReconnection.setEnabled(False)
+
 
     def initUI(self):
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
@@ -702,7 +708,7 @@ if __name__ == '__main__':
     try:
         if sys.argv[1] == '--help':
             import subprocess
-            subprocess.call(["man", "satnetclient.1"])
+            subprocess.call(["man", "./satnetclient.1"])
 
     except IndexError:
         # Create Queue and redirect sys.stdout to this queue

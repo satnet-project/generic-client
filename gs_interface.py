@@ -113,6 +113,8 @@ class UDPThread(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
+        # Test!! To-do.
+
         self.CONNECTION_INFO = {'ip':'127.0.0.1', 'udpport':'5001'}
         server_address = (str(self.CONNECTION_INFO['ip']),\
          int(self.CONNECTION_INFO['udpport']))

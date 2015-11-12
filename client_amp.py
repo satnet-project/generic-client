@@ -438,6 +438,7 @@ class SATNetGUI(QtGui.QWidget):
 
     # To-do Not closed properly.
     def CloseConnection(self):
+
         if self.connectionkind == 'udp':
             try:
                 self.stopUDPThread()
@@ -445,6 +446,7 @@ class SATNetGUI(QtGui.QWidget):
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop UDP thread")
+        
         if self.connectionkind == 'tcp':
             try:
                 self.stopTCPThread()
@@ -453,16 +455,13 @@ class SATNetGUI(QtGui.QWidget):
                 log.err(e)
                 log.err("Can't stop TCP thread")
 
-        elif self.connectionkind == 'serial':
+        if self.connectionkind == 'serial':
             try:
                 self.stopKISSThread()
                 log.msg("Stopping KISS connection")
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop KISS thread")
-
-        else:
-            raise Exception
 
         self.c.disconnect()
 
@@ -597,42 +596,37 @@ class SATNetGUI(QtGui.QWidget):
                 # Connector disconnected
                 self.c.disconnect()
             except Exception as e:
-                log.err(e)
-                log.err("Can't disconnected connector", self.c)
-                # Serial thread stopped
+                pass
 
-        if self.connectionkind == 'udp':
+            if self.connectionkind == 'udp':
+                try:
+                    self.stopUDPThread()
+                except Exception as e:
+                    log.err(e)
+                    log.err("Can't stop UDP thread")
+
+            elif self.connectionkind == 'tcp':
+                try:
+                    self.stopTCPThread()
+                except Exception as e:
+                    log.err(e)
+                    log.err("Can't stop TCP thread")
+
+            elif self.connectionkind == 'serial':
+                try:
+                    self.stopKISSThread()
+                except Exception as e:
+                    log.err(e)
+                    log.err("Can't stop KISS thread")
+
             try:
-                self.stopUDPThread()
+                reactor.stop()
+                log.msg("Reactor stopped")
+                event.accept()
             except Exception as e:
                 log.err(e)
-                log.err("Can't stop UDP thread")
-
-        elif self.connectionkind == 'tcp':
-            try:
-                self.stopTCPThread()
-            except Exception as e:
-                log.err(e)
-                log.err("Can't stop TCP thread")
-
-        elif self.connectionkind == 'serial':
-            try:
-                self.stopKISSThread()
-            except Exception as e:
-                log.err(e)
-                log.err("Can't stop KISS thread")
-
-        else:
-            raise Exception
-
-        try:
-            reactor.stop()
-            log.msg("Reactor stopped")
-            event.accept()
-        except Exception as e:
-            log.err(e)
-            log.err("Reactor not running.")
-            event.ignore()
+                log.err("Reactor not running.")
+                event.ignore()
 
 
 class DateDialog(QtGui.QDialog):
@@ -736,5 +730,3 @@ if __name__ == '__main__':
 
         from twisted.internet import reactor
         reactor.run()
-
-        qapp.exec_()

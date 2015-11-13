@@ -15,6 +15,9 @@ install:
   - cd scripts/
   - bash ./setup.sh -t
   - cd ../tests
+  - pwd
+  - cd ..
+  - pwd
   - source .venv_tests/bin/activate
 
 script:

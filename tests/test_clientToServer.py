@@ -30,20 +30,20 @@ from twisted.python import log
 from unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from gs_interface import GroundStationInterface
 
+from gs_interface import GroundStationInterface
 
 class CredentialsChecker(unittest.TestCase):
 
     def setUp(self):
         log.startLogging(sys.stdout)
+        log.msg("")
 
         return True
 
-    def _test(self, frame):
-        log.msg("test")
-        log.msg(frame)
-
+    """
+    Send a correct frame without connection
+    """
     def test_AMPnotPresentCorrectFrame(self):
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresent test")
 
@@ -52,32 +52,36 @@ class CredentialsChecker(unittest.TestCase):
         GS = 'Vigo'
         AMP = None
 
-        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
+        gsi._manageFrame(frame)
 
         assert os.path.exists("ESEO-" + GS + "-" + time.strftime("%Y.%m.%d") + ".csv") == 1
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Local file created")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresent test OK")
 
     """
-    Send a correct frame
+    Send a correct frame with connection
     """
-    # def _test_CorrectFrame(self):
+    def test_CorrectFrame(self):
 
-    #     log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running CorrectFrame test")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running CorrectFrame test")
 
-    #     frame = 'Frame'
-    #     CONNECTION_INFO = {}
-    #     GS = 'Vigo'
-    #     AMP = mock.MagicMock()
+        frame = 'Frame'
+        CONNECTION_INFO = {}
+        GS = 'Vigo'
+        AMP = mock.Mock()
+        AMP._processframe = self._test()
     #     # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
 
-    #     log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Call _manageFrame with test frame")
-    #     gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
+
+        log.msg(AMP._processframe)
 
         # # _manageFrame = mock.Mock()
         # # GroundStationInterface.AMP = True
 
-        # @mock.patch('GroundStationInterface()')
-        # def Satnet_RPC(self, sUsername, sPassword, debug=True):
+        # @mock.patch('QtCore')
+        # def QtCorePatch:
         #     return True
 
         # self.rpc = Satnet_RPC('xabi.crespo', mockUserGoodCredentials.password,\

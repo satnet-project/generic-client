@@ -7,16 +7,14 @@ branches:
 python:
   - '2.7'
 
-# The SSH references to submodules could cause some problems. We will 
-# change the ssh directions to http.
 git:
   submodules: false
 
 install:
-  - pwd
   - pip install coveralls
   - cd scripts/
   - bash ./setup.sh -t
+  - cd ../tests
 
 script:
   - coverage run test_clientToServer.py

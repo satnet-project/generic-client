@@ -15,6 +15,7 @@ install:
   - cd scripts/
   - bash ./setup.sh -t
   - cd ../tests
+  - source .venv_tests/bin/activate
 
 script:
   - coverage run test_clientToServer.py

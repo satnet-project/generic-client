@@ -18,7 +18,6 @@ install:
   - pwd
   - cd ..
   - pwd
-  - source .venv_tests/bin/activate
 
 script:
   - coverage run test_clientToServer.py

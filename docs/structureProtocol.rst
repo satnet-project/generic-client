@@ -24,24 +24,25 @@ Customer classes are as follows. Each class is detailed with its corresponding m
 |               |                          | vNotifyEvent           |
 +---------------+--------------------------+------------------------+
 
-The ClientProtocol class is responsible for creating the connection protocol client.
+El módulo server_amp.py es el encargado de iniciar el servidor de Twisted.
 
-.. py:function:: __init__(self, CONNECTION_INFO, gsi)
+El fichero se puede iniciar en modo debug, en este modo se muestran por pantalla mensajes de aviso cada vez que se crea un deferred o se invoca. También dispone de un modo de ayuda que muestra un pequeño mensaje de ayuda.
+
+La clase SATNETServer, perteneciente al módulo server_amp.py contiene los metodos AMP necesarios.
+
+
+.. py:function:: dataReceived(self, data)
     
-    ClientProtocol class initialization through the CONNECTION_INFO variable and the gsi object.
+    ClientProtocol class initialization through the CONNECTION_INFO variable and the gsi object.m
 
-.. py:function:: connectionMade(self)
+.. py:function:: iStartRemote(self, iSLotId)
     
     Method belonging to the protocol responsible for starting the user's connection.
 
-.. py:function:: connectionLost(self)
+.. py:function:: vEndRemote(self)
     
-    When the connection is lost this method is executed.
+    Actualmente no está implementado.
 
-.. py:function:: user_login(self)
+.. py:function:: vSendMsg(self, sMsg, iTimestamp)
     
     This method is responsible for making the AMP calls that initiate the connection.
-
-.. py:function:: vNotifyMsg(self, sMsg)
-
-    AMP call responsible for notifying the user of reception of a message.

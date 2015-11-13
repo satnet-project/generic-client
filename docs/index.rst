@@ -21,7 +21,7 @@ The latest version of this development can be found at:
 
    installation.rst
    usage.rst
-   fluxDiagram.rst
+   flowDiagram.rst
    workingProcedure.rst
    structureClient.rst
    structureProtocol.rst

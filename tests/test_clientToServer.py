@@ -45,7 +45,7 @@ class CredentialsChecker(unittest.TestCase):
     Send a correct frame without connection
     """
     def test_AMPnotPresentCorrectFrame(self):
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresent test")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentCorrectFrame test")
 
         frame = 'Frame'
         CONNECTION_INFO = {}
@@ -62,58 +62,57 @@ class CredentialsChecker(unittest.TestCase):
     """
     Send a correct frame with connection
     """
-    def test_CorrectFrame(self):
+    def _test_AMPPresentCorrectFrame(self):
 
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running CorrectFrame test")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPpresentCorrectFrame test")
 
         frame = 'Frame'
         CONNECTION_INFO = {}
         GS = 'Vigo'
         AMP = mock.Mock()
-        AMP._processframe = self._test()
-    #     # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
+        # AMP._processframe = self._test()
+        # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
 
         log.msg(AMP._processframe)
 
-        # # _manageFrame = mock.Mock()
-        # # GroundStationInterface.AMP = True
+    """
+    Send an incorrect frame without connection
+    """
+    def test_AMPnotPresentIncorrectFrame(self):
 
-        # @mock.patch('QtCore')
-        # def QtCorePatch:
-        #     return True
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentIncorrectFrame test")
 
-        # self.rpc = Satnet_RPC('xabi.crespo', mockUserGoodCredentials.password,\
-        #  debug=True)
+        frame = 1234
+        CONNECTION_INFO = {}
+        GS = 'Vigo'
+        AMP = None
 
-        # return self.assertTrue()
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
+        gsi._manageFrame(frame)
 
-        # log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> CorrectFrame test ok!")
+        assert os.path.exists("ESEO-" + GS + "-" + time.strftime("%Y.%m.%d") + ".csv") == 1
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Local file created")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresent test OK")
 
-    # """
-    # Send an incorrect frame
-    # """
-    # def test_BadFrame(self):
+    """
+    Send an incorrect frame with connection
+    """
+    def _test_AMPPresentIncorrectFrame(self):
 
-    #     log.msg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Running BadFrame test")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPPresentIncorrectFrame")
 
-    #     """
-    #     Mock object.
-    #     """
-    #     mockUserBadUsername = mock.Mock()
-    #     mockUserBadUsername.username = 'wrongUser'
-    #     mockUserBadUsername.password = 'pwd4django'
+        frame = 1234
+        CONNECTION_INFO = {}
+        GS = 'Vigo'
+        AMP = mock.Mock()
+        # AMP._processframe = self._test()
+        # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
 
-    #     @mock.patch('__main__.Satnet_RPC')
-    #     def Satnet_RPC(self, sUsername, sPassword, debug=True):
-    #         raise BadCredentials("Incorrect username")    
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
 
-    #     log.msg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BadUsername test ok!")
-
-    #     return self.assertRaisesRegexp(BadCredentials, 'Incorrect username',\
-    #      Satnet_RPC, mockUserBadUsername.username, mockUserBadUsername.password,\
-    #       debug=True)
+        log.msg(AMP._processframe)
 
 
 if __name__ == '__main__':

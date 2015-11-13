@@ -24,6 +24,8 @@ from twisted.python import log
 from PyQt4 import QtCore
 import time
 
+from errors import WrongFormatNotification
+
 
 class GroundStationInterface():
     """
@@ -81,13 +83,16 @@ class GroundStationInterface():
             try:
                 log.msg("llamo a _processframe")
                 self.AMP._processframe(self,result)
-                log.msg("despues de processframe")
+                log.msg("despues de process")
             except Exception as e:
                 log.err('Error processing frame')
                 log.err(e)
         else:
             log.msg("self.AMP is None")
-            self._updateLocalFile(result)
+            try:
+                self._updateLocalFile(result)
+            except TypeError:
+                raise WrongFormatNotification("Bad format frame")
 
     def _updateLocalFile(self, frame):
         log.msg('---- Saving message to local file ----')

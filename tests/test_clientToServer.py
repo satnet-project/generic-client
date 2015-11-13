@@ -32,6 +32,7 @@ from unittest import TestCase
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from gs_interface import GroundStationInterface
+from errors import WrongFormatNotification
 
 class CredentialsChecker(unittest.TestCase):
 
@@ -41,10 +42,14 @@ class CredentialsChecker(unittest.TestCase):
 
         return True
 
+    def prueba(self):
+        log.msg("loleilo prueba")
+
+
     """
     Send a correct frame without connection
     """
-    def test_AMPnotPresentCorrectFrame(self):
+    def _test_AMPnotPresentCorrectFrame(self):
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentCorrectFrame test")
 
         frame = 'Frame'
@@ -57,7 +62,7 @@ class CredentialsChecker(unittest.TestCase):
 
         assert os.path.exists("ESEO-" + GS + "-" + time.strftime("%Y.%m.%d") + ".csv") == 1
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Local file created")
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresent test OK")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresentCorrectFrame test OK")
 
     """
     Send a correct frame with connection
@@ -73,6 +78,8 @@ class CredentialsChecker(unittest.TestCase):
         # AMP._processframe = self._test()
         # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
 
+        AMP._processframe = self.prueba()
+
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
 
         log.msg(AMP._processframe)
@@ -80,7 +87,7 @@ class CredentialsChecker(unittest.TestCase):
     """
     Send an incorrect frame without connection
     """
-    def test_AMPnotPresentIncorrectFrame(self):
+    def _test_AMPnotPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentIncorrectFrame test")
 
@@ -90,11 +97,11 @@ class CredentialsChecker(unittest.TestCase):
         AMP = None
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
-        gsi._manageFrame(frame)
 
-        assert os.path.exists("ESEO-" + GS + "-" + time.strftime("%Y.%m.%d") + ".csv") == 1
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Local file created")
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresent test OK")
+        self.assertRaisesRegexp(WrongFormatNotification, "Bad format frame",\
+          lambda: gsi._manageFrame(frame))
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Error - Local file not created")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresentIncorrectFrame test OK")
 
     """
     Send an incorrect frame with connection

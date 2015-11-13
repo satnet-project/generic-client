@@ -242,6 +242,12 @@ class SATNetGUI(QtGui.QWidget):
             self.sendData, self.serialSignal)
         self.workerKISSThread.start()
 
+    # # Run threads associated to UPD protocol
+    # def runUDPThread(self):
+    #     self.workerUDPThread = OperativeUDPThread(self.udp_queue,\
+    #      self.sendData, self.UDPSignal)
+    #     self.workerUDPThread.start()
+
     # Run threads associated to UPD protocol
     def runUDPThread(self):
         self.workerUDPThread = OperativeUDPThread(self.udp_queue,\
@@ -284,10 +290,8 @@ class SATNetGUI(QtGui.QWidget):
          str(self.LabelSerialPort.currentText())
         self.CONNECTION_INFO['baudrate'] = str(self.LabelBaudrate.text())
         self.CONNECTION_INFO['ip'] = self.LabelUDP.text()
-        # print self.LabelUDPPort.text()
         self.CONNECTION_INFO['udpport'] = int(self.LabelUDPPort.text())
         self.CONNECTION_INFO['tcpport'] = int(self.LabelUDPPort.text())
-
 
         self.CONNECTION_INFO['reconnection'],\
          self.CONNECTION_INFO['parameters'] = self.LoadSettings()
@@ -301,8 +305,7 @@ class SATNetGUI(QtGui.QWidget):
         elif self.connectionkind == 'udp':
             self.runUDPThread()
         elif self.connectionkind == 'tcp':
-            self.runTCPThread()
-            
+            self.runTCPThread()  
         else:
             log.err('Error choosing connection type')
 
@@ -311,7 +314,6 @@ class SATNetGUI(QtGui.QWidget):
 
         self.LoadDefaultSettings.setEnabled(False)
         self.AutomaticReconnection.setEnabled(False)
-
 
     def initUI(self):
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))

@@ -15,8 +15,8 @@ git:
 install:
   - pwd
   - pip install coveralls
-  - pip install -r requirements-tests.txt
-  - cd tests/
+  - cd scripts/
+  - bash ./setup.sh -t
 
 script:
   - coverage run test_clientToServer.py

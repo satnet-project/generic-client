@@ -55,9 +55,9 @@ then
 
 elif [ $1 == '-t' ];
 then
-	script_path="$( cd "$( dirname "$0" )" && pwd )"
-	project_path=$( readlink -e "$script_path/.." )
-	venv_path="$project_path/.venv_test"
+	# script_path="$( cd "$( dirname "$0" )" && pwd )"
+	# project_path=$( readlink -e "$script_path/.." )
+	# venv_path="$project_path/.venv_test"
 
 	# Install required packages
 	sudo apt-get install build-essential -f 
@@ -66,11 +66,11 @@ then
 	sudo apt-get install python-twisted
 
 	# Create a virtualenv
-	virtualenv $venv_path
-	source "$venv_path/bin/activate"
+	# virtualenv $venv_path
+	# source "$venv_path/bin/activate"
 	pip install -r "$project_path/requirements-tests.txt"
 
-	cd $venv_path
+	# cd $venv_path
 	mkdir build && cd build
 	pip install SIP --allow-unverified SIP --download="."
 	unzip sip*

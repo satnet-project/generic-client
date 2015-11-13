@@ -24,53 +24,68 @@ import sys
 import os
 import unittest
 import mock
+import time
 
+from twisted.python import log
 from unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from gs_interface import GroundStationInterface
 
-from twisted.python import log
-
-from ampauth.errors import BadCredentials
-from rpcrequests import Satnet_RPC
-
-"""
-Tengo que 
-Tengo que utilizar el objeto ClientProtocol.
-
-
-"""
 
 class CredentialsChecker(unittest.TestCase):
 
     def setUp(self):
         log.startLogging(sys.stdout)
 
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Setting username")
-
         return True
+
+    def _test(self, frame):
+        log.msg("test")
+        log.msg(frame)
+
+    def test_AMPnotPresentCorrectFrame(self):
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresent test")
+
+        frame = 'Frame'
+        CONNECTION_INFO = {}
+        GS = 'Vigo'
+        AMP = None
+
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
+
+        assert os.path.exists("ESEO-" + GS + "-" + time.strftime("%Y.%m.%d") + ".csv") == 1
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Local file created")
 
     """
     Send a correct frame
     """
-    def test_CorrectFrame(self):
+    # def _test_CorrectFrame(self):
 
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Running CorrectFrame test")
+    #     log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running CorrectFrame test")
 
-        """
-        Mock object.
-        """
-        _manageFrame = mock.Mock()
-        GroundStationInterface.AMP = True
+    #     frame = 'Frame'
+    #     CONNECTION_INFO = {}
+    #     GS = 'Vigo'
+    #     AMP = mock.MagicMock()
+    #     # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
 
-        @mock.patch('__main__.Satnet_RPC')
-        def Satnet_RPC(self, sUsername, sPassword, debug=True):
-            return True
+    #     log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Call _manageFrame with test frame")
+    #     gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
 
-        self.rpc = Satnet_RPC('xabi.crespo', mockUserGoodCredentials.password,\
-         debug=True)
+        # # _manageFrame = mock.Mock()
+        # # GroundStationInterface.AMP = True
 
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> GoodCrendentials test ok!")
+        # @mock.patch('GroundStationInterface()')
+        # def Satnet_RPC(self, sUsername, sPassword, debug=True):
+        #     return True
+
+        # self.rpc = Satnet_RPC('xabi.crespo', mockUserGoodCredentials.password,\
+        #  debug=True)
+
+        # return self.assertTrue()
+
+        # log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> CorrectFrame test ok!")
 
     # """
     # Send an incorrect frame

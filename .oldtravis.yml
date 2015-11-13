@@ -1,0 +1,43 @@
+language: 'python'
+
+branches:
+  only:
+    - master
+
+python:
+  - '2.7'
+
+# The SSH references to submodules could cause some problems. We will 
+# change the ssh directions to http.
+git:
+  submodules: false
+
+# Use sed to replace the SSH URL with the public URL, then initialize submodules
+before_install:
+  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+  - git submodule update --init --recursive
+  - cd protocol
+  - git checkout jrpc_if
+  - cd ../
+
+install:
+  - pwd
+  - pip install coveralls
+  - pip install -r requirements-tests.txt
+  - cd protocol/scripts
+  - pip install -r requirements-tests.txt
+  - './protocol-setup.sh'
+  - cd ../tests/
+
+script:
+  - coverage run test_creds.py
+  - coverage run test_end2end.py
+  - coverage run test_login_multipleClients.py
+  - coverage run test_login_singleClient.py
+# Still needs an active server to test. TO-DO
+#  - coverage run test_sendMsg.py
+  - coverage run test_startRemote.py
+
+after_success:
+  - cd ../../
+  - 'coveralls'

@@ -15,9 +15,6 @@ install:
   - cd scripts/
   - bash ./setup.sh -t
   - cd ../tests
-  - pwd
-  - cd ..
-  - pwd
 
 script:
   - coverage run test_clientToServer.py

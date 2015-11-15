@@ -79,16 +79,14 @@ class GroundStationInterface():
     def _manageFrame(self, result):
 
         if self.AMP is not None:
-            log.msg("self.AMP is not None")
+            if type(result) != str:
+                raise WrongFormatNotification("Bad format frame")
             try:
-                log.msg("llamo a _processframe")
-                self.AMP._processframe(self,result)
-                log.msg("despues de process")
+                self.AMP._processframe(self, result)
             except Exception as e:
                 log.err('Error processing frame')
                 log.err(e)
         else:
-            log.msg("self.AMP is None")
             try:
                 self._updateLocalFile(result)
             except TypeError:

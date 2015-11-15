@@ -33,6 +33,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification
+from client_amp import ClientProtocol
+import errors
+
+from twisted.protocols.amp import AMP
+
 
 class CredentialsChecker(unittest.TestCase):
 
@@ -42,14 +47,11 @@ class CredentialsChecker(unittest.TestCase):
 
         return True
 
-    def prueba(self):
-        log.msg("loleilo prueba")
-
-
     """
     Send a correct frame without connection
+
     """
-    def _test_AMPnotPresentCorrectFrame(self):
+    def test_AMPnotPresentCorrectFrame(self):
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentCorrectFrame test")
 
         frame = 'Frame'
@@ -60,7 +62,8 @@ class CredentialsChecker(unittest.TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
         gsi._manageFrame(frame)
 
-        assert os.path.exists("ESEO-" + GS + "-" + time.strftime("%Y.%m.%d") + ".csv") == 1
+        assert os.path.exists("ESEO-" + GS + "-" +\
+         time.strftime("%Y.%m.%d") + ".csv") == 1
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Local file created")
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresentCorrectFrame test OK")
 
@@ -74,20 +77,27 @@ class CredentialsChecker(unittest.TestCase):
         frame = 'Frame'
         CONNECTION_INFO = {}
         GS = 'Vigo'
-        AMP = mock.Mock()
+        amp = AMP
         # AMP._processframe = self._test()
         # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
 
-        AMP._processframe = self.prueba()
+        # AMP._processframe = self.prueba(frame)
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
 
         log.msg(AMP._processframe)
 
+        ClientProtocol(CONNECTION_INFO, gsi)._processframe(frame)
+        # ClientProtocol(CONNECTION_INFO, gsi).processframe(frame)
+
+        """
+        Falta hacer el mock de la funcion call
+        """
+
     """
     Send an incorrect frame without connection
     """
-    def _test_AMPnotPresentIncorrectFrame(self):
+    def test_AMPnotPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentIncorrectFrame test")
 
@@ -105,8 +115,11 @@ class CredentialsChecker(unittest.TestCase):
 
     """
     Send an incorrect frame with connection
+
+    El problema viene cuando procesa el frame que ve que no es una cadena de texto
+    correcta. Introducir comparación de tipo de fichero.
     """
-    def _test_AMPPresentIncorrectFrame(self):
+    def test_AMPPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPPresentIncorrectFrame")
 
@@ -114,12 +127,13 @@ class CredentialsChecker(unittest.TestCase):
         CONNECTION_INFO = {}
         GS = 'Vigo'
         AMP = mock.Mock()
-        # AMP._processframe = self._test()
-        # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
 
-        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
 
-        log.msg(AMP._processframe)
+        self.assertRaisesRegexp(Exception, "Bad format frame",\
+          lambda: gsi._manageFrame(frame))
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Error - Local file not created")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPPresentIncorrectFrame test OK")
 
 
 if __name__ == '__main__':

@@ -112,7 +112,7 @@ class ClientProtocol(AMP):
     # Method associated to frame processing.
     def _processframe(self, frame):
 
-        log.msg("hey process frame!!!")
+        log.msg("Estoy en _processframe")
         self.processFrame(frame)
 
     # @inlineCallbacks

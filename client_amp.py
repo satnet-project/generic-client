@@ -118,12 +118,12 @@ class ClientProtocol(AMP):
 
         log.msg('Received frame: ' + frame)
         try:
-            log.msg("callremote")
             yield self.callRemote(SendMsg, sMsg=frame,\
              iTimestamp=misc.get_utc_timestamp())
         except:
             log.msg("Error")
-        log.msg("despues")
+
+        log.msg("He pasado la llamada de callremote a SendMsg")
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] +\

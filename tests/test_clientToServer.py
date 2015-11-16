@@ -30,16 +30,18 @@ from twisted.python import log
 from unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification
 from client_amp import ClientProtocol
-import errors
-from ampCommands import SendMsg
+# import errors
 
-from twisted.protocols.amp import AMP
-
+from twisted.protocols.amp import AMP, Command, Integer, Boolean, String
 import misc
+from errors import SlotErrorNotification
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol")))
+from server_amp import SATNETServer
+
 
 """
 Problemas. La conexion entre cliente y servidor para el test se puede realizar 
@@ -49,23 +51,56 @@ Si uso un transporte deberia iniciar el servidor, si no hago mocks me invento
 todo.
 
 La he hecho mediante un mock.
+
+He creado un transport cutre y estoy intentando llamar a una funcion del
+protocolo.
 """
 
-class Math(AMP):
 
-    @SendMsg.responder
-    def vSendMsg(self, sMsg, iTimestamp):
-        log.msg("Dentro del vSendMsg")
-        return True
+class SendMsg(Command):
+    
+    arguments = [('sMsg', String()),
+                 ('iTimestamp', Integer())]
+    response = [('bResult', Boolean())]
+    errors = {
+        SlotErrorNotification: 'SLOT_ERROR_NOTIFICATION'}
 
 
-class CredentialsChecker(unittest.TestCase):
+# class SATNETServer(AMP):
+
+#     def __init__(self):
+#         log.msg("SATNETServer")
+
+#     @SendMsg.responder
+#     def vSendMsg(self, sMsg, iTimestamp):
+#         return {'bResult': True}
+
+
+class FakeTransport(object):
+
+    def write(self, data):
+        
+        self.peer.dataReceived(data)
+
+    def loseConnection(self):
+        pass
+
+    def getPeer(self):
+        pass
+
+    def getHost(self):
+        pass
+
+
+class ClientToServerTest(unittest.TestCase):
 
     def mock_processframe(self, AMP_self, frame):
+  
         CONNECTION_INFO = {}
         gsi = object
         
         clientprotocol = ClientProtocol(CONNECTION_INFO, gsi)
+        # Mock callremote
         clientprotocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote)
         clientprotocol._processframe(frame)
 
@@ -73,33 +108,35 @@ class CredentialsChecker(unittest.TestCase):
     Callremote mocked!
     """
     def mock_callremote(self, SendMsg, sMsg, iTimestamp):
+ 
         try:
-            log.msg("Dentro del try")
-            log.msg(SendMsg)
-            log.msg(sMsg)
-            log.msg(iTimestamp)
-            # Puedo hacer un mock de CallRemote
-            try:
-                self.amp.callRemote(SendMsg, sMsg='hola', iTimestamp=misc.get_utc_timestamp())
-            except Exception as e:
-                log.err(e)
+            self.amp.callRemote(SendMsg, sMsg='hola', iTimestamp=misc.get_utc_timestamp())
         except Exception as e:
             log.err(e)
 
     def setUp(self):
+        
         log.startLogging(sys.stdout)
         log.msg("")
 
-        server = Math()
+        server = SATNETServer()
+
         self.amp = AMP()
+
+        server.makeConnection(FakeTransport())
+        self.amp.makeConnection(FakeTransport())
+
+        server.transport.peer = self.amp
+        self.amp.transport.peer = server
 
         return True
 
-    """
-    Send a correct frame without connection
 
     """
-    def test_AMPnotPresentCorrectFrame(self):
+    Send a correct frame without connection
+    """
+    def _test_AMPnotPresentCorrectFrame(self):
+ 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentCorrectFrame test")
 
         frame = 'Frame'
@@ -115,26 +152,27 @@ class CredentialsChecker(unittest.TestCase):
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMP not present - Local file created")
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresentCorrectFrame test OK")
 
+
     """
     Send a correct frame with connection
     """
-    def _test_AMPPresentCorrectFrame(self):
+    def test_AMPPresentCorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPpresentCorrectFrame test")
 
         frame = 'Frame'
         CONNECTION_INFO = {}
         GS = 'Vigo'
-        self.amp = mock.Mock()
+
         self.amp._processframe = mock.MagicMock(side_effect=self.mock_processframe)
-        self.amp.callremote = mock.MagicMock(side_effect=self.mock_callremote)
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)._manageFrame(frame)
+
 
     """
     Send an incorrect frame without connection
     """
-    def test_AMPnotPresentIncorrectFrame(self):
+    def _test_AMPnotPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentIncorrectFrame test")
 
@@ -150,10 +188,11 @@ class CredentialsChecker(unittest.TestCase):
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMP present - Local file not created")
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresentIncorrectFrame test OK")
 
+
     """
     Send an incorrect frame with connection
     """
-    def test_AMPPresentIncorrectFrame(self):
+    def _test_AMPPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPPresentIncorrectFrame")
 

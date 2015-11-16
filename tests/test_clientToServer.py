@@ -35,8 +35,28 @@ from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification
 from client_amp import ClientProtocol
 import errors
+from ampCommands import SendMsg
 
 from twisted.protocols.amp import AMP
+
+import misc
+
+"""
+Problemas. La conexion entre cliente y servidor para el test se puede realizar 
+mediante un mock o mediante un transport falso.
+
+Si uso un transporte deberia iniciar el servidor, si no hago mocks me invento
+todo.
+
+La he hecho mediante un mock.
+"""
+
+class Math(AMP):
+
+    @SendMsg.responder
+    def vSendMsg(self, sMsg, iTimestamp):
+        log.msg("Dentro del vSendMsg")
+        return True
 
 
 class CredentialsChecker(unittest.TestCase):
@@ -44,18 +64,33 @@ class CredentialsChecker(unittest.TestCase):
     def mock_processframe(self, AMP_self, frame):
         CONNECTION_INFO = {}
         gsi = object
+        
+        clientprotocol = ClientProtocol(CONNECTION_INFO, gsi)
+        clientprotocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote)
+        clientprotocol._processframe(frame)
 
-        log.msg("antes de clientprotocol")
-        ClientProtocol(CONNECTION_INFO, gsi)._processframe(frame)
-        log.msg("despues de clientprotocol")
-
-    def mock_callremote(self, Send, sMsg, iTimestamp):
-        log.msg("holaaa")
+    """
+    Callremote mocked!
+    """
+    def mock_callremote(self, SendMsg, sMsg, iTimestamp):
+        try:
+            log.msg("Dentro del try")
+            log.msg(SendMsg)
+            log.msg(sMsg)
+            log.msg(iTimestamp)
+            # Puedo hacer un mock de CallRemote
+            try:
+                self.amp.callRemote(SendMsg, sMsg='hola', iTimestamp=misc.get_utc_timestamp())
+            except Exception as e:
+                log.err(e)
+        except Exception as e:
+            log.err(e)
 
     def setUp(self):
         log.startLogging(sys.stdout)
         log.msg("")
 
+        server = Math()
         self.amp = AMP()
 
         return True

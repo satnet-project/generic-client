@@ -92,10 +92,12 @@ class GroundStationInterface():
                 raise WrongFormatNotification("Bad format frame")
 
     def _updateLocalFile(self, frame):
-        log.msg('---- Saving message to local file ----')
         filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
         with open(filename,"a+") as f:
             f.write(frame + ",\n")
+        
+        log.msg('---- Message saved to local file ----')
+
 
     # :ivar AMP:
     #     Client protocol to which received frames will be sent to be 

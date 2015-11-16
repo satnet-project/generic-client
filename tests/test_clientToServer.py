@@ -45,11 +45,18 @@ class CredentialsChecker(unittest.TestCase):
         CONNECTION_INFO = {}
         gsi = object
 
+        log.msg("antes de clientprotocol")
         ClientProtocol(CONNECTION_INFO, gsi)._processframe(frame)
+        log.msg("despues de clientprotocol")
+
+    def mock_callremote(self, Send, sMsg, iTimestamp):
+        log.msg("holaaa")
 
     def setUp(self):
         log.startLogging(sys.stdout)
         log.msg("")
+
+        self.amp = AMP()
 
         return True
 
@@ -57,69 +64,70 @@ class CredentialsChecker(unittest.TestCase):
     Send a correct frame without connection
 
     """
-    def _test_AMPnotPresentCorrectFrame(self):
+    def test_AMPnotPresentCorrectFrame(self):
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentCorrectFrame test")
 
         frame = 'Frame'
         CONNECTION_INFO = {}
         GS = 'Vigo'
-        AMP = None
+        self.amp = None
 
-        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
         gsi._manageFrame(frame)
 
         assert os.path.exists("ESEO-" + GS + "-" +\
          time.strftime("%Y.%m.%d") + ".csv") == 1
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Local file created")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMP not present - Local file created")
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresentCorrectFrame test OK")
 
     """
     Send a correct frame with connection
     """
-    def test_AMPPresentCorrectFrame(self):
+    def _test_AMPPresentCorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPpresentCorrectFrame test")
 
         frame = 'Frame'
         CONNECTION_INFO = {}
         GS = 'Vigo'
-        AMP = mock.Mock()
-        AMP._processframe = mock.MagicMock(side_effect=self.mock_processframe)
+        self.amp = mock.Mock()
+        self.amp._processframe = mock.MagicMock(side_effect=self.mock_processframe)
+        self.amp.callremote = mock.MagicMock(side_effect=self.mock_callremote)
 
-        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)._manageFrame(frame)
 
     """
     Send an incorrect frame without connection
     """
-    def _test_AMPnotPresentIncorrectFrame(self):
+    def test_AMPnotPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentIncorrectFrame test")
 
         frame = 1234
         CONNECTION_INFO = {}
         GS = 'Vigo'
-        AMP = None
+        self.amp = None
 
-        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
 
         self.assertRaisesRegexp(WrongFormatNotification, "Bad format frame",\
           lambda: gsi._manageFrame(frame))
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Error - Local file not created")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMP present - Local file not created")
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresentIncorrectFrame test OK")
 
     """
     Send an incorrect frame with connection
     """
-    def _test_AMPPresentIncorrectFrame(self):
+    def test_AMPPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPPresentIncorrectFrame")
 
         frame = 1234
         CONNECTION_INFO = {}
         GS = 'Vigo'
-        AMP = mock.Mock()
+        self.amp = mock.Mock()
 
-        gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
+        gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
 
         self.assertRaisesRegexp(Exception, "Bad format frame",\
           lambda: gsi._manageFrame(frame))

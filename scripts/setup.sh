@@ -55,8 +55,8 @@ then
 
 elif [ $1 == '-t' ];
 then
-	# script_path="$( cd "$( dirname "$0" )" && pwd )"
-	# project_path=$( readlink -e "$script_path/.." )
+	script_path="$( cd "$( dirname "$0" )" && pwd )"
+	project_path=$( readlink -e "$script_path/.." )
 	# venv_path="$project_path/.venv_test"
 
 	# Install required packages

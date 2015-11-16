@@ -111,16 +111,19 @@ class ClientProtocol(AMP):
 
     # Method associated to frame processing.
     def _processframe(self, frame):
-
-        log.msg("Estoy en _processframe")
         self.processFrame(frame)
 
-    # @inlineCallbacks
+    @inlineCallbacks
     def processFrame(self, frame):
 
         log.msg('Received frame: ' + frame)
-        # yield self.callRemote(SendMsg, sMsg=frame,\
-        #  iTimestamp=misc.get_utc_timestamp())
+        try:
+            log.msg("callremote")
+            yield self.callRemote(SendMsg, sMsg=frame,\
+             iTimestamp=misc.get_utc_timestamp())
+        except:
+            log.msg("Error")
+        log.msg("despues")
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] +\

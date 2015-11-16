@@ -41,6 +41,12 @@ from twisted.protocols.amp import AMP
 
 class CredentialsChecker(unittest.TestCase):
 
+    def mock_processframe(self, AMP_self, frame):
+        CONNECTION_INFO = {}
+        gsi = object
+
+        ClientProtocol(CONNECTION_INFO, gsi)._processframe(frame)
+
     def setUp(self):
         log.startLogging(sys.stdout)
         log.msg("")
@@ -77,21 +83,10 @@ class CredentialsChecker(unittest.TestCase):
         frame = 'Frame'
         CONNECTION_INFO = {}
         GS = 'Vigo'
-        amp = AMP
-        AMP._processframe = mock.MagicMock
-        # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
-
-        # AMP._processframe = self.prueba(frame)
+        AMP = mock.Mock()
+        AMP._processframe = mock.MagicMock(side_effect=self.mock_processframe)
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
-
-
-        ClientProtocol(CONNECTION_INFO, gsi)._processframe(frame)
-        # ClientProtocol(CONNECTION_INFO, gsi).processframe(frame)
-
-        """
-        Falta hacer el mock de la funcion call
-        """
 
     """
     Send an incorrect frame without connection
@@ -114,9 +109,6 @@ class CredentialsChecker(unittest.TestCase):
 
     """
     Send an incorrect frame with connection
-
-    El problema viene cuando procesa el frame que ve que no es una cadena de texto
-    correcta. Introducir comparación de tipo de fichero.
     """
     def _test_AMPPresentIncorrectFrame(self):
 

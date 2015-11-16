@@ -77,7 +77,6 @@ class GroundStationInterface():
         self.GS = GS
 
     def _manageFrame(self, result):
-
         if self.AMP is not None:
             if type(result) != str:
                 raise WrongFormatNotification("Bad format frame")

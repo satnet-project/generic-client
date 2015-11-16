@@ -11,8 +11,8 @@ git:
   submodules: false
 
 before_install:
-  - sudo apt install build-essential -f
-  - sudo apt install python-twisted -f 
+  - sudo apt install build-essential
+  - sudo apt install python-twisted 
 
 install:
   - pip install coveralls

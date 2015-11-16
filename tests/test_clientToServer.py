@@ -51,7 +51,7 @@ class CredentialsChecker(unittest.TestCase):
     Send a correct frame without connection
 
     """
-    def test_AMPnotPresentCorrectFrame(self):
+    def _test_AMPnotPresentCorrectFrame(self):
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentCorrectFrame test")
 
         frame = 'Frame'
@@ -70,7 +70,7 @@ class CredentialsChecker(unittest.TestCase):
     """
     Send a correct frame with connection
     """
-    def _test_AMPPresentCorrectFrame(self):
+    def test_AMPPresentCorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPpresentCorrectFrame test")
 
@@ -78,14 +78,13 @@ class CredentialsChecker(unittest.TestCase):
         CONNECTION_INFO = {}
         GS = 'Vigo'
         amp = AMP
-        # AMP._processframe = self._test()
+        AMP._processframe = mock.MagicMock
         # AMP._processframe = mock.MagicMock(side_effect=self._test(frame))
 
         # AMP._processframe = self.prueba(frame)
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)._manageFrame(frame)
 
-        log.msg(AMP._processframe)
 
         ClientProtocol(CONNECTION_INFO, gsi)._processframe(frame)
         # ClientProtocol(CONNECTION_INFO, gsi).processframe(frame)
@@ -97,7 +96,7 @@ class CredentialsChecker(unittest.TestCase):
     """
     Send an incorrect frame without connection
     """
-    def test_AMPnotPresentIncorrectFrame(self):
+    def _test_AMPnotPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentIncorrectFrame test")
 
@@ -119,7 +118,7 @@ class CredentialsChecker(unittest.TestCase):
     El problema viene cuando procesa el frame que ve que no es una cadena de texto
     correcta. Introducir comparación de tipo de fichero.
     """
-    def test_AMPPresentIncorrectFrame(self):
+    def _test_AMPPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPPresentIncorrectFrame")
 

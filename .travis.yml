@@ -15,6 +15,7 @@ install:
   - cd scripts/
   - bash ./setup.sh -t
   - cd ../tests
+  - source /home/travis/virtualenv/bin/activate
 
 script:
   - coverage run test_clientToServer.py

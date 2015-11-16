@@ -10,6 +10,10 @@ python:
 git:
   submodules: false
 
+before_install:
+  - sudo apt --assume-yes install build-essential
+  - sudo apt --assume-yes install python-twisted
+
 install:
   - pip install coveralls
   - cd scripts/

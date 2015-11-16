@@ -60,10 +60,10 @@ then
 	# venv_path="$project_path/.venv_test"
 
 	# Install required packages
-	sudo apt-get install build-essential -f 
-	sudo apt-get install python-pip -f
-	sudo apt-get install python-dev -f
-	sudo apt-get install python-twisted
+	# sudo apt-get install build-essential -f 
+	# sudo apt-get install python-pip -f
+	# sudo apt-get install python-dev -f
+	# sudo apt-get install python-twisted
 
 	# Create a virtualenv
 	# virtualenv $venv_path

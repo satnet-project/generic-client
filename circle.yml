@@ -3,7 +3,8 @@ dependencies:
   pre:
     - sudo apt-get install python-mock
     - sudo apt-get install python-twisted
-    - cd scripts && bash ./setup.sh -t
+    - cd scripts && pwd && bash ./setup.sh -t
+    - pip install - r requirements-test.txt
 
 # Using normal installation script.
 test:

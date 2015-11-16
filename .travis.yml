@@ -11,7 +11,6 @@ git:
   submodules: false
 
 before_install:
-  - sudo apt-get install build-essential
   - sudo apt-get install python-twisted 
 
 install:

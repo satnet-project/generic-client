@@ -17,7 +17,6 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 
 import sys
-import getopt
 import os
 import misc
 
@@ -120,8 +119,9 @@ class ClientProtocol(AMP):
         try:
             yield self.callRemote(SendMsg, sMsg=frame,\
              iTimestamp=misc.get_utc_timestamp())
-        except:
-            log.msg("Error")
+        except Exception as e:
+            log.err(e)
+            log.err("Error")
 
         log.msg("He pasado la llamada de callremote a SendMsg")
 
@@ -130,12 +130,16 @@ class ClientProtocol(AMP):
          ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
             log.msg("Disconnection because the slot has ended")
+            log.msg(sDetails)
         elif iEvent == NotifyEvent.REMOTE_DISCONNECTED:
             log.msg("Remote client has lost the connection")
+            log.msg(sDetails)
         elif iEvent == NotifyEvent.END_REMOTE:
             log.msg("The remote client has closed the connection")
+            log.msg(sDetails)
         elif iEvent == NotifyEvent.REMOTE_CONNECTED:
             log.msg("The remote client has just connected")
+            log.msg(sDetails)
 
         return {}
     NotifyEvent.responder(vNotifyEvent)

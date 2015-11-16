@@ -39,8 +39,8 @@ from twisted.protocols.amp import AMP, Command, Integer, Boolean, String
 import misc
 from errors import SlotErrorNotification
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol")))
-from server_amp import SATNETServer
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol")))
+# from server_amp import SATNETServer
 
 
 """
@@ -66,14 +66,14 @@ class SendMsg(Command):
         SlotErrorNotification: 'SLOT_ERROR_NOTIFICATION'}
 
 
-# class SATNETServer(AMP):
+class SATNETServer(AMP):
 
-#     def __init__(self):
-#         log.msg("SATNETServer")
+    # def __init__(self):
+    #     log.msg("SATNETServer")
 
-#     @SendMsg.responder
-#     def vSendMsg(self, sMsg, iTimestamp):
-#         return {'bResult': True}
+    def vSendMsg(self, sMsg, iTimestamp):
+        return {'bResult': True}
+    SendMsg.responder(vSendMsg)
 
 
 class FakeTransport(object):
@@ -110,6 +110,10 @@ class ClientToServerTest(unittest.TestCase):
     def mock_callremote(self, SendMsg, sMsg, iTimestamp):
  
         try:
+            log.msg("antes de SendMsg")
+            log.msg(SendMsg)
+            log.msg("despues de SendMsg")
+            log.msg(self.amp)
             self.amp.callRemote(SendMsg, sMsg='hola', iTimestamp=misc.get_utc_timestamp())
         except Exception as e:
             log.err(e)

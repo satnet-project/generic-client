@@ -139,7 +139,7 @@ class ClientToServerTest(unittest.TestCase):
     """
     Send a correct frame without connection
     """
-    def _test_AMPnotPresentCorrectFrame(self):
+    def test_AMPnotPresentCorrectFrame(self):
  
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentCorrectFrame test")
 
@@ -160,7 +160,7 @@ class ClientToServerTest(unittest.TestCase):
     """
     Send a correct frame with connection
     """
-    def test_AMPPresentCorrectFrame(self):
+    def _test_AMPPresentCorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPpresentCorrectFrame test")
 
@@ -176,7 +176,7 @@ class ClientToServerTest(unittest.TestCase):
     """
     Send an incorrect frame without connection
     """
-    def _test_AMPnotPresentIncorrectFrame(self):
+    def test_AMPnotPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentIncorrectFrame test")
 
@@ -189,14 +189,14 @@ class ClientToServerTest(unittest.TestCase):
 
         self.assertRaisesRegexp(WrongFormatNotification, "Bad format frame",\
           lambda: gsi._manageFrame(frame))
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMP present - Local file not created")
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMP not present - Local file not created")
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> AMPnotPresentIncorrectFrame test OK")
 
 
     """
     Send an incorrect frame with connection
     """
-    def _test_AMPPresentIncorrectFrame(self):
+    def test_AMPPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPPresentIncorrectFrame")
 

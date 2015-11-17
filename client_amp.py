@@ -97,13 +97,18 @@ class ClientProtocol(AMP):
         log.msg("(" + self.CONNECTION_INFO['username'] +\
          ") --------- Notify Message ---------")
         log.msg(sMsg)
-        if self.CONNECTION_INFO['connection'] == 'serial':        
-            self.kissTNC.write(sMsg)        
-        elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
-             self.CONNECTION_INFO['udpport']))
-        elif self.CONNECTION_INFO['connection'] == 'tcp':
-            self.TCPSocket.send(sMsg)
+        """
+        ¿Tiene algun sentido notificar al usuario local, el
+        que tiene la GS, mediante un mensaje a su aparato
+        receptor?
+        """
+        # if self.CONNECTION_INFO['connection'] == 'serial':        
+        #     self.kissTNC.write(sMsg)        
+        # elif self.CONNECTION_INFO['connection'] == 'udp':
+        #     self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
+        #      self.CONNECTION_INFO['udpport']))
+        # elif self.CONNECTION_INFO['connection'] == 'tcp':
+        #     self.TCPSocket.send(sMsg)
 
         return {}
     NotifyMsg.responder(vNotifyMsg)
@@ -122,8 +127,6 @@ class ClientProtocol(AMP):
         except Exception as e:
             log.err(e)
             log.err("Error")
-
-        log.msg("He pasado la llamada de callremote a SendMsg")
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] +\

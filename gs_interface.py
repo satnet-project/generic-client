@@ -80,8 +80,10 @@ class GroundStationInterface():
         if self.AMP is not None:
             if type(result) != str:
                 raise WrongFormatNotification("Bad format frame")
+            
             try:
-                self.AMP._processframe(self, result)
+                # self.AMP._processframe(self, result)
+                self.AMP._processframe(result)
             except Exception as e:
                 log.err('Error processing frame')
                 log.err(e)
@@ -253,7 +255,10 @@ class KISSThread(QtCore.QThread):
             log.err(e)
 
     def run(self):
-        log.msg('Listening')
+        log.msg('Listening' + '.............................' +\
+         '................................................' +\
+          '.............................')
+
         self.running = True
         self.doWork(self.kissTNC)
         # success = self.doWork(self.kissTNC)

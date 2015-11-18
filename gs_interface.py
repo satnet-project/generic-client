@@ -288,8 +288,8 @@ class OperativeTCPThread(TCPThread):
         if self.TCPSignal:
             while True:
                 try:
-                    con, address= TCPSocket.accept()
-                    frame= con.recv(1024) # buffer size is 1024 bytes
+                    con, address = TCPSocket.accept()
+                    frame = con.recv(1024) # buffer size is 1024 bytes
                     self.catchValue(frame, address)
                 except Exception as e:
                     log.err('ErrorOperative TCP protocol')

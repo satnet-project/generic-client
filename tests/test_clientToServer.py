@@ -39,20 +39,11 @@ from twisted.python import log
 from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransport
 
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification, SlotErrorNotification
 from client_amp import ClientProtocol, CtxFactory, ClientReconnectFactory
 import misc
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol")))
-from server_amp import SATNETServer
-from rpcrequests import Satnet_RPC
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol/ampauth")))
-from server import CredReceiver, CredAMPServerFactory
-from errors import BadCredentials
 
 
 class SendMsg(Command):
@@ -68,19 +59,17 @@ class SendMsg(Command):
 Testing for one single client connection
 To-do. Test timeout
 """
-class TestSingleClient(unittest.TestCase):
-
-    def mock_callremote_true(self, NotifyMsg, sMsg):
-        return True
+class TestClientToServer(unittest.TestCase):
 
     def mock_callremote(self, SendMsg, sMsg, iTimestamp):
-        protocol = SATNETServer()
-        protocol.factory = mock.Mock()
-        protocol.factory.active_connections = {'localUsr':'s.gongoragarcia@gmail.com'}
-        protocol.sUsername = 's.gongoragarcia@gmail.com'
-        protocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote_true)
+        return True
+        # protocol = SATNETServer()
+        # protocol.factory = mock.Mock()
+        # protocol.factory.active_connections = {'localUsr':'s.gongoragarcia@gmail.com'}
+        # protocol.sUsername = 's.gongoragarcia@gmail.com'
+        # protocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote_true)
 
-        protocol.vSendMsg(sMsg='hola', iTimestamp=misc.get_utc_timestamp())
+        # protocol.vSendMsg(sMsg='hola', iTimestamp=misc.get_utc_timestamp())
 
     def mock_processframe(self, frame):
         CONNECTION_INFO = {}
@@ -109,26 +98,26 @@ class TestSingleClient(unittest.TestCase):
 
     def _listenServer(self, d):
         try:
+            CredAMPServerFactory = mock.Mock()
+            CredReceiver = mock.Mock()
+
             self.pf = CredAMPServerFactory()
             self.pf.protocol = CredReceiver()
             self.pf.protocol.login = MagicMock(side_effect=self.mockLoginMethod)
             self.pf.onConnectionLost = d
             cert = ssl.PrivateCertificate.loadPEM(
-                open('../../protocol/key/server.pem').read())
+                open('key/server.pem').read())
             return reactor.listenSSL(1234, self.pf, cert.options())
         except CannotListenError:
             log.msg("Server already initialized")
 
     def _connectClient(self, d1, d2):
-        # self.factory = protocol.ClientFactory.forProtocol(ClientProtocolTest)
         self.factory = protocol.ClientFactory.forProtocol(ClientProtocol)
         
-        log.msg(self.factory)
-
         self.factory.onConnectionMade = d1
         self.factory.onConnectionLost = d2
 
-        cert = ssl.Certificate.loadPEM(open('../../protocol/key/public.pem').read())
+        cert = ssl.Certificate.loadPEM(open('key/public.pem').read())
         
         options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
         return reactor.connectSSL("localhost", 1234, self.factory, options)

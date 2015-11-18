@@ -18,10 +18,12 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 import sys
 import os
+
 import misc
 
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+# from misc import get_utc_timestamp
+
+from PyQt4 import QtGui, QtCore
 
 from Queue import Queue
 from OpenSSL import SSL
@@ -34,19 +36,17 @@ from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
 from twisted.internet.defer import inlineCallbacks
 
-from ampCommands import Login
-from ampCommands import StartRemote
-from ampCommands import NotifyMsg
-from ampCommands import NotifyEvent
-from ampCommands import SendMsg
+from ampCommands import Login, StartRemote, NotifyMsg
+from ampCommands import NotifyEvent, SendMsg
 
-from gs_interface import GroundStationInterface
-from gs_interface import OperativeUDPThread
-from gs_interface import OperativeTCPThread
-from gs_interface import OperativeKISSThread
+from gs_interface import GroundStationInterface, OperativeUDPThread
+from gs_interface import OperativeTCPThread, OperativeKISSThread
 
 
 class ClientProtocol(AMP):
+    """
+    Client class
+    """
 
     def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
@@ -96,21 +96,53 @@ class ClientProtocol(AMP):
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] +\
          ") --------- Notify Message ---------")
-        log.msg(sMsg)
-        """
-        ¿Tiene algun sentido notificar al usuario local, el
-        que tiene la GS, mediante un mensaje a su aparato
-        receptor?
-        """
-        # if self.CONNECTION_INFO['connection'] == 'serial':        
-        #     self.kissTNC.write(sMsg)        
-        # elif self.CONNECTION_INFO['connection'] == 'udp':
-        #     self.UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
-        #      self.CONNECTION_INFO['udpport']))
-        # elif self.CONNECTION_INFO['connection'] == 'tcp':
-        #     self.TCPSocket.send(sMsg)
 
-        return {}
+        if self.CONNECTION_INFO['connection'] == 'serial':
+            """
+            Hay que utilizar la conexion ya existente. Esta aproximacion
+            no es del todo correcta.
+            """
+            # import kiss
+            # import aprs
+
+            # kissTNC = aprs.APRSKISS(port='/dev/ttyS1', speed='9000')
+            # kissTNC.start()
+            # kissTNC.write(sMsg)
+
+            return {}
+
+        elif self.CONNECTION_INFO['connection'] == 'udp':
+            """
+            Hay que utilizar la conexion ya existente. Esta aproximacion
+            no es del todo correcta.
+
+            Error - La dirección ya se está usando.
+            # """
+            # import socket
+
+            # UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            # UDPSocket.bind((str(self.CONNECTION_INFO['ip']),\
+            #  int(self.CONNECTION_INFO['udpport']))
+            # UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
+            #  self.CONNECTION_INFO['udpport']))
+            # UDPSocket.close()
+
+            return {}
+
+        elif self.CONNECTION_INFO['connection'] == 'tcp':
+            """
+            Hay que utilizar la conexion ya existente. Esta aproximacion
+            no es del todo correcta
+            """
+            # import socket
+
+            # TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # TCPSocket.bind((str(self.CONNECTION_INFO['ip']),\
+            #  int(self.CONNECTION_INFO['udpport'])))
+            # TCPSocket.listen(1)
+            # TCPSocket.send(sMsg)
+
+            return {}
     NotifyMsg.responder(vNotifyMsg)
 
     # Method associated to frame processing.

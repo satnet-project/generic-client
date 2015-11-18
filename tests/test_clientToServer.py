@@ -34,7 +34,6 @@ from mock import Mock, MagicMock
 from twisted.internet import defer, protocol, reactor, ssl
 from twisted.internet.error import CannotListenError
 from twisted.internet.protocol import Factory
-# from twisted.cred.portal import Portal
 from twisted.protocols.amp import AMP, Command, Integer, Boolean, String
 from twisted.python import log
 from twisted.trial.unittest import TestCase
@@ -45,40 +44,15 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification, SlotErrorNotification
 from client_amp import ClientProtocol, CtxFactory, ClientReconnectFactory
+import misc
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol")))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol/ampauth")))
-
-import misc
 from server_amp import SATNETServer
-from server import CredReceiver, CredAMPServerFactory
-
-from os import path
-
-sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
-
-
-from ampauth.errors import BadCredentials
-from ampauth.server import CredReceiver, CredAMPServerFactory
-# from client_amp_test import ClientProtocol
 from rpcrequests import Satnet_RPC
 
-
-class ServerProtocolTest(CredReceiver):
-
-    def connectionLost(self, reason):
-        super(ServerProtocolTest, self).connectionLost(reason)
-        self.factory.onConnectionLost.callback(self)
-
-
-class ClientProtocolTest(ClientProtocol):
-
-    def connectionMade(self):
-        self.factory.protoInstance = self
-        self.factory.onConnectionMade.callback(self)
-
-    def connectionLost(self, reason):
-        self.factory.onConnectionLost.callback(self)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol/ampauth")))
+from server import CredReceiver, CredAMPServerFactory
+from errors import BadCredentials
 
 
 class SendMsg(Command):
@@ -96,16 +70,17 @@ To-do. Test timeout
 """
 class TestSingleClient(unittest.TestCase):
 
-    def mock_callremote(self, SendMsg, sMsg, iTimestamp):
-        try:
-            log.msg("try")
-            log.msg(self.amp)
-            log.msg(self.amp.callRemote)
+    def mock_callremote_true(self, NotifyMsg, sMsg):
+        return True
 
-            self.amp.callRemote(SendMsg, sMsg='hola', iTimestamp=misc.get_utc_timestamp())
-        except Exception as e:
-            log.msg("error")
-            log.err(e)
+    def mock_callremote(self, SendMsg, sMsg, iTimestamp):
+        protocol = SATNETServer()
+        protocol.factory = mock.Mock()
+        protocol.factory.active_connections = {'localUsr':'s.gongoragarcia@gmail.com'}
+        protocol.sUsername = 's.gongoragarcia@gmail.com'
+        protocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote_true)
+
+        protocol.vSendMsg(sMsg='hola', iTimestamp=misc.get_utc_timestamp())
 
     def mock_processframe(self, frame):
         CONNECTION_INFO = {}
@@ -145,7 +120,11 @@ class TestSingleClient(unittest.TestCase):
             log.msg("Server already initialized")
 
     def _connectClient(self, d1, d2):
-        self.factory = protocol.ClientFactory.forProtocol(ClientProtocolTest)
+        # self.factory = protocol.ClientFactory.forProtocol(ClientProtocolTest)
+        self.factory = protocol.ClientFactory.forProtocol(ClientProtocol)
+        
+        log.msg(self.factory)
+
         self.factory.onConnectionMade = d1
         self.factory.onConnectionLost = d2
 
@@ -188,7 +167,7 @@ class TestSingleClient(unittest.TestCase):
     """
     Send an incorrect frame without connection
     """
-    def _test_AMPnotPresentIncorrectFrame(self):
+    def test_AMPnotPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPnotPresentIncorrectFrame test")
 
@@ -207,7 +186,7 @@ class TestSingleClient(unittest.TestCase):
     """
     Send an incorrect frame with connection
     """
-    def _test_AMPPresentIncorrectFrame(self):
+    def test_AMPPresentIncorrectFrame(self):
 
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPPresentIncorrectFrame")
 

@@ -42,16 +42,16 @@ from twisted.test.proto_helpers import StringTransport
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification, SlotErrorNotification
-from client_amp import ClientProtocol, CtxFactory, ClientReconnectFactory
+from client_amp import ClientProtocol, CtxFactory, ClientReconnectFactory, NotifyMsg
 import misc
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol")))
 from server_amp import SATNETServer
-from rpcrequests import Satnet_RPC
+# from rpcrequests import Satnet_RPC
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol/ampauth")))
-from server import CredReceiver, CredAMPServerFactory
-from errors import BadCredentials
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol/ampauth")))
+# from server import CredReceiver, CredAMPServerFactory
+# from errors import BadCredentials
 
 
 class SendMsg(Command):
@@ -63,11 +63,80 @@ class SendMsg(Command):
         SlotErrorNotification: 'SLOT_ERROR_NOTIFICATION'}
 
 
+class SATNETServer(protocol.Protocol):
+
+    factory = None
+    sUsername = ""
+    credProto = None
+    bGSuser = None
+    slot = None
+    
+    def vSendMsg(self, sMsg, iTimestamp):
+
+        # For tests only, where can I get the current channel?
+        slot_id = 2
+        slot = {'state': 'RESERVED',\
+         'gs_channel': 'groundstation_channel',\
+          'sc_channel': 'spacecraft_channel',\
+           'starting_time': 1576836800, 'ending_time': 1677850000 }
+
+        log.msg("(" + self.sUsername + ") --------- Send Message ---------")
+        # If the client haven't started a connection via StartRemote command...
+        # TODO. Never enters because the clients are in active_protocols as 
+        # soon as they log in
+
+        if self.sUsername not in self.factory.active_connections['localUsr']:
+        # if self.sUsername not in self.factory.active_connections:
+            log.msg('Connection not available. Call StartRemote command first')
+            raise SlotErrorNotification(
+                'Connection not available. Call StartRemote command first.')
+        # ... if the SC operator is not connected, sent messages will be saved
+        # as passive messages...
+        elif self.factory.active_connections['localUsr'] == False:
+            return {'bResult': False}
+            
+            if self.bGSuser == True:
+                PassiveMessage = Satnet_StorePassiveMessage(groundstation_id =\
+                 'groundstation_id', timestamp = 'timestamp', doppler_shift =\
+                  'doppler_shift', message = sMsg, debug = True)
+
+                log.msg('Message saved on server')
+
+                # ... if the GS operator is not connected, the remote SC client 
+                # will be notified to wait for the GS to connect...
+            elif self.bGSuser == False:
+                self.callRemote(NotifyEvent,\
+                 iEvent=NotifyEvent.REMOTE_DISCONNECTED, sDetails=None)
+                return {'bResult': False}
+                # ... else, send the message to the remote and store it in the DB
+        else:
+            self.callRemote(NotifyMsg, sMsg="Protocol has received the message")
+
+            gs_channel = slot['gs_channel']
+            sc_channel = slot['sc_channel']
+
+            log.msg("Saved message")
+            
+            slot_id = 2
+            upwards = True
+            forwarded = True
+            timestamp = 1677850000
+
+            Satnet_StoreMessage = mock.Mock()
+
+            Message = Satnet_StoreMessage(slot_id, upwards, forwarded,\
+             timestamp, sMsg, debug = True)
+
+            return {'bResult': True}
+
+    SendMsg.responder(vSendMsg)
+
+
 """
 Testing for one single client connection
 To-do. Test timeout
 """
-class TestSingleClient(unittest.TestCase):
+class TestServerToClient(unittest.TestCase):
 
     def mock_callremote_true(self, NotifyMsg, sMsg):
 
@@ -75,7 +144,7 @@ class TestSingleClient(unittest.TestCase):
 
     def mock_callremote(self, NotifyMsg, sMsg):
 
-        CONNECTION_INFO = {'username':'s.gongoragarcia@gmail.com'}
+        CONNECTION_INFO = {'username':'s.gongoragarcia@gmail.com', 'connection':'serial'}
         gsi = object
 
         ClientProtocol(CONNECTION_INFO, gsi).vNotifyMsg(sMsg)
@@ -107,6 +176,9 @@ class TestSingleClient(unittest.TestCase):
 
     def _listenServer(self, d):
         try:
+            CredAMPServerFactory = mock.Mock()
+            CredReceiver = mock.Mock()
+
             self.pf = CredAMPServerFactory()
             self.pf.protocol = CredReceiver()
             self.pf.protocol.login = MagicMock(side_effect=self.mockLoginMethod)
@@ -149,6 +221,9 @@ class TestSingleClient(unittest.TestCase):
         log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPpresentCorrectFrame test")
 
         frame = 'Frame'
+
+        # SATNETServer = mock.Mock()
+
 
         protocol = SATNETServer()
         protocol.factory = mock.Mock()

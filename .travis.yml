@@ -25,8 +25,6 @@ install:
   - cd ../tests
 
 script:
-  - pwd
-  - ls
   - coverage run test_clientToServer.py
 
 after_success:

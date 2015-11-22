@@ -57,7 +57,6 @@ then
 	project_path=$( readlink -e "$script_path/.." )
 
     mkdir key
-    ls
     # 1: Generate a Private Key
     echo '>>> Generating a private key'
     openssl genrsa -des3 -passout pass:satnet -out key/test.key 1024

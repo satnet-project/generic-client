@@ -77,7 +77,7 @@ then
     # 6: Generate clients bundle (Certificate)
     cp key/test.crt key/public.pem
 
-    ls
+    mv key ../tests
 
 	pip install -r "$project_path/requirements-tests.txt"
 

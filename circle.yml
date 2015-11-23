@@ -4,9 +4,10 @@ dependencies:
     - sudo apt-get install python-mock
     - sudo apt-get install python-twisted
     - cd scripts && pwd && bash ./setup.sh -t
-    - pwd && ls && pip install -r requirements-test.txt
+    - pwd && ls && pip install -r requirements-tests.txt
 
 # Using normal installation script.
 test:
   override:
     - source .venv/bin/activate && cd tests/ && python test_clientToServer.py
+    - source .venv/bin/activate && cd tests/ && python test_serverToClient.py

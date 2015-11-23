@@ -184,7 +184,7 @@ class TestServerToClient(unittest.TestCase):
             self.pf.protocol.login = MagicMock(side_effect=self.mockLoginMethod)
             self.pf.onConnectionLost = d
             cert = ssl.PrivateCertificate.loadPEM(
-                open('../../protocol/key/server.pem').read())
+                open('key/server.pem').read())
             return reactor.listenSSL(1234, self.pf, cert.options())
         except CannotListenError:
             log.msg("Server already initialized")
@@ -197,7 +197,7 @@ class TestServerToClient(unittest.TestCase):
         self.factory.onConnectionMade = d1
         self.factory.onConnectionLost = d2
 
-        cert = ssl.Certificate.loadPEM(open('../../protocol/key/public.pem').read())
+        cert = ssl.Certificate.loadPEM(open('key/public.pem').read())
         
         options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
         return reactor.connectSSL("localhost", 1234, self.factory, options)

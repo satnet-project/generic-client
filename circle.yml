@@ -4,7 +4,7 @@ dependencies:
     - sudo apt-get install python-mock
     - sudo apt-get install python-twisted
     - cd scripts && pwd && bash ./setup.sh -t
-    - pip install - r requirements-test.txt
+    - pip install -r requirements-test.txt
 
 # Using normal installation script.
 test:

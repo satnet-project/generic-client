@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "SATNETCLIENT" "1" "November 11, 2015" "0.1" "SATNet Client"
+.TH "SATNETCLIENT" "1" "November 12, 2015" "0.1" "SATNet Client"
 .SH NAME
 satnetclient \- SATNet Client Documentation
 .
@@ -131,6 +131,62 @@ udpport: 5005
 This file should be at the root filesystem of the client.
 .fi
 .sp
+.SH WORKING PROCEDURE
+.sp
+Startup process of the graphical interface.
+.nf
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| |    Opens client_amp.py    |
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-+
+|               I
+|               I
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-V\-\-\-\-\-\-\-\-\-\-\-\-\-+ \-\- help argument  +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| |      Checks arguments     | \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-> | Launch man page |
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-+                   +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+|               I
+|               I
+|               I \- No arguments
+|               I
+|               I
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-V\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| |    Redirects sys.stdout   |
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-+
+|               I
+|               I
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-V\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| |  Launchs the application  |
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+|               I
+|               I
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-V\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| | Creates the main window   |
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-+
+|               I
+|               I
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-V\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| |   Shows the main window   |
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-+
+|               I
+|               I
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-V\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| | Install the corresponding |
+| |   reactor, pyqt4reactor   |
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-+
+|               I
+|               I
+| +\-\-\-\-\-\-\-\-\-\-\-\-\-V\-\-\-\-\-\-\-\-\-\-\-\-\-+
+| |     Starts the reactor    |
+V +\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.sp
+.sp
+Creates the main window
+.sp
+Shows the main window
+.sp
+Installs the corresponding reactor called pyqt4reactor
+.sp
+Starts the reactor.
 .SH CLIENT FILE STRUCTURE
 .sp
 Client classes are as follows. Each class is detailed with its corresponding methods.
@@ -1327,33 +1383,31 @@ T}
 _
 .TE
 .sp
-The ClientProtocol class is responsible for creating the connection protocol client.
+El módulo server_amp.py es el encargado de iniciar el servidor de Twisted.
+.sp
+El fichero se puede iniciar en modo debug, en este modo se muestran por pantalla mensajes de aviso cada vez que se crea un deferred o se invoca. También dispone de un modo de ayuda que muestra un pequeño mensaje de ayuda.
+.sp
+La clase SATNETServer, perteneciente al módulo server_amp.py contiene los metodos AMP necesarios.
 .INDENT 0.0
 .TP
-.B __init__(self, CONNECTION_INFO, gsi)
+.B dataReceived(self, data)
 ClientProtocol class initialization through the CONNECTION_INFO variable and the gsi object.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B connectionMade(self)
+.B iStartRemote(self, iSLotId)
 Method belonging to the protocol responsible for starting the user\(aqs connection.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B connectionLost(self)
-When the connection is lost this method is executed.
+.B vEndRemote(self)
+Actualmente no está implementado.
 .UNINDENT
 .INDENT 0.0
 .TP
-.B user_login(self)
+.B vSendMsg(self, sMsg, iTimestamp)
 This method is responsible for making the AMP calls that initiate the connection.
 .UNINDENT
-.INDENT 0.0
-.TP
-.B vNotifyMsg(self, sMsg)
-AMP call responsible for notifying the user of reception of a message.
-.UNINDENT
-.SH TREE STRUCTURE
 .SH AUTHOR
 Ricardo Tubio-Pardavila - Samuel Gongora-Garcia
 .SH COPYRIGHT

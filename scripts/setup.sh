@@ -6,6 +6,10 @@ then
 	project_path=$( readlink -e "$script_path/.." )
 	venv_path="$project_path/.venv"
 
+	echo $script_path
+	echo $project_path
+	echo $venv_path
+
 	# Install required packages
 	sudo apt --assume-yes install build-essential 
 	sudo apt --assume-yes install virtualenv
@@ -17,6 +21,9 @@ then
 
 	# Create a virtualenv
 	virtualenv $venv_path
+
+	ls
+
 	source "$venv_path/bin/activate"
 	pip install -r "$project_path/requirements.txt"
 

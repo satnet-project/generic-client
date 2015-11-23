@@ -98,10 +98,7 @@ class ClientProtocol(AMP):
          ") --------- Notify Message ---------")
 
         if self.CONNECTION_INFO['connection'] == 'serial':
-            """
-            Hay que utilizar la conexion ya existente. Esta aproximacion
-            no es del todo correcta.
-            """
+            log.msg(sMsg)
             # import kiss
             # import aprs
 
@@ -112,12 +109,7 @@ class ClientProtocol(AMP):
             return {}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            """
-            Hay que utilizar la conexion ya existente. Esta aproximacion
-            no es del todo correcta.
-
-            Error - La dirección ya se está usando.
-            # """
+            log.msg(sMsg)
             # import socket
 
             # UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -130,10 +122,7 @@ class ClientProtocol(AMP):
             return {}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
-            """
-            Hay que utilizar la conexion ya existente. Esta aproximacion
-            no es del todo correcta
-            """
+            log.msg(sMsg)
             # import socket
 
             # TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -285,12 +274,6 @@ class SATNetGUI(QtGui.QWidget):
         self.workerKISSThread = OperativeKISSThread(self.serial_queue,\
             self.sendData, self.serialSignal)
         self.workerKISSThread.start()
-
-    # # Run threads associated to UPD protocol
-    # def runUDPThread(self):
-    #     self.workerUDPThread = OperativeUDPThread(self.udp_queue,\
-    #      self.sendData, self.UDPSignal)
-    #     self.workerUDPThread.start()
 
     # Run threads associated to UPD protocol
     def runUDPThread(self):

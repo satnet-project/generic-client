@@ -26,6 +26,7 @@ install:
 
 script:
   - coverage run test_clientToServer.py
+  - coverage run test_serverToClient.py
 
 after_success:
   - cd ../../

@@ -21,9 +21,6 @@ then
 
 	# Create a virtualenv
 	virtualenv $venv_path
-
-	ls
-
 	source "$venv_path/bin/activate"
 	pip install -r "$project_path/requirements.txt"
 
@@ -84,9 +81,10 @@ then
     cp key/test.crt key/public.pem
 
     mv key ../tests
-
+    echo '>>> Python modules installation'
 	pip install -r "$project_path/requirements-tests.txt"
 
+	echo '>>> SIP installation'
 	mkdir build && cd build
 	pip install SIP --allow-unverified SIP --download="."
 	unzip sip*
@@ -96,7 +94,7 @@ then
 	sudo make install
 	cd ../ && rm -r -f sip*
 
-	# PyQt4 installation.
+	echo '>>> PyQt4 installation'
 	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
 	tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
 	cd PyQt-x11-gpl-4.11.4

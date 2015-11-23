@@ -9,5 +9,5 @@ dependencies:
 # Using normal installation script.
 test:
   override:
-    - source .venv/bin/activate && cd tests/ && python test_clientToServer.py
-    - source .venv/bin/activate && cd tests/ && python test_serverToClient.py
+    - cd tests/ && python test_clientToServer.py
+    - cd tests/ && python test_serverToClient.py

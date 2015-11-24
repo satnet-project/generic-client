@@ -123,9 +123,7 @@ class UDPThread(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
-        # Test!! To-do.
-
-        self.CONNECTION_INFO = {'ip':'127.0.0.1', 'udpport':'5001'}
+        self.CONNECTION_INFO = {'ip':'', 'udpport':'57008'}
         server_address = (str(self.CONNECTION_INFO['ip']),\
          int(self.CONNECTION_INFO['udpport']))
 
@@ -147,7 +145,13 @@ class UDPThread(QtCore.QThread):
             log.err(e)
 
     def run(self):
-        log.msg('Listening on ' + str(self.CONNECTION_INFO['ip']) +\
+
+        if self.CONNECTION_INFO['ip'] == '':
+            ip = 'localhost'
+        else:
+            ip = str(self.CONNECTION_INFO['ip'])
+
+        log.msg('Listening on ' + ip +\
          " port: " + str(self.CONNECTION_INFO['udpport']))
         self.running = True
         self.doWork(self.UDPSocket)
@@ -317,17 +321,24 @@ class OperativeUDPThread(UDPThread):
     def doWork(self, UDPSocket):
         if self.UDPSignal:
             while True:
-                frame, address = UDPSocket.recvfrom(1024) # buffer size is 1024 bytes
-                self.catchValue(frame, address)
+                frame, address = UDPSocket.recvfrom(4096) # buffer size is 1024 bytes
+                frameList = []
+                frameList = list(frame)
+                frameList = ":".join("{:02x}".format(ord(c)) for c in frameList)
 
-    def catchValue(self, frame, address):
+                print type(frameList)
+
+                self.catchValue(frameList, address)
+
+    def catchValue(self, frameList, address):
         # self.finished.emit(ResultObj(frame))
 
-        log.msg("----------------------------- " + "Message from UDP socket" +\
-         " -----------------------------")
+        log.msg("----------------------------------------------- "\
+         + "Message from UDP socket" + " -----------------------" +\
+          "-----------------------")
         log.msg("------------------ Received from ip: " + str(address[0]) +\
          " port: " + str(address[1]) +  " ------------------")      
-        self.finished.emit(frame)
+        self.finished.emit(frameList)
 
 
 class OperativeKISSThread(KISSThread):

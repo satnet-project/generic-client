@@ -140,8 +140,7 @@ class ClientProtocol(AMP):
 
     @inlineCallbacks
     def processFrame(self, frame):
-
-        log.msg('Received frame: ' + frame)
+        log.msg('Received frame: ')
         try:
             yield self.callRemote(SendMsg, sMsg=frame,\
              iTimestamp=misc.get_utc_timestamp())

@@ -44,6 +44,6 @@ class TestUDPConnection(object):
 if __name__ == "__main__":
 
 	ip = '127.0.0.1'
-	port = 5001
+	port = 57008
 
 	main = TestUDPConnection(ip, port)

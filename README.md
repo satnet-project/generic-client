@@ -35,6 +35,19 @@ To run this script you have the following options:
 
     `python client_amp.py`
 
+2. To start a serial connection directly from the command line will have to enter 
+the parameters as follows:
+
+    `python client_amp.py -g -n username -p userpassword -t slot -c serial -s serialport -b baudrate`
+    
+3. For a UDP connection you must set an ip and a port: 
+
+    `python client_amp.py -g -n username -p userpassword -t slot -c udp -i ip -u ipport`
+
+For help about script usage enter:
+
+	`python client_amp -help`
+
 #### Other resources
 
 A basic client-server implementation of the AMP protocol for Java and 

@@ -31,7 +31,15 @@ class TestUDPConnection(object):
 		sock = socket(AF_INET, SOCK_DGRAM)
 		server_address = (ip, port)
 
-		message = "This is the message. It will be repeated"
+		# message = "This is the message. It will be repeated"
+
+
+		message = ['\x02', '\xa0', '\x00', '\x00', 'S', 'E', 'R', 'P', '-',\
+		 'B', 'p', '\x01', '$', '\x18', '\x00', '\x03', '\xeb', '\x9e',\
+		  '\xa4', '\x01', '{', '\xff', '\xff', '\xff', '\xff', '\xff',\
+		   '\xff', '\xff', '\xff', '\xff', '\xff', '\xff', '\x00', '\x00',\
+		    'S', '\x95', '\x00', '\x00', '\x00', 'C', '\xff', '\xff',\
+		     '\xe7', '\xff']
 
 		self.sendData(sock, message, server_address)
 

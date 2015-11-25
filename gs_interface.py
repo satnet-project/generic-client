@@ -91,6 +91,7 @@ class GroundStationInterface():
             try:
                 self._updateLocalFile(result)
             except TypeError:
+                # To-do Change error description
                 raise WrongFormatNotification("Bad format frame")
 
     def _updateLocalFile(self, frame):
@@ -322,23 +323,18 @@ class OperativeUDPThread(UDPThread):
         if self.UDPSignal:
             while True:
                 frame, address = UDPSocket.recvfrom(4096) # buffer size is 1024 bytes
-                frameList = []
-                frameList = list(frame)
-                frameList = ":".join("{:02x}".format(ord(c)) for c in frameList)
+                self.catchValue(frame, address)
 
-                print type(frameList)
-
-                self.catchValue(frameList, address)
-
-    def catchValue(self, frameList, address):
+    def catchValue(self, frame, address):
         # self.finished.emit(ResultObj(frame))
-
         log.msg("----------------------------------------------- "\
          + "Message from UDP socket" + " -----------------------" +\
-          "-----------------------")
-        log.msg("------------------ Received from ip: " + str(address[0]) +\
-         " port: " + str(address[1]) +  " ------------------")      
-        self.finished.emit(frameList)
+          "------------------------")
+        log.msg("--------------------------------" +\
+         " Received from ip: " + str(address[0]) +\
+         " port: " + str(address[1]) +  " --------------" +\
+          "------------------")      
+        self.finished.emit(frame)
 
 
 class OperativeKISSThread(KISSThread):
@@ -359,5 +355,7 @@ class OperativeKISSThread(KISSThread):
     def catchValue(self, frame):
         # self.finished.emit(ResultObj(frame))
 
-        log.msg('---- Message from Serial port ----')
+        log.msg("--------------------------------------- " +\
+         "Message from Serial port" + " ---------------" +\
+          "----------------------")
         self.finished.emit(frame)

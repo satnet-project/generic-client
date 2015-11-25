@@ -18,10 +18,7 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 import sys
 import os
-
 import misc
-
-# from misc import get_utc_timestamp
 
 from PyQt4 import QtGui, QtCore
 
@@ -136,13 +133,20 @@ class ClientProtocol(AMP):
 
     # Method associated to frame processing.
     def _processframe(self, frame):
-        self.processFrame(frame)
+
+        frameProcessed = []
+        frameProcessed = list(frame)
+        frameProcessed = ":".join("{:02x}".format(ord(c)) for c in frameProcessed)
+
+        # Recibo el byte array, convierto a HEX, y envio el bytearray a processframe
+        log.msg('Received frame: ', frameProcessed)
+ 
+        self.processFrame(frameProcessed)
 
     @inlineCallbacks
-    def processFrame(self, frame):
-        log.msg('Received frame: ')
+    def processFrame(self, frameProcessed):
         try:
-            yield self.callRemote(SendMsg, sMsg=frame,\
+            yield self.callRemote(SendMsg, sMsg=frameProcessed,\
              iTimestamp=misc.get_utc_timestamp())
         except Exception as e:
             log.err(e)
@@ -153,16 +157,16 @@ class ClientProtocol(AMP):
          ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
             log.msg("Disconnection because the slot has ended")
-            log.msg(sDetails)
+            # log.msg(sDetails)
         elif iEvent == NotifyEvent.REMOTE_DISCONNECTED:
             log.msg("Remote client has lost the connection")
-            log.msg(sDetails)
+            # log.msg(sDetails)
         elif iEvent == NotifyEvent.END_REMOTE:
             log.msg("The remote client has closed the connection")
-            log.msg(sDetails)
+            # log.msg(sDetails)
         elif iEvent == NotifyEvent.REMOTE_CONNECTED:
             log.msg("The remote client has just connected")
-            log.msg(sDetails)
+            # log.msg(sDetails)
 
         return {}
     NotifyEvent.responder(vNotifyEvent)
@@ -251,7 +255,8 @@ class Client(object):
 
 # QDialog, QWidget or QMainWindow, which is better in this situation? TO-DO
 class SATNetGUI(QtGui.QWidget):
-    def __init__(self, parent = None):
+    def __init__(self, username, password, slot, connection, serialPort,\
+     baudRate, UDPIp, UDPPort, parent = None):
         QtGui.QWidget.__init__(self, parent)
 
         self.initUI()
@@ -260,6 +265,9 @@ class SATNetGUI(QtGui.QWidget):
         self.initLogo()
         self.initData()
         self.initConsole()
+        self.setArguments(username, password, slot, connection, serialPort,\
+         baudRate, UDPIp, UDPPort)
+
         self.serialSignal = True
         self.UDPSignal = True
         self.TCPSignal = True
@@ -458,13 +466,32 @@ class SATNetGUI(QtGui.QWidget):
             self.LoadDefaultSettings.setChecked(False)
 
     def initConsole(self):
-        # Console
         self.console = QtGui.QTextBrowser(self)
         self.console.move(340, 10)
         self.console.resize(950, 780)
         self.console.setFont(QtGui.QFont('SansSerif', 10))
 
-    # To-do Not closed properly.
+    def setArguments(self, username, password, slot, connection, serialPort,\
+     baudRate, UDPIp, UDPPort):
+        if username != "":
+            self.LabelUsername.setText(username)
+        if password != "":
+            self.LabelPassword.setText(password)
+        if slot != "":
+            self.LabelSlotID.setValue(int(slot))        
+        if connection != "":
+            index = self.LabelConnection.findText(connection)
+            self.LabelConnection.setCurrentIndex(index)
+        if serialPort != "":
+            index = self.LabelSerialPort.findText(serialPort)
+            self.LabelSerialPort.setCurrentIndex(index)
+        if baudRate !=  "":
+            self.LabelBaudrate.setText(baudRate)
+        if UDPIp != "":
+            self.LabelUDP.setText(UDPIp)
+        if UDPPort != "":
+            self.LabelUDPPort.setText(UDPPort)
+
     def CloseConnection(self):
 
         if self.connectionkind == 'udp':
@@ -584,8 +611,8 @@ class SATNetGUI(QtGui.QWidget):
                 "Usage: python client_amp.py [-i <ip>] # Set ip direction\n"
                 "Usage: python client_amp.py [-u <udpport>] # Set udp port\n"
                 "\n"
-                "Example for serial config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c serial -s /dev/ttyS1 -b 115200\n"
-                "Example for udp config: python client_amp.py -g -u crespo -p cre.spo -t 2 -c udp -i 127.0.0.1 -u 5001\n"
+                "Example for serial config: python client_amp.py -g -n crespo -p cre.spo -t 2 -c serial -s /dev/ttyS1 -b 115200\n"
+                "Example for udp config: python client_amp.py -g -n crespo -p cre.spo -t 2 -c udp -i 127.0.0.1 -u 5001\n"
                 "\n"
                 "[User]\n"
                 "username: crespo\n"
@@ -626,26 +653,30 @@ class SATNetGUI(QtGui.QWidget):
             except Exception as e:
                 pass
 
-            if self.connectionkind == 'udp':
-                try:
-                    self.stopUDPThread()
-                except Exception as e:
-                    log.err(e)
-                    log.err("Can't stop UDP thread")
+            try:
+                if self.connectionkind == 'udp':
+                    try:
+                        self.stopUDPThread()
+                    except Exception as e:
+                        log.err(e)
+                        log.err("Can't stop UDP thread")
 
-            elif self.connectionkind == 'tcp':
-                try:
-                    self.stopTCPThread()
-                except Exception as e:
-                    log.err(e)
-                    log.err("Can't stop TCP thread")
+                elif self.connectionkind == 'tcp':
+                    try:
+                        self.stopTCPThread()
+                    except Exception as e:
+                        log.err(e)
+                        log.err("Can't stop TCP thread")
 
-            elif self.connectionkind == 'serial':
-                try:
-                    self.stopKISSThread()
-                except Exception as e:
-                    log.err(e)
-                    log.err("Can't stop KISS thread")
+                elif self.connectionkind == 'serial':
+                    try:
+                        self.stopKISSThread()
+                    except Exception as e:
+                        log.err(e)
+                        log.err("Can't stop KISS thread")
+            except AttributeError as e:
+                log.err(e)
+                log.err("Unable to stop a connection never created")
 
             try:
                 reactor.stop()
@@ -653,7 +684,7 @@ class SATNetGUI(QtGui.QWidget):
                 event.accept()
             except Exception as e:
                 log.err(e)
-                log.err("Reactor not running.")
+                log.err("Reactor not running")
                 event.ignore()
 
 
@@ -728,12 +759,89 @@ class ResultObj(QtCore.QObject):
 if __name__ == '__main__':
 
     try:
-        if sys.argv[1] == '--help':
+        if sys.argv[1] == "-help":
             import subprocess
             subprocess.call(["man", "./satnetclient.1"])
 
+        elif sys.argv[1] == "-g":
+            username = ""
+            password = ""
+            slot = ""
+            connection = ""
+            serialPort = ""
+            baudRate = ""
+            UDPIp = ""
+            UDPPort = ""
+            
+            import getopt
+            try:
+                opts, args = getopt.getopt(sys.argv[1:],"hfgn:p:t:c:s:b:i:u:",\
+                 ["name=", "password=", "slot=", "connection=", "serialport=",\
+                  "baudrate=", "ip=", "udpport="])
+            except getopt.GetoptError:
+                print "error"
+
+            if ('-g', '') in opts:
+                for opt, arg in opts:
+                    if opt == "-n":
+                        username = arg
+                    elif opt == "-p":
+                        password = arg
+                    elif opt == "-t":
+                        slot = arg
+                    elif opt == "-c":
+                        connection = arg
+                    elif opt == "-s":
+                        serialPort = arg
+                    elif opt == "-b":
+                        baudRate = arg
+                    elif opt == "-i":
+                        UDPIp = arg
+                    elif opt == "-u":
+                        UDPPort = arg
+
+            queue = Queue()
+            sys.stdout = WriteStream(queue)
+
+            log.startLogging(sys.stdout)
+            log.msg('------------------------------------------------- ' + \
+             'SATNet - Generic client' +\
+              ' -------------------------------------------------')
+
+            qapp = QtGui.QApplication(sys.argv)
+            app = SATNetGUI(username, password, slot, connection, serialPort,\
+             baudRate, UDPIp, UDPPort)
+            app.setWindowIcon(QtGui.QIcon('logo.png'))
+            app.show()
+
+            # Create thread that will listen on the other end of the queue, and 
+            # send the text to the textedit in our application
+            my_receiver = MyReceiver(queue)
+            my_receiver.mysignal.connect(app.append_text)
+            my_receiver.start()
+
+            from qtreactor import pyqt4reactor
+            pyqt4reactor.install()
+
+            from twisted.internet import reactor
+            reactor.run()
+
+        elif sys.argv[1] != "-g" and sys.argv[1] != "-help":
+            print "Unknown option: %s" %(sys.argv[1])
+            print "Try 'python client_amp.py -help' for more information."
+
+
     except IndexError:
-        # Create Queue and redirect sys.stdout to this queue
+
+        username = ""
+        password = ""
+        slot = ""
+        connection = ""
+        serialPort = ""
+        baudRate = ""
+        UDPIp = ""
+        UDPPort = ""
+
         queue = Queue()
         sys.stdout = WriteStream(queue)
 
@@ -743,7 +851,8 @@ if __name__ == '__main__':
           ' -------------------------------------------------')
 
         qapp = QtGui.QApplication(sys.argv)
-        app = SATNetGUI()
+        app = SATNetGUI(username, password, slot, connection, serialPort,\
+         baudRate, UDPIp, UDPPort)
         app.setWindowIcon(QtGui.QIcon('logo.png'))
         app.show()
 

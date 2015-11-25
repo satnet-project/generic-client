@@ -5,9 +5,9 @@ dependencies:
     - sudo apt-get install python-twisted
     - cd scripts && bash ./setup.sh -t
     - git submodule update --init --recursive
-  	- cd protocol && git checkout jrpc_if
+    - cd protocol && git checkout jrpc_if
 
 test:
   override:
     - cd tests/ && python test_clientToServer.py
-#    - cd tests/ && python test_serverToClient.py
+    - cd tests/ && python test_serverToClient.py

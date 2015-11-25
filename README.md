@@ -46,7 +46,7 @@ the parameters as follows:
 
 For help about script usage enter:
 
-	`python client_amp -help`
+    `python client_amp -help`
 
 #### Other resources
 

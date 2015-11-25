@@ -20,14 +20,18 @@ before_install:
 
 install:
   - pip install coveralls
+  - pip install coverage
+  - pip install nose
   - cd scripts/
   - bash ./setup.sh -t
   - cd ../tests
 
 script:
-  - coverage run test_clientToServer.py
-  - coverage run test_serverToClient.py
+  - python setup.py install
+  - nosetests --with-coverage
+#  - coverage run test_clientToServer.py
+#  - coverage run test_serverToClient.py
 
 after_success:
-  - cd ../
+#  - cd ../
   - 'coveralls'

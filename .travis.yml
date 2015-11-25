@@ -30,6 +30,4 @@ script:
 
 after_success:
   - cd ../
-  - pwd
-  - ls -a
   - 'coveralls'

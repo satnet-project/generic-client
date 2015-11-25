@@ -124,49 +124,12 @@ class UDPThread(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
-        self.CONNECTION_INFO = {'ip':'', 'udpport':'57008'}
-        server_address = (str(self.CONNECTION_INFO['ip']),\
-         int(self.CONNECTION_INFO['udpport']))
-
-        from socket import socket, AF_INET, SOCK_DGRAM
-        try:
-            log.msg("Opening UPD socket" + ".........................." +\
-         '...........................' + '...........................' +\
-          '........................')
-
-            self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
-        except Exception as e:
-            log.err('Error opening UPD socket')
-            log.err(e)
-
-        try:
-            self.UDPSocket.bind(server_address)
-        except Exception as e:
-            log.err('Error starting UPD protocol')
-            log.err(e)
-
     def run(self):
-
-        if self.CONNECTION_INFO['ip'] == '':
-            ip = 'localhost'
-        else:
-            ip = str(self.CONNECTION_INFO['ip'])
-
-        log.msg('Listening on ' + ip +\
-         " port: " + str(self.CONNECTION_INFO['udpport']))
         self.running = True
-        self.doWork(self.UDPSocket)
+        self.doWork()
         # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
-    
-    def stop(self):
-        log.msg('Stopping UDPSocket' +\
-         "..................................." +\
-         "................................" +\
-          "....................................")
-        self.UDPSocket.close()
-        self.running = False
-    
+        
     def doWork(self):
         return True
     
@@ -179,29 +142,7 @@ class TCPThread(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
-        self.CONNECTION_INFO = {'ip':'127.0.0.1', 'tcpport':'5001'}
-        server_address = (str(self.CONNECTION_INFO['ip']),\
-         int(self.CONNECTION_INFO['tcpport']))
-
-        from socket import socket, AF_INET, SOCK_STREAM
-        try:
-            log.msg("Opening TCP socket" + ".........................." +\
-         '...........................' + '...........................' +\
-          '........................')
-
-            self.TCPSocket = socket(AF_INET, SOCK_STREAM)
-        except Exception as e:
-            log.err('Error opening TCP socket')
-            log.err(e)
-
-        try:
-            self.TCPSocket.bind(server_address)
-        except Exception as e:
-            log.err('Error starting TCP protocol')
-            log.err(e)
-
     def run(self):
-        
         log.msg('Listening on ' + str(self.CONNECTION_INFO['ip']) +\
          " port: " + str(self.CONNECTION_INFO['tcpport']))
         try:
@@ -236,42 +177,15 @@ class KISSThread(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
-        # Opening port
-        import logging
-        import kiss
-        import kiss.constants
-        try:
-            log.msg('Opening serial port' + '.............................' +\
-             '................................................' +\
-              '.............................')
-
-            self.kissTNC = kiss.KISS('/dev/ttyS1', '9000')
-            formatter = logging.Formatter('%(name)s - %(message)s')
-            self.kissTNC.console_handler.setFormatter(formatter)
-            
-        except Exception as e:
-            log.err('Error opening port')
-            log.err(e)
-
-        try:
-            self.kissTNC.start()
-        except Exception as e:
-            log.err('Error starting KISS protocol')
-            log.err(e)
-
     def run(self):
         log.msg('Listening' + '.............................' +\
          '................................................' +\
           '.............................')
 
         self.running = True
-        self.doWork(self.kissTNC)
+        self.doWork()
         # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
-    
-    def stop(self):
-        log.msg('Stopping serial port')
-        self.running = False
     
     def doWork(self):
         return True
@@ -290,6 +204,28 @@ class OperativeTCPThread(TCPThread):
         self.TCPSignal = TCPSignal
     
     def doWork(self, TCPSocket):
+
+        self.CONNECTION_INFO = {'ip':'127.0.0.1', 'tcpport':'5001'}
+        server_address = (str(self.CONNECTION_INFO['ip']),\
+         int(self.CONNECTION_INFO['tcpport']))
+
+        from socket import socket, AF_INET, SOCK_STREAM
+        try:
+            log.msg("Opening TCP socket" + ".........................." +\
+         '...........................' + '...........................' +\
+          '........................')
+
+            self.TCPSocket = socket(AF_INET, SOCK_STREAM)
+        except Exception as e:
+            log.err('Error opening TCP socket')
+            log.err(e)
+
+        try:
+            self.TCPSocket.bind(server_address)
+        except Exception as e:
+            log.err('Error starting TCP protocol')
+            log.err(e)
+
         if self.TCPSignal:
             while True:
                 try:
@@ -313,16 +249,45 @@ class OperativeTCPThread(TCPThread):
 class OperativeUDPThread(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, UDPSignal, parent = None):
+    def __init__(self, queue, callback, UDPSignal, CONNECTION_INFO,\
+     parent = None):
         UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
         self.UDPSignal = UDPSignal
-    
-    def doWork(self, UDPSocket):
+        self.CONNECTION_INFO = CONNECTION_INFO
+
+    def doWork(self):
+        server_address = (str(self.CONNECTION_INFO['ip']),\
+         int(self.CONNECTION_INFO['udpport']))
+
+        if self.CONNECTION_INFO['ip'] == '':
+            ip = 'localhost'
+        else:
+            ip = str(self.CONNECTION_INFO['ip'])
+
+        log.msg('Listening on ' + ip +\
+         " port: " + str(self.CONNECTION_INFO['udpport']))
+
+        from socket import socket, AF_INET, SOCK_DGRAM
+        try:
+            log.msg("Opening UPD socket" + ".........................." +\
+         '...........................' + '...........................' +\
+          '........................')
+            self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
+        except Exception as e:
+            log.err('Error opening UPD socket')
+            log.err(e)
+
+        self.CONNECTION_INFO = {'ip':'', 'udpport':'57008'}
+        server_address = (str(self.CONNECTION_INFO['ip']),\
+         int(self.CONNECTION_INFO['udpport']))
+
+        self.UDPSocket.bind(server_address)
+
         if self.UDPSignal:
             while True:
-                frame, address = UDPSocket.recvfrom(4096) # buffer size is 1024 bytes
+                frame, address = self.UDPSocket.recvfrom(4096) # buffer size is 1024 bytes
                 self.catchValue(frame, address)
 
     def catchValue(self, frame, address):
@@ -336,26 +301,63 @@ class OperativeUDPThread(UDPThread):
           "------------------")      
         self.finished.emit(frame)
 
+    def stop(self):
+        log.msg('Stopping UDPSocket' +\
+         "..................................." +\
+         "................................" +\
+          "....................................")
+        self.UDPSocket.close()
+        self.running = False
+
 
 class OperativeKISSThread(KISSThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, serialSignal, parent = None):
+    def __init__(self, queue, callback, serialSignal, CONNECTION_INFO,\
+     parent = None):
         KISSThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
         self.serialSignal = serialSignal
 
-    def doWork(self, kissTNC):
+        # Opening port
+        import logging
+        import kiss
+        import kiss.constants
+        try:
+            log.msg('Opening serial port' + '.............................' +\
+             '................................................' +\
+              '.............................')
+
+            self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],\
+             CONNECTION_INFO['baudrate'])
+            formatter = logging.Formatter('%(name)s - %(message)s')
+            self.kissTNC.console_handler.setFormatter(formatter)
+            
+        except Exception as e:
+            log.err('Error opening port')
+            log.err(e)
+
+        try:
+            self.kissTNC.start()
+        except Exception as e:
+            log.err('Error starting KISS protocol')
+            log.err(e)
+
+    def doWork(self):
         if self.serialSignal:
             # Only needs to be initialized one time.
-            kissTNC.read(callback=self.catchValue)
+            self.kissTNC.read(callback=self.catchValue)
+
             return True
 
     def catchValue(self, frame):
         # self.finished.emit(ResultObj(frame))
-
         log.msg("--------------------------------------- " +\
          "Message from Serial port" + " ---------------" +\
           "----------------------")
         self.finished.emit(frame)
+
+    def stop(self):
+        log.msg('Stopping serial port')
+        self.running = False

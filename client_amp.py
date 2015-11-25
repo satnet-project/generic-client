@@ -279,13 +279,12 @@ class SATNetGUI(QtGui.QWidget):
     # Run threads associated to KISS protocol
     def runKISSThread(self):
         self.workerKISSThread = OperativeKISSThread(self.serial_queue,\
-            self.sendData, self.serialSignal)
+            self.sendData, self.serialSignal, self.CONNECTION_INFO)
         self.workerKISSThread.start()
 
-    # Run threads associated to UPD protocol
     def runUDPThread(self):
         self.workerUDPThread = OperativeUDPThread(self.udp_queue,\
-         self.sendData, self.UDPSignal)
+         self.sendData, self.UDPSignal, self.CONNECTION_INFO)
         self.workerUDPThread.start()
         
     # Run threads associated to TCP protocol
@@ -375,7 +374,7 @@ class SATNetGUI(QtGui.QWidget):
         # Load parameters from file
         ButtonLoad = QtGui.QPushButton("Load parameters from file")
         ButtonLoad.setToolTip("Load parameters from <i>config.ini</i> file")
-        ButtonLoad.setFixedWidth(298)
+        ButtonLoad.setFixedWidth(296)
         ButtonLoad.clicked.connect(self.LoadParameters)
         # Configuration
         ButtonConfiguration = QtGui.QPushButton("Configuration")
@@ -803,7 +802,7 @@ if __name__ == '__main__':
                         UDPPort = arg
 
             queue = Queue()
-            # sys.stdout = WriteStream(queue)
+            sys.stdout = WriteStream(queue)
 
             log.startLogging(sys.stdout)
             log.msg('------------------------------------------------- ' + \

@@ -3,7 +3,9 @@ dependencies:
   pre:
     - sudo apt-get install python-mock
     - sudo apt-get install python-twisted
-    - cd scripts && pwd && bash ./setup.sh -t
+    - cd scripts && bash ./setup.sh -t
+    - git submodule update --init --recursive
+  	- cd protocol && git checkout jrpc_if
 
 test:
   override:

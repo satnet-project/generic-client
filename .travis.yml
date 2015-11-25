@@ -29,7 +29,7 @@ script:
   - coverage run test_serverToClient.py
 
 after_success:
-  - cd ../../
+  - cd ../
   - pwd
   - ls -a
   - 'coveralls'

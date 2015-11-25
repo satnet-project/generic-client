@@ -408,7 +408,7 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelPassword.setFixedWidth(190)
         self.LabelPassword.setEchoMode(QtGui.QLineEdit.Password)
         layout.addRow(QtGui.QLabel("Password:       "), self.LabelPassword)
-        self.LabelSlotID = QtGui.QSpinBox()
+        self.LabelSlotID = QtGui.QLineEdit()
         layout.addRow(QtGui.QLabel("slot_id:        "), self.LabelSlotID)
 
         self.LabelConnection = QtGui.QComboBox()
@@ -473,12 +473,14 @@ class SATNetGUI(QtGui.QWidget):
 
     def setArguments(self, username, password, slot, connection, serialPort,\
      baudRate, UDPIp, UDPPort):
+
         if username != "":
             self.LabelUsername.setText(username)
         if password != "":
             self.LabelPassword.setText(password)
         if slot != "":
-            self.LabelSlotID.setValue(int(slot))        
+            print slot
+            self.LabelSlotID.setText(slot)        
         if connection != "":
             index = self.LabelConnection.findText(connection)
             self.LabelConnection.setCurrentIndex(index)
@@ -547,7 +549,7 @@ class SATNetGUI(QtGui.QWidget):
         self.CONNECTION_INFO['password'] = config.get('User', 'password')
         self.LabelPassword.setText(self.CONNECTION_INFO['password'])
         self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
-        self.LabelSlotID.setValue(int(self.CONNECTION_INFO['slot_id']))        
+        self.LabelSlotID.setText(self.CONNECTION_INFO['slot_id'])        
         self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
         index = self.LabelConnection.findText(self.CONNECTION_INFO['connection'])
         self.LabelConnection.setCurrentIndex(index)
@@ -801,7 +803,7 @@ if __name__ == '__main__':
                         UDPPort = arg
 
             queue = Queue()
-            sys.stdout = WriteStream(queue)
+            # sys.stdout = WriteStream(queue)
 
             log.startLogging(sys.stdout)
             log.msg('------------------------------------------------- ' + \

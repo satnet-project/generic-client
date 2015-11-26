@@ -143,16 +143,7 @@ class TCPThread(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
-        log.msg('Listening on ' + str(self.CONNECTION_INFO['ip']) +\
-         " port: " + str(self.CONNECTION_INFO['tcpport']))
-        try:
-            self.running = True
-            self.TCPSocket.listen(1)
-            self.doWork(self.TCPSocket)
-            
-        except Exception as e:
-            log.err('Error Listening TCP protocol')
-            log.err(e)
+        self.doWork()
         # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
     
@@ -197,17 +188,15 @@ class KISSThread(QtCore.QThread):
 class OperativeTCPThread(TCPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, TCPSignal, parent = None):
+    def __init__(self, queue, callback, TCPSignal, CONNECTION_INFO,\
+     parent = None):
         TCPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
         self.TCPSignal = TCPSignal
-    
-    def doWork(self, TCPSocket):
 
-        self.CONNECTION_INFO = {'ip':'127.0.0.1', 'tcpport':'5001'}
-        server_address = (str(self.CONNECTION_INFO['ip']),\
-         int(self.CONNECTION_INFO['tcpport']))
+        server_address = (str(CONNECTION_INFO['ip']),\
+         int(CONNECTION_INFO['tcpport']))
 
         from socket import socket, AF_INET, SOCK_STREAM
         try:
@@ -226,6 +215,18 @@ class OperativeTCPThread(TCPThread):
             log.err('Error starting TCP protocol')
             log.err(e)
 
+        log.msg('Listening on ' + str(self.CONNECTION_INFO['ip']) +\
+         " port: " + str(self.CONNECTION_INFO['tcpport']))
+        try:
+            self.running = True
+            self.TCPSocket.listen(1)
+            self.doWork(self.TCPSocket)
+            
+        except Exception as e:
+            log.err('Error Listening TCP protocol')
+            log.err(e)
+
+    def doWork(self):
         if self.TCPSignal:
             while True:
                 try:

@@ -290,7 +290,7 @@ class SATNetGUI(QtGui.QWidget):
     # Run threads associated to TCP protocol
     def runTCPThread(self):
         self.workerTCPThread = OperativeTCPThread(self.tcp_queue,\
-         self.sendData, self.TCPSignal)
+         self.sendData, self.TCPSignal, self.CONNECTION_INFO)
         self.workerTCPThread.start()
     
     # Stop KISS thread

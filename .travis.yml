@@ -27,7 +27,7 @@ install:
   - cd ../tests
 
 script:
-  - python setup.py install
+#  - python setup.py install
   - nosetests --with-coverage
 #  - coverage run test_clientToServer.py
 #  - coverage run test_serverToClient.py

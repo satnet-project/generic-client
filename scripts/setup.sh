@@ -6,9 +6,9 @@ then
 	project_path=$( readlink -e "$script_path/.." )
 	venv_path="$project_path/.venv"
 
-	echo $script_path
-	echo $project_path
-	echo $venv_path
+	# Enable serial access
+	currentUser=$(whoami)
+	sudo usermod -a -G dialout $currentUser 
 
 	# Install required packages
 	sudo apt --assume-yes install build-essential 
@@ -18,6 +18,8 @@ then
 	sudo apt --assume-yes install unzip
 	sudo apt --assume-yes install python-pip
 	sudo apt --assume-yes install python-dev
+	sudo apt --assume-yes install libffi-dev
+	sudo apt --assume-yes install libssl-dev
 
 	# Create a virtualenv
 	virtualenv $venv_path

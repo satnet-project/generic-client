@@ -101,7 +101,7 @@ then
 	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
 	tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
 	cd PyQt-x11-gpl-4.11.4
-	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 --enable qtcore
+	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 --enable qtcore qtgui
 	make
 	# Bug. Needed ldconfig, copy it from /usr/sbin
 	cp /sbin/ldconfig ../../bin/

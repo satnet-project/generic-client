@@ -259,7 +259,8 @@ class SATNetGUI(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 18))
 
-        enviromentDesktop = 'gnome'
+        import os
+        enviromentDesktop = os.environ.get('DESKTOP_SESSION')
 
         self.initUI()
         self.initButtons()
@@ -436,7 +437,7 @@ class SATNetGUI(QtGui.QWidget):
         index = self.LabelConnection.findText(connection)
         self.LabelConnection.setCurrentIndex(index)
 
-        if enviromentDesktop == 'gnome':
+        if enviromentDesktop == 'default':
             if connection == 'serial':
                 self.LabelSerialPort = QtGui.QComboBox()
                 from glob import glob
@@ -452,7 +453,7 @@ class SATNetGUI(QtGui.QWidget):
                 self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelUDPPort)
             else:
                 print "Error en creacion gnome"        
-        elif enviromentDesktop == 'mate':
+        elif enviromentDesktop == 'lightdm-xsession':
             self.LabelSerialPort = QtGui.QComboBox()
             from glob import glob
             ports = glob('/dev/tty[A-Za-z]*')
@@ -590,7 +591,7 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelConnection.setCurrentIndex(index)
 
 
-        if enviromentDesktop == 'mate':
+        if enviromentDesktop == 'lightdm-xsession':
             self.CONNECTION_INFO['serialport'] = config.get('Serial',\
              'serialport')
             index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
@@ -609,13 +610,13 @@ class SATNetGUI(QtGui.QWidget):
                 self.LabelBaudrate.setEnabled(True)
                 self.LabelUDP.setEnabled(False)
                 self.LabelUDPPort.setEnabled(False)
-            elif self.CONNECTION_INFO['udp'] or self.CONNECTION_INFO['tcp']:
+            elif self.CONNECTION_INFO['connection'] == 'udp' or self.CONNECTION_INFO['connection']  == 'tcp':
                 self.LabelSerialPort.setEnabled(False)
                 self.LabelBaudrate.setEnabled(False)
                 self.LabelUDP.setEnabled(True)
                 self.LabelUDPPort.setEnabled(True)
 
-        elif enviromentDesktop == 'gnome':
+        elif enviromentDesktop == 'default':
             if self.CONNECTION_INFO['connection'] == 'serial':
                 self.CONNECTION_INFO['serialport'] = config.get('Serial',\
                  'serialport')
@@ -632,10 +633,6 @@ class SATNetGUI(QtGui.QWidget):
                 self.LabelUDPPort.setText(config.get('UDP', 'udpport'))
             else:
                 print "Error en LoadParameters"
-
-
-        # Deberia crear los botones aqui
-
 
     def SetConfiguration(self):
         # First draft

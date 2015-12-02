@@ -80,7 +80,7 @@ class GroundStationInterface():
         if self.AMP is not None:
             if type(result) != str:
                 raise WrongFormatNotification("Bad format frame")
-            
+           
             try:
                 # self.AMP._processframe(self, result)
                 self.AMP._processframe(result)
@@ -98,7 +98,7 @@ class GroundStationInterface():
         filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
         with open(filename,"a+") as f:
             f.write(frame + ",\n")
-        
+       
         log.msg('---- Message saved to local file ----')
 
 
@@ -169,9 +169,9 @@ class KISSThread(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
-        log.msg('Listening' + '.............................' +\
-         '................................................' +\
-          '.............................')
+        log.msg('Listening' + '.............................' +
+                '................................................' +
+                '.............................')
 
         self.running = True
         self.doWork()
@@ -245,8 +245,8 @@ class OperativeTCPThread(TCPThread):
         log.msg("------------------ Received from ip: " + str(address[0]) +\
          " port: " + str(address[1]) +  " ------------------")      
         self.finished.emit(frame)
-    
-    
+   
+   
 class OperativeUDPThread(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
@@ -272,17 +272,17 @@ class OperativeUDPThread(UDPThread):
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
-            log.msg("Opening UPD socket" + ".........................." +\
-         '...........................' + '...........................' +\
-          '........................')
+            log.msg("Opening UPD socket" + ".........................." +
+                    '..........................................' +
+                    '....................................')
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
         except Exception as e:
             log.err('Error opening UPD socket')
             log.err(e)
 
         self.CONNECTION_INFO = {'ip':'', 'udpport':'57008'}
-        server_address = (str(self.CONNECTION_INFO['ip']),\
-         int(self.CONNECTION_INFO['udpport']))
+        server_address = (str(self.CONNECTION_INFO['ip']),
+                            int(self.CONNECTION_INFO['udpport']))
 
         self.UDPSocket.bind(server_address)
 
@@ -293,9 +293,9 @@ class OperativeUDPThread(UDPThread):
 
     def catchValue(self, frame, address):
         # self.finished.emit(ResultObj(frame))
-        log.msg("----------------------------------------------- "\
-         + "Message from UDP socket" + " -----------------------" +\
-          "------------------------")
+        log.msg("----------------------------------------------- "
+                + "Message from UDP socket" + " -----------------------" +
+                "------------------------")
         log.msg("--------------------------------" +\
          " Received from ip: " + str(address[0]) +\
          " port: " + str(address[1]) +  " --------------" +\
@@ -303,10 +303,10 @@ class OperativeUDPThread(UDPThread):
         self.finished.emit(frame)
 
     def stop(self):
-        log.msg('Stopping UDPSocket' +\
-         "..................................." +\
-         "................................" +\
-          "....................................")
+        log.msg('Stopping UDPSocket' +
+                "..................................." +
+                "................................" +
+                "....................................")
         self.UDPSocket.close()
         self.running = False
 

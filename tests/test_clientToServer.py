@@ -68,8 +68,7 @@ class TestClientToServer(unittest.TestCase):
         gsi = object      
         clientprotocol = ClientProtocol(CONNECTION_INFO, gsi)
         # Mock callremote
-        clientprotocol.callRemote = 
-            mock.MagicMock(side_effect=self.mock_callremote)
+        clientprotocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote)
         clientprotocol._processframe(frame)
 
     def mockLoginMethod(self, username, password):
@@ -100,7 +99,7 @@ class TestClientToServer(unittest.TestCase):
             self.pf.onConnectionLost = d
             cert = ssl.PrivateCertificate.loadPEM(
                 open('key/server.pem').read())
-            return reactor.listenSSL(1234, self.pf, cert.options())
+            # return reactor.listenSSL(1234, self.pf, cert.options())
         except CannotListenError:
             log.msg("Server already initialized")
 
@@ -120,8 +119,7 @@ class TestClientToServer(unittest.TestCase):
                                         self.serverDisconnected])
         except AttributeError:
             self.clientConnection.disconnect()
-            return defer.gatherResults([self.clientDisconnected,
-                                        self.serverDisconnected])      
+            return defer.gatherResults([self.clientDisconnected, self.serverDisconnected])      
 
     """
     Send a correct frame without connection
@@ -137,15 +135,14 @@ class TestClientToServer(unittest.TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
         gsi._manageFrame(frame)
 
-        assert os.path.exists(("ESEO-" + GS + "-" +
-                                 time.strftime("%Y.%m.%d") + ".csv") == 1)
+        assert os.path.exists("ESEO-" + GS + "-" + time.strftime("%Y.%m.%d") + ".csv")
         log.msg(">>>>>>>>>>>>>>>>> AMP not present - Local file created")
         log.msg(">>>>>>>>>>>>>>>>> AMPnotPresentCorrectFrame test OK")
 
     """
     Send an incorrect frame without connection
     """
-    def _test_AMPnotPresentIncorrectFrame(self):
+    def test_AMPnotPresentIncorrectFrame(self):
         log.msg(">>>>>>>>>>>>>>>>> Running AMPnotPresentIncorrectFrame test")
 
         frame = 1234
@@ -155,15 +152,14 @@ class TestClientToServer(unittest.TestCase):
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
 
-        self.assertRaisesRegexp(WrongFormatNotification, "Bad format frame",
-                                lambda: gsi._manageFrame(frame))
+        self.assertRaisesRegexp(WrongFormatNotification, "Bad format frame", lambda: gsi._manageFrame(frame))
         log.msg(">>>>>>>>>>>>>>>>> AMP not present - Local file not created")
         log.msg(">>>>>>>>>>>>>>>>> AMPnotPresentIncorrectFrame test OK")
 
     """
     Send an incorrect frame with connection
     """
-    def _test_AMPPresentIncorrectFrame(self):
+    def test_AMPPresentIncorrectFrame(self):
         log.msg(">>>>>>>>>>>>>>>>>>Running AMPPresentIncorrectFrame")
 
         frame = 1234
@@ -173,15 +169,14 @@ class TestClientToServer(unittest.TestCase):
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
 
-        self.assertRaisesRegexp(Exception, "Bad format frame",
-                                lambda: gsi._manageFrame(frame))
+        self.assertRaisesRegexp(Exception, "Bad format frame", lambda: gsi._manageFrame(frame))
         log.msg(">>>>>>>>>>>>>>>>> Error - Local file not created")
         log.msg(">>>>>>>>>>>>>>>>> AMPPresentIncorrectFrame test OK")
 
     """
     Send a correct frame with connection
     """
-    def _test_AMPPresentCorrectFrame(self):
+    def test_AMPPresentCorrectFrame(self):
         log.msg(">>>>>>>>>>>>>>>>> Running AMPpresentCorrectFrame test")
 
         frame = 'Frame'
@@ -189,10 +184,8 @@ class TestClientToServer(unittest.TestCase):
         GS = 'Vigo'
 
         self.amp = AMP()
-        self.amp._processframe = mock.MagicMock(
-            side_effect=self.mock_processframe)
-        GroundStationInterface(
-            CONNECTION_INFO, GS, self.amp)._manageFrame(frame)
+        self.amp._processframe = mock.MagicMock(side_effect=self.mock_processframe)
+        GroundStationInterface(CONNECTION_INFO, GS, self.amp)._manageFrame(frame)
 
 
 if __name__ == '__main__':

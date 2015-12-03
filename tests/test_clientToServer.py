@@ -113,11 +113,15 @@ class TestClientToServer(unittest.TestCase):
 
     def tearDown(self):
         try:
-            d = defer.maybeDeferred(self.serverPort.stopListening)
+            # d = defer.maybeDeferred(self.serverPort.stopListening)
             self.clientConnection.disconnect()
-            return defer.gatherResults([d, self.clientDisconnected,
-                                        self.serverDisconnected])
+            # return defer.gatherResults([d, self.clientDisconnected,
+
+            return defer.gatherResults([self.clientDisconnected, self.serverDisconnected])
+
+                                        # self.serverDisconnected])
         except AttributeError:
+            log.msg("AttributeError")
             self.clientConnection.disconnect()
             return defer.gatherResults([self.clientDisconnected, self.serverDisconnected])      
 

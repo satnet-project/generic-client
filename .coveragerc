@@ -1,5 +1,12 @@
+[run]
+omit =
+    */python?.?/*
+    */site-packages/nose/*
+    *__init__*
+    .venv/*
+
 [report]
-omit =  
+omit =
     */python?.?/*
     */site-packages/nose/*
     *__init__*

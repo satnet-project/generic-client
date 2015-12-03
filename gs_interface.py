@@ -80,7 +80,7 @@ class GroundStationInterface():
         if self.AMP is not None:
             if type(result) != str:
                 raise WrongFormatNotification("Bad format frame")
-           
+          
             try:
                 # self.AMP._processframe(self, result)
                 self.AMP._processframe(result)
@@ -98,7 +98,7 @@ class GroundStationInterface():
         filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
         with open(filename,"a+") as f:
             f.write(frame + ",\n")
-       
+      
         log.msg('---- Message saved to local file ----')
 
 
@@ -120,7 +120,7 @@ class GroundStationInterface():
 
 # Class associated to UDP protocol
 class UDPThread(QtCore.QThread):
-    
+   
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
@@ -129,10 +129,10 @@ class UDPThread(QtCore.QThread):
         self.doWork()
         # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
-        
+       
     def doWork(self):
         return True
-    
+   
     def cleanUp(self):
         pass
 
@@ -250,8 +250,8 @@ class OperativeTCPThread(TCPThread):
 class OperativeUDPThread(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, UDPSignal, CONNECTION_INFO,\
-     parent = None):
+    def __init__(self, queue, callback, UDPSignal, CONNECTION_INFO,
+                    parent = None):
         UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
@@ -288,7 +288,7 @@ class OperativeUDPThread(UDPThread):
 
         if self.UDPSignal:
             while True:
-                frame, address = self.UDPSocket.recvfrom(4096) # buffer size is 1024 bytes
+                frame, address = self.UDPSocket.recvfrom(4096)
                 self.catchValue(frame, address)
 
     def catchValue(self, frame, address):
@@ -296,10 +296,10 @@ class OperativeUDPThread(UDPThread):
         log.msg("----------------------------------------------- "
                 + "Message from UDP socket" + " -----------------------" +
                 "------------------------")
-        log.msg("--------------------------------" +\
-         " Received from ip: " + str(address[0]) +\
-         " port: " + str(address[1]) +  " --------------" +\
-          "------------------")      
+        log.msg("--------------------------------" +
+                " Received from ip: " + str(address[0]) +
+                " port: " + str(address[1]) +  " --------------" +
+                "------------------")      
         self.finished.emit(frame)
 
     def stop(self):

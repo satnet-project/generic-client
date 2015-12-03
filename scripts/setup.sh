@@ -109,6 +109,61 @@ then
 	sudo make install
 	cd ../ && rm -r -f PyQt*
 
+elif [ $1 == '-l' ];
+then
+	script_path="$( cd "$( dirname "$0" )" && pwd )"
+	project_path=$( readlink -e "$script_path/.." )
+	venv_path="$project_path/.venv_test"
+
+	mkdir key
+	# 1: Generate a Private Key
+	echo '>>> Generating a private key'
+	openssl genrsa -des3 -passout pass:satnet -out key/test.key 1024
+	# 2: Generate a CSR (Certificate Signing Request)
+	echo '>>> Generating a CSR'
+	openssl req -new -key key/test.key -passin pass:satnet -out key/test.csr -subj /CN=example.humsat.org/ 
+	# 3: Remove Passphrase from Private Key
+	echo '>>> Removing passphrase from private key'
+	openssl rsa -in key/test.key -passin pass:satnet -out key/test.key
+	# 4: Generating a Self-Signed Certificate
+	echo '>>> Generating a public key (certificate)'
+	openssl x509 -req -days 365 -in key/test.csr -signkey key/test.key -out key/test.crt
+
+	echo '>>> Generating key bundles'
+	# 5: Generate server bundle (Certificate + Private key)
+	cat key/test.crt key/test.key > key/server.pem
+	# 6: Generate clients bundle (Certificate)
+	cp key/test.crt key/public.pem
+
+	v key ../tests
+
+	# Create a virtualenv
+	virtualenv $venv_path
+	source "$venv_path/bin/activate"
+	pip install -r "$project_path/requirements.txt"
+
+	echo '>>> SIP installation'
+	mkdir build && cd build
+	pip install SIP --allow-unverified SIP --download="."
+	unzip sip*
+	cd sip*
+	python configure.py
+	make
+	sudo make install
+	cd ../ && rm -r -f sip*
+
+	echo '>>> PyQt4 installation'
+	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
+	tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
+	cd PyQt-x11-gpl-4.11.4
+	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4
+	make
+	# Bug. Needed ldconfig, copy it from /usr/sbin
+	cp /sbin/ldconfig ../../bin/
+	sudo ldconfig
+	sudo make install
+	cd ../ && rm -r -f PyQt*
+
 fi
 
 

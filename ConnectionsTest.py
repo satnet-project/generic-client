@@ -22,36 +22,28 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 class TestUDPConnection(object):
 
-	def __init__(self, ip, port):
-		from socket import socket, AF_INET, SOCK_DGRAM
+    def __init__(self, ip, port):
+        from socket import socket, AF_INET, SOCK_DGRAM
 
-		ip = str(ip)
-		port = int(port)
+        ip = str(ip)
+        port = int(port)
 
-		sock = socket(AF_INET, SOCK_DGRAM)
-		server_address = (ip, port)
+        sock = socket(AF_INET, SOCK_DGRAM)
+        server_address = (ip, port)
 
-		# message = "This is the message. It will be repeated"
+        message = "This is the message. It will be repeated"
 
+        self.sendData(sock, message, server_address)
 
-		message = ['\x02', '\xa0', '\x00', '\x00', 'S', 'E', 'R', 'P', '-',\
-		 'B', 'p', '\x01', '$', '\x18', '\x00', '\x03', '\xeb', '\x9e',\
-		  '\xa4', '\x01', '{', '\xff', '\xff', '\xff', '\xff', '\xff',\
-		   '\xff', '\xff', '\xff', '\xff', '\xff', '\xff', '\x00', '\x00',\
-		    'S', '\x95', '\x00', '\x00', '\x00', 'C', '\xff', '\xff',\
-		     '\xe7', '\xff']
+    def sendData(self, sock, message, server_address):
+        print "Sending message"
+        sock.sendto(message, server_address)
 
-		self.sendData(sock, message, server_address)
-
-	def sendData(self, sock, message, server_address):
-		print "Sending message"
-		sock.sendto(message, server_address)
-
-		sock.close()
+        sock.close()
 
 if __name__ == "__main__":
 
-	ip = '127.0.0.1'
-	port = 57008
+    ip = '127.0.0.1'
+    port = 57008
 
-	main = TestUDPConnection(ip, port)
+    main = TestUDPConnection(ip, port)

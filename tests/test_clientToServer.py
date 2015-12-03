@@ -55,18 +55,21 @@ class TestClientToServer(unittest.TestCase):
         return True
         # protocol = SATNETServer()
         # protocol.factory = mock.Mock()
-        # protocol.factory.active_connections = {'localUsr':'s.gongoragarcia@gmail.com'}
+        # protocol.factory.active_connections = 
+        #   {'localUsr':'s.gongoragarcia@gmail.com'}
         # protocol.sUsername = 's.gongoragarcia@gmail.com'
-        # protocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote_true)
+        # protocol.callRemote = 
+        #   mock.MagicMock(side_effect=self.mock_callremote_true)
 
         # protocol.vSendMsg(sMsg='hola', iTimestamp=misc.get_utc_timestamp())
 
     def mock_processframe(self, frame):
         CONNECTION_INFO = {}
-        gsi = object       
+        gsi = object      
         clientprotocol = ClientProtocol(CONNECTION_INFO, gsi)
         # Mock callremote
-        clientprotocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote)
+        clientprotocol.callRemote = 
+            mock.MagicMock(side_effect=self.mock_callremote)
         clientprotocol._processframe(frame)
 
     def mockLoginMethod(self, username, password):
@@ -92,7 +95,8 @@ class TestClientToServer(unittest.TestCase):
 
             self.pf = CredAMPServerFactory()
             self.pf.protocol = CredReceiver()
-            self.pf.protocol.login = mock.MagicMock(side_effect=self.mockLoginMethod)
+            self.pf.protocol.login = mock.MagicMock(
+                                        side_effect=self.mockLoginMethod)
             self.pf.onConnectionLost = d
             cert = ssl.PrivateCertificate.loadPEM(
                 open('key/server.pem').read())
@@ -101,10 +105,10 @@ class TestClientToServer(unittest.TestCase):
             log.msg("Server already initialized")
 
     def _connectClient(self, d1, d2):
-        self.factory = protocol.ClientFactory.forProtocol(ClientProtocol)    
+        self.factory = protocol.ClientFactory.forProtocol(ClientProtocol)   
         self.factory.onConnectionMade = d1
         self.factory.onConnectionLost = d2
-        cert = ssl.Certificate.loadPEM(open('key/public.pem').read())      
+        cert = ssl.Certificate.loadPEM(open('key/public.pem').read())     
         options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
         return reactor.connectSSL("localhost", 1234, self.factory, options)
 
@@ -117,7 +121,7 @@ class TestClientToServer(unittest.TestCase):
         except AttributeError:
             self.clientConnection.disconnect()
             return defer.gatherResults([self.clientDisconnected,
-                                        self.serverDisconnected])            
+                                        self.serverDisconnected])      
 
     """
     Send a correct frame without connection
@@ -133,8 +137,8 @@ class TestClientToServer(unittest.TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
         gsi._manageFrame(frame)
 
-        assert os.path.exists("ESEO-" + GS + "-" +
-                                time.strftime("%Y.%m.%d") + ".csv") == 1
+        assert os.path.exists(("ESEO-" + GS + "-" +
+                                 time.strftime("%Y.%m.%d") + ".csv") == 1)
         log.msg(">>>>>>>>>>>>>>>>> AMP not present - Local file created")
         log.msg(">>>>>>>>>>>>>>>>> AMPnotPresentCorrectFrame test OK")
 
@@ -187,7 +191,7 @@ class TestClientToServer(unittest.TestCase):
         self.amp = AMP()
         self.amp._processframe = mock.MagicMock(
             side_effect=self.mock_processframe)
-        gsi = GroundStationInterface(
+        GroundStationInterface(
             CONNECTION_INFO, GS, self.amp)._manageFrame(frame)
 
 

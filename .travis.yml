@@ -37,8 +37,9 @@ install:
   - cd build
   - pwd
 
-  - pip install SIP --allow-unverified SIP --download="."
-  - unzip sip*
+#  - pip install SIP --allow-unverified SIP --download="."
+  - wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.zip
+  - unzip sip-4.17.zip
   - echo "2"
   - pwd
   - cd sip*

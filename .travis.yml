@@ -31,7 +31,12 @@ install:
   - echo "1"
   - pwd
 
-  - mkdir build && cd build
+  - mkdir build
+  - pwd
+
+  - cd build
+  - pwd
+
   - pip install SIP --allow-unverified SIP --download="."
   - unzip sip*
   - echo "2"

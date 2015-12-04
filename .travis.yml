@@ -35,14 +35,11 @@ install:
   - python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
   - make
   - make install
-  - cd ../ && rm -r -f PyQt-x11-gpl-4.11.4 && cd ../
+  - cd ../ && rm -r -f PyQt-x11-gpl-4.11.4 && cd ../../
 
 script:
 #  - python setup.py install
-  - pwd
-  - ls
-  - cd ../
-  - nosetests --with-coverage --cover-erase --cover-package=generic-client
+  - nosetests --with-coverage --cover-erase
 #  - coverage run test_clientToServer.py
 #  - coverage run test_serverToClient.py
 

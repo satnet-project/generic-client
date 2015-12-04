@@ -148,7 +148,7 @@ then
     pwd
     ls
 
-    
+
     ls  ../tests
 
     echo '>>> Python modules installation'

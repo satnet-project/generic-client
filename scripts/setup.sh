@@ -117,7 +117,13 @@ then
 	script_path="$( cd "$( dirname "$0" )" && pwd )"
 	project_path=$( readlink -e "$script_path/.." )
 
+	echo "key"
+
     mkdir key
+
+    pwd
+    ls
+
     # 1: Generate a Private Key
     echo '>>> Generating a private key'
     openssl genrsa -des3 -passout pass:satnet -out key/test.key 1024
@@ -138,6 +144,10 @@ then
     cp key/test.crt key/public.pem
 
     mv key ../tests
+
+    pwd
+    ls
+    
     echo '>>> Python modules installation'
     pip install coveralls
     pip install coverage

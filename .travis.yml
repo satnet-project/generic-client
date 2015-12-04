@@ -28,7 +28,6 @@ install:
   - mkdir build && cd build
   - wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.zip
   - unzip sip-4.17.zip && cd sip-4.17
-
   - python configure.py --incdir="/home/travis/virtualenv/python2.7.9/lib/python2.7"
   - make
   - make install

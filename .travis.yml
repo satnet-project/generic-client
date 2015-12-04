@@ -41,7 +41,7 @@ script:
 #  - python setup.py install
   - pwd
   - ls
-  - cd ../../
+  - cd ../
   - nosetests --with-coverage --cover-erase --cover-package=generic-client
 #  - coverage run test_clientToServer.py
 #  - coverage run test_serverToClient.py

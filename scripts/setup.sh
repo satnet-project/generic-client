@@ -147,7 +147,10 @@ then
 
     pwd
     ls
+
     
+    ls  ../tests
+
     echo '>>> Python modules installation'
     pip install coveralls
     pip install coverage

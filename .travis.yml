@@ -17,10 +17,9 @@ before_install:
   - git submodule update --init --recursive
   - cd protocol
   - git checkout jrpc_if
-  - cd ../ 
+  - cd ../scripts 
 
 install:
-  - cd scripts/
   - bash ./setup.sh -travisCI
   - cd ../tests
   - mkdir build && cd build
@@ -42,7 +41,8 @@ script:
 #  - python setup.py install
   - pwd
   - ls
-  - nosetests --with-coverage --cover-erase --cover-package=ampauth
+  - cd ../../
+  - nosetests --with-coverage --cover-erase --cover-package=generic-client
 #  - coverage run test_clientToServer.py
 #  - coverage run test_serverToClient.py
 

@@ -154,7 +154,9 @@ then
     echo "antes de pwd"
     pwd
     cd ../tests
+    pwd
     ls
+    pwd
     cd ../
     pwd
     echo "despues de pwd"

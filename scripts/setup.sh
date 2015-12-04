@@ -94,7 +94,8 @@ then
 	cd sip*
 	python configure.py
 	make
-	sudo make install
+	make install
+#	sudo make install
 	cd ../ && rm -r -f sip*
 
 	echo '>>> PyQt4 installation'
@@ -104,9 +105,11 @@ then
 	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4
 	make
 	# Bug. Needed ldconfig, copy it from /usr/sbin
-	cp /sbin/ldconfig ../../bin/
-	sudo ldconfig
-	sudo make install
+#	cp /sbin/ldconfig ../../bin/
+
+#	sudo ldconfig
+#	sudo make install
+	make install
 	cd ../ && rm -r -f PyQt*
 
 elif [ $1 == '-l' ];

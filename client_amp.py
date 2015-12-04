@@ -259,7 +259,6 @@ class SATNetGUI(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 18))
 
-        import os
         enviromentDesktop = os.environ.get('DESKTOP_SESSION')
 
         self.initUI()
@@ -466,7 +465,7 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelUDPPort = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelUDPPort)
         else:
-            raise Error
+            log.msg('Desktop enviroment not supported')
 
         # Configuration group.
         configuration = QtGui.QGroupBox(self)

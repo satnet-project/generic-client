@@ -65,10 +65,11 @@ class TestClientToServer(unittest.TestCase):
 
     def mock_processframe(self, frame):
         CONNECTION_INFO = {}
-        gsi = object      
+        gsi = object     
         clientprotocol = ClientProtocol(CONNECTION_INFO, gsi)
         # Mock callremote
-        clientprotocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote)
+        clientprotocol.callRemote = mock.MagicMock(
+            side_effect=self.mock_callremote)
         clientprotocol._processframe(frame)
 
     def mockLoginMethod(self, username, password):
@@ -84,7 +85,7 @@ class TestClientToServer(unittest.TestCase):
         self.connected = defer.Deferred()
         self.clientDisconnected = defer.Deferred()
         self.clientConnection = self._connectClient(self.connected,
-                                                    self.clientDisconnected)
+         self.clientDisconnected)
         return self.connected
 
     def _listenServer(self, d):
@@ -104,10 +105,12 @@ class TestClientToServer(unittest.TestCase):
             log.msg("Server already initialized")
 
     def _connectClient(self, d1, d2):
-        self.factory = protocol.ClientFactory.forProtocol(ClientProtocol)   
+        self.factory = protocol.ClientFactory.forProtocol(
+            ClientProtocol)   
         self.factory.onConnectionMade = d1
         self.factory.onConnectionLost = d2
-        cert = ssl.Certificate.loadPEM(open('key/public.pem').read())     
+        cert = ssl.Certificate.loadPEM(
+            open('key/public.pem').read())     
         options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
         return reactor.connectSSL("localhost", 1234, self.factory, options)
 
@@ -117,13 +120,15 @@ class TestClientToServer(unittest.TestCase):
             self.clientConnection.disconnect()
             # return defer.gatherResults([d, self.clientDisconnected,
 
-            return defer.gatherResults([self.clientDisconnected, self.serverDisconnected])
+            return defer.gatherResults([self.clientDisconnected,
+             self.serverDisconnected])
 
                                         # self.serverDisconnected])
         except AttributeError:
             log.msg("AttributeError")
             self.clientConnection.disconnect()
-            return defer.gatherResults([self.clientDisconnected, self.serverDisconnected])      
+            return defer.gatherResults([self.clientDisconnected,
+             self.serverDisconnected])      
 
     """
     Send a correct frame without connection
@@ -139,7 +144,8 @@ class TestClientToServer(unittest.TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
         gsi._manageFrame(frame)
 
-        assert os.path.exists("ESEO-" + GS + "-" + time.strftime("%Y.%m.%d") + ".csv")
+        assert os.path.exists("ESEO-" + GS + "-" +
+         time.strftime("%Y.%m.%d") + ".csv")
         log.msg(">>>>>>>>>>>>>>>>> AMP not present - Local file created")
         log.msg(">>>>>>>>>>>>>>>>> AMPnotPresentCorrectFrame test OK")
 
@@ -156,7 +162,8 @@ class TestClientToServer(unittest.TestCase):
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
 
-        self.assertRaisesRegexp(WrongFormatNotification, "Bad format frame", lambda: gsi._manageFrame(frame))
+        self.assertRaisesRegexp(WrongFormatNotification, "Bad format frame",
+         lambda: gsi._manageFrame(frame))
         log.msg(">>>>>>>>>>>>>>>>> AMP not present - Local file not created")
         log.msg(">>>>>>>>>>>>>>>>> AMPnotPresentIncorrectFrame test OK")
 
@@ -173,7 +180,8 @@ class TestClientToServer(unittest.TestCase):
 
         gsi = GroundStationInterface(CONNECTION_INFO, GS, self.amp)
 
-        self.assertRaisesRegexp(Exception, "Bad format frame", lambda: gsi._manageFrame(frame))
+        self.assertRaisesRegexp(Exception, "Bad format frame",
+         lambda: gsi._manageFrame(frame))
         log.msg(">>>>>>>>>>>>>>>>> Error - Local file not created")
         log.msg(">>>>>>>>>>>>>>>>> AMPPresentIncorrectFrame test OK")
 
@@ -188,8 +196,10 @@ class TestClientToServer(unittest.TestCase):
         GS = 'Vigo'
 
         self.amp = AMP()
-        self.amp._processframe = mock.MagicMock(side_effect=self.mock_processframe)
-        GroundStationInterface(CONNECTION_INFO, GS, self.amp)._manageFrame(frame)
+        self.amp._processframe = mock.MagicMock(
+            side_effect=self.mock_processframe)
+        GroundStationInterface(
+            CONNECTION_INFO, GS, self.amp)._manageFrame(frame)
 
 
 if __name__ == '__main__':

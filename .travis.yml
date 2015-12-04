@@ -13,7 +13,6 @@ git:
   submodules: false
 
 before_install:
-#  - sudo apt-get install python-twisted
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
   - git submodule update --init --recursive
   - cd protocol
@@ -31,16 +30,17 @@ install:
   - python configure.py --incdir="/home/travis/virtualenv/python2.7.9/lib/python2.7"
   - make
   - make install
-
+  - pwd
+  - ls
   - wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
   - tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
   - cd PyQt-x11-gpl-4.11.4 && python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4
   - make
-  - cp /sbin/ldconfig ../../bin/
-
+  - pwd
+  - ls
+#  - cp /sbin/ldconfig ../../bin/
 # sudo ldconfig
   - make install
-#  make install
 
 script:
 #  - python setup.py install
@@ -52,9 +52,6 @@ after_success:
 #  - cd ../
   - 'coveralls'
 
-
-
-
-
-#  cd ../ && rm -r -f sip*
-#  cd ../ && rm -r -f PyQt*
+# To-do Remove junk files.
+# - cd ../ && rm -r -f sip*
+# - cd ../ && rm -r -f PyQt*

@@ -21,28 +21,15 @@ before_install:
   - cd ../ 
 
 install:
-  - pip install coveralls
+  - pip install coveralls coverage nose
   - pip install coverage
   - pip install nose
   - cd scripts/
   - bash ./setup.sh -travisCI
   - cd ../tests
-
-  - echo "1"
-  - pwd
-
-  - mkdir build
-  - pwd
-
-  - cd build
-  - pwd
-
-#  - pip install SIP --allow-unverified SIP --download="."
+  - mkdir build && cd build
   - wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.zip
-  - unzip sip-4.17.zip
-  - echo "2"
-  - pwd
-  - cd sip*
+  - unzip sip-4.17.zip && cd sip-4.17
   - python configure.py
   - make
   - make install

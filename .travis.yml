@@ -44,4 +44,6 @@ script:
 #  - coverage run test_serverToClient.py
 
 after_success:
+  - coverage combine
+  - coverage report --omit 'OpenSSL/*'
   - 'coveralls'

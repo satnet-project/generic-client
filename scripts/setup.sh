@@ -116,13 +116,7 @@ elif [ $1 == '-travisCI' ];
 then
 	script_path="$( cd "$( dirname "$0" )" && pwd )"
 	project_path=$( readlink -e "$script_path/.." )
-
-	echo "key"
-
     mkdir key
-
-    pwd
-    ls
 
     # 1: Generate a Private Key
     echo '>>> Generating a private key'
@@ -144,23 +138,10 @@ then
     cp key/test.crt key/public.pem
 
     mv key ../
-
-    pwd
-    ls
-
-
-    ls  ../tests
-
     echo "antes de pwd"
     pwd
     cd ../tests/key
-    pwd
-    ls
-    pwd
     cd ../../
-    pwd
-    echo "despues de pwd"
-
     echo '>>> Python modules installation'
     pip install coveralls
     pip install coverage
@@ -193,7 +174,7 @@ then
 	# 6: Generate clients bundle (Certificate)
 	cp key/test.crt key/public.pem
 
-	v key ../tests
+	mv key ../tests
 
 	# Create a virtualenv
 	virtualenv $venv_path

@@ -642,8 +642,6 @@ class SATNetGUI(QtGui.QWidget):
     def CheckConnection(self):
         Connection = str(self.LabelConnection.currentText())
 
-        CONNECTION_INFO = []
-
         import ConfigParser
         config = ConfigParser.ConfigParser()
         config.read("config.ini")
@@ -863,7 +861,6 @@ if __name__ == '__main__':
         if sys.argv[1] == "-help":
             import subprocess
             subprocess.call(["man", "./satnetclient.1"])
-
         elif sys.argv[1] == "-g":
             username = ""
             password = ""
@@ -873,7 +870,7 @@ if __name__ == '__main__':
             baudRate = ""
             UDPIp = ""
             UDPPort = ""
-           
+          
             import getopt
             try:
                 opts, args = getopt.getopt(sys.argv[1:],"hfgn:p:t:c:s:b:i:u:",\
@@ -926,14 +923,11 @@ if __name__ == '__main__':
 
             from twisted.internet import reactor
             reactor.run()
-
         elif sys.argv[1] != "-g" and sys.argv[1] != "-help":
             print "Unknown option: %s" %(sys.argv[1])
             print "Try 'python client_amp.py -help' for more information."
-
-
+    
     except IndexError:
-
         username = ""
         password = ""
         slot = ""

@@ -143,7 +143,7 @@ then
     # 6: Generate clients bundle (Certificate)
     cp key/test.crt key/public.pem
 
-    mv key ../tests
+    mv key ../
 
     pwd
     ls

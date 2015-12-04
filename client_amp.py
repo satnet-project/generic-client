@@ -785,6 +785,12 @@ class SATNetGUI(QtGui.QWidget):
         elif reply == QtGui.QMessageBox.No:
             pass
 
+"""
+Pasa del dialog y crea una ventana normal que guarde los datos al pulsar sobre el boton
+si hay algo disponible saltará antes.
+"""
+
+
 
 class DateDialog(QtGui.QDialog):
     def __init__(self, parent = None):
@@ -795,21 +801,27 @@ class DateDialog(QtGui.QDialog):
         parameters.setLayout(layout_parameters)
 
         self.LabelClientname = QtGui.QLineEdit()
-        self.LabelClientname.setFixedWidth(190)
+        self.LabelClientname.setFixedWidth(200)
         layout_parameters.addRow(QtGui.QLabel("Client name:           "),\
          self.LabelClientname)
         self.LabelPassword = QtGui.QLineEdit()
-        self.LabelPassword.setFixedWidth(190)
+        self.LabelPassword.setFixedWidth(200)
         layout_parameters.addRow(QtGui.QLabel("Reconnection attempts: "),\
          self.LabelPassword)
         self.LabelServer = QtGui.QLineEdit()
-        self.LabelServer.setFixedWidth(190)
+        self.LabelServer.setFixedWidth(200)
         layout_parameters.addRow(QtGui.QLabel("Server address:        "),\
             self.LabelServer)
         self.LabelPort = QtGui.QLineEdit()
-        self.LabelPort.setFixedWidth(190)
+        self.LabelPort.setFixedWidth(200)
         layout_parameters.addRow(QtGui.QLabel("Server port:           "),\
             self.LabelPort)
+
+        confirmationButton = QtGui.QPushButton("Engrave data", self)
+        confirmationButton.setToolTip("Engrave current data")
+        confirmationButton.clicked.connect(DateDialog.exec_)
+        confirmationButton.setFixedWidth(190)
+        confirmationButton.move(110, 185)
 
         self.setMinimumSize(400, 220)
 
@@ -818,7 +830,8 @@ class DateDialog(QtGui.QDialog):
 
     def getConfiguration(self):
         configuration = [str(self.LabelClientname.text()),\
-         str(self.LabelPassword.text())]
+         str(self.LabelPassword.text()), str(self.LabelServer.text(),\
+          str(self.LabelPort.text()))]
 
         return configuration
 
@@ -829,7 +842,8 @@ class DateDialog(QtGui.QDialog):
         dialog.exec_()
         configuration = dialog.getConfiguration()
 
-        return (configuration[0], configuration[1])
+        return (configuration[0], configuration[1], configuration[2],\
+         configuration[3])
 
 
 # Objects designed for output the information

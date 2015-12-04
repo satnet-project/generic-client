@@ -241,18 +241,21 @@ class OperativeTCPThread(TCPThread):
     def catchValue(self, frame, address):
         # self.finished.emit(ResultObj(frame))
 
-        log.msg("----------------------------- " + "Message from TCP socket" +\
-         " -----------------------------")
-        log.msg("------------------ Received from ip: " + str(address[0]) +\
-         " port: " + str(address[1]) +  " ------------------")      
+        log.msg("----------------------------- " + 
+                "Message from TCP socket" + 
+                " -----------------------------")
+        log.msg("------------------ Received from ip: " + 
+                str(address[0]) + 
+                " port: " + 
+                str(address[1]) +  " ------------------")      
         self.finished.emit(frame)
-   
-   
+  
+  
 class OperativeUDPThread(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, UDPSignal, CONNECTION_INFO,
-                    parent = None):
+    def __init__(self, queue, callback, UDPSignal, 
+                CONNECTION_INFO, parent = None):
         UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
@@ -355,9 +358,9 @@ class OperativeKISSThread(KISSThread):
 
     def catchValue(self, frame):
         # self.finished.emit(ResultObj(frame))
-        log.msg("--------------------------------------- " +\
-         "Message from Serial port" + " ---------------" +\
-          "----------------------")
+        log.msg("--------------------------------------- " + 
+                "Message from Serial port" +
+                " -------------------------------------")
         self.finished.emit(frame)
 
     def stop(self):

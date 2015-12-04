@@ -139,6 +139,9 @@ then
 
     mv key ../tests
     echo '>>> Python modules installation'
+    pip install coveralls
+    pip install coverage
+    pip install nose
 	pip install -r "$project_path/requirements-tests.txt"
 
 elif [ $1 == '-l' ];

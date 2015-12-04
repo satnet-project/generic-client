@@ -1,3 +1,5 @@
+sudo:false
+
 language: 'python'
 
 branches:
@@ -11,7 +13,7 @@ git:
   submodules: false
 
 before_install:
-  - sudo apt-get install python-twisted
+#  - sudo apt-get install python-twisted
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
   - git submodule update --init --recursive
   - cd protocol
@@ -28,9 +30,9 @@ install:
 
 script:
 #  - python setup.py install
-  - nosetests --with-coverage --cover-erase --cover-package=ampauth --cover-package=client_amp
-#  - coverage run test_clientToServer.py
-#  - coverage run test_serverToClient.py
+#  - nosetests --with-coverage --cover-erase --cover-package=ampauth --cover-package=client_amp
+  - coverage run test_clientToServer.py
+  - coverage run test_serverToClient.py
 
 after_success:
 #  - cd ../

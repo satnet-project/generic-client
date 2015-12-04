@@ -28,9 +28,15 @@ install:
   - bash ./setup.sh -travisCI
   - cd ../tests
 
+  - echo "1"
+  - pwd
+
   - mkdir build && cd build
   - pip install SIP --allow-unverified SIP --download="."
-  - unzip sip* && cd sip*
+  - unzip sip*
+  - echo "2"
+  - pwd
+  - cd sip*
   - python configure.py
   - make
   - make install

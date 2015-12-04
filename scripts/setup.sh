@@ -153,11 +153,11 @@ then
 
     echo "antes de pwd"
     pwd
-    cd ../tests
+    cd ../tests/key
     pwd
     ls
     pwd
-    cd ../
+    cd ../../
     pwd
     echo "despues de pwd"
 

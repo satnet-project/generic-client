@@ -114,7 +114,7 @@ class TestClientToServer(unittest.TestCase):
         self.factory.onConnectionMade = d1
         self.factory.onConnectionLost = d2
         cert = ssl.Certificate.loadPEM(
-            open('key/public.pem').read())     
+            open('../key/public.pem').read())     
         options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
         return reactor.connectSSL("localhost", 1234, self.factory, options)
 

@@ -186,7 +186,7 @@ class TestServerToClient(unittest.TestCase):
                 side_effect=self.mockLoginMethod)
             self.pf.onConnectionLost = d
             cert = ssl.PrivateCertificate.loadPEM(
-                open('key/server.pem').read())
+                open('../key/server.pem').read())
             return reactor.listenSSL(1234, self.pf, cert.options())
         except CannotListenError:
             log.msg("Server already initialized")

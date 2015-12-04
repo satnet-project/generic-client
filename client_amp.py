@@ -813,6 +813,8 @@ class DateDialog(QtGui.QDialog):
 
         self.setMinimumSize(400, 220)
 
+        # 400x150 Mate
+
 
     def getConfiguration(self):
         configuration = [str(self.LabelClientname.text()),\

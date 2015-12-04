@@ -38,12 +38,11 @@ install:
   - cd ../ && rm -r -f PyQt-x11-gpl-4.11.4 && cd ../../
 
 script:
-#  - python setup.py install
   - nosetests --with-coverage --cover-erase
-#  - coverage run test_clientToServer.py
-#  - coverage run test_serverToClient.py
+  - coverage run test_clientToServer.py
+  - coverage run test_serverToClient.py
 
 after_success:
   - coverage combine
-  - coverage report --omit 'OpenSSL/*'
+  - coverage report --omit '*/OpenSSL/*' '*/PyQt4/*'
   - 'coveralls'

@@ -451,7 +451,7 @@ class SATNetGUI(QtGui.QWidget):
                 self.LabelUDPPort = QtGui.QLineEdit()
                 self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelUDPPort)
             else:
-                print "Error en creacion gnome"        
+                log.msg("Error opening a connection interface")        
         elif enviromentDesktop == 'lightdm-xsession':
             self.LabelSerialPort = QtGui.QComboBox()
             from glob import glob
@@ -465,7 +465,7 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelUDPPort = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelUDPPort)
         else:
-            log.msg('Desktop enviroment not supported')
+            log.msg("Desktop enviroment not supported")
 
         # Configuration group.
         configuration = QtGui.QGroupBox(self)
@@ -483,11 +483,11 @@ class SATNetGUI(QtGui.QWidget):
 
     def initLogo(self):
         # Logo.
-        self.LabelLogo = QtGui.QLabel(self)
-        self.LabelLogo.move(20, 490)
+        LabelLogo = QtGui.QLabel(self)
+        LabelLogo.move(20, 490)
         pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
-        self.LabelLogo.setPixmap(pic)
-        self.LabelLogo.show()
+        LabelLogo.setPixmap(pic)
+        LabelLogo.show()
 
     def initData(self, enviromentDesktop):
         reconnection, parameters = self.LoadSettings()
@@ -802,6 +802,17 @@ class DateDialog(QtGui.QDialog):
         self.LabelPassword.setFixedWidth(190)
         layout_parameters.addRow(QtGui.QLabel("Reconnection attempts: "),\
          self.LabelPassword)
+        self.LabelServer = QtGui.QLineEdit()
+        self.LabelServer.setFixedWidth(190)
+        layout_parameters.addRow(QtGui.QLabel("Server address:        "),\
+            self.LabelServer)
+        self.LabelPort = QtGui.QLineEdit()
+        self.LabelPort.setFixedWidth(190)
+        layout_parameters.addRow(QtGui.QLabel("Server port:           "),\
+            self.LabelPort)
+
+        self.setMinimumSize(400, 220)
+
 
     def getConfiguration(self):
         configuration = [str(self.LabelClientname.text()),\
@@ -839,8 +850,8 @@ class WriteStream(object):
 class MyReceiver(QtCore.QThread):
     mysignal = QtCore.pyqtSignal(str)
 
-    def __init__(self,queue,*args,**kwargs):
-        QtCore.QThread.__init__(self,*args,**kwargs)
+    def __init__(self, queue, *args, **kwargs):
+        QtCore.QThread.__init__(self, *args, **kwargs)
         self.queue = queue
 
     @QtCore.pyqtSlot()

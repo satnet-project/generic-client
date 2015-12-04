@@ -58,7 +58,7 @@ then
 	cp _build/man/satnetclient.1 ../
 	deactivate
 
-elif [ $1 == '-t' ];
+elif [ $1 == '-circleCI' ];
 then
 	script_path="$( cd "$( dirname "$0" )" && pwd )"
 	project_path=$( readlink -e "$script_path/.." )
@@ -95,7 +95,7 @@ then
 	python configure.py
 	make
 	make install
-#	sudo make install
+	sudo make install
 	cd ../ && rm -r -f sip*
 
 	echo '>>> PyQt4 installation'
@@ -105,12 +105,41 @@ then
 	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4
 	make
 	# Bug. Needed ldconfig, copy it from /usr/sbin
-#	cp /sbin/ldconfig ../../bin/
+	cp /sbin/ldconfig ../../bin/
 
-#	sudo ldconfig
-#	sudo make install
+	sudo ldconfig
+	sudo make install
 	make install
 	cd ../ && rm -r -f PyQt*
+
+elif [ $1 == '-travisCI' ];
+then
+	script_path="$( cd "$( dirname "$0" )" && pwd )"
+	project_path=$( readlink -e "$script_path/.." )
+
+    mkdir key
+    # 1: Generate a Private Key
+    echo '>>> Generating a private key'
+    openssl genrsa -des3 -passout pass:satnet -out key/test.key 1024
+    # 2: Generate a CSR (Certificate Signing Request)
+    echo '>>> Generating a CSR'
+    openssl req -new -key key/test.key -passin pass:satnet -out key/test.csr -subj /CN=example.humsat.org/ 
+    # 3: Remove Passphrase from Private Key
+    echo '>>> Removing passphrase from private key'
+    openssl rsa -in key/test.key -passin pass:satnet -out key/test.key
+    # 4: Generating a Self-Signed Certificate
+    echo '>>> Generating a public key (certificate)'
+    openssl x509 -req -days 365 -in key/test.csr -signkey key/test.key -out key/test.crt
+
+    echo '>>> Generating key bundles'
+    # 5: Generate server bundle (Certificate + Private key)
+    cat key/test.crt key/test.key > key/server.pem
+    # 6: Generate clients bundle (Certificate)
+    cp key/test.crt key/public.pem
+
+    mv key ../tests
+    echo '>>> Python modules installation'
+	pip install -r "$project_path/requirements-tests.txt"
 
 elif [ $1 == '-l' ];
 then

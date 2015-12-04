@@ -114,7 +114,7 @@ class GroundStationInterface():
     # Removes the reference to the protocol object (self.AMP). It shall 
     # be invocked when the connection to the SATNET server is lost.
     def disconnectProtocol(self):
-        log.msg('Protocol disconnected from the GS')   
+        log.msg("Protocol disconnected from the GS")  
         self.AMP = None
 
 
@@ -136,6 +136,7 @@ class UDPThread(QtCore.QThread):
     def cleanUp(self):
         pass
 
+
 # Class associated to TCP protocol
 class TCPThread(QtCore.QThread):
     
@@ -148,10 +149,10 @@ class TCPThread(QtCore.QThread):
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
     
     def stop(self):
-        log.msg('Stopping TCPSocket' +\
-         "..................................." +\
-         "................................" +\
-          "....................................")
+        log.msg('Stopping TCPSocket' + 
+                "..................................." +
+                ".................................." +
+                "..................................")
         self.TCPSocket.close()
         self.running = False
     
@@ -188,15 +189,15 @@ class KISSThread(QtCore.QThread):
 class OperativeTCPThread(TCPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, TCPSignal, CONNECTION_INFO,\
-     parent = None):
+    def __init__(self, queue, callback, TCPSignal,
+                 CONNECTION_INFO, parent = None):
         TCPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
         self.TCPSignal = TCPSignal
 
-        server_address = (str(CONNECTION_INFO['ip']),\
-         int(CONNECTION_INFO['tcpport']))
+        server_address = (str(CONNECTION_INFO['ip']),
+                             int(CONNECTION_INFO['tcpport']))
 
         from socket import socket, AF_INET, SOCK_STREAM
         try:

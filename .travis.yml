@@ -34,32 +34,20 @@ install:
   - wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
   - tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
   - cd PyQt-x11-gpl-4.11.4
-  - python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
-
- # --no-tools  --no-qsci-api  --no-python-dbus
-
+  - python ./configure.py --confirm-license --no-designer-plugin --no-tools --no-qsci-api --no-python-dbus -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
   - make
   - make install
   - cd ../ && rm -r -f PyQt-x11-gpl-4.11.4 && cd ../
-  - pwd
-  - ls
-
 
 script:
 #  - python setup.py install
-#  - nosetests --with-coverage --cover-erase --cover-package=ampauth --cover-package=client_amp
-  - coverage run test_clientToServer.py
-  - coverage run test_serverToClient.py
+  - nosetests --with-coverage --cover-erase --cover-package=ampauth
+#  - coverage run test_clientToServer.py
+#  - coverage run test_serverToClient.py
 
 after_success:
 #  - cd ../
   - 'coveralls'
-
-# To-do Remove junk files.
-# - cd ../ && rm -r -f sip*
-# - cd ../ && rm -r -f PyQt*
-
-
 
 
 # Checking to see if the QtGui module should be built...

@@ -39,6 +39,7 @@ install:
 
 script:
   - nosetests --with-coverage --cover-erase
+  - pwd
   - coverage run test_clientToServer.py
   - coverage run test_serverToClient.py
 

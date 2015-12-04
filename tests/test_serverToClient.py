@@ -1,4 +1,35 @@
 # coding=utf-8
+import sys
+import os
+import unittest
+import mock
+
+from twisted.python import log
+from unittest import TestCase
+
+from mock import Mock, MagicMock
+
+from twisted.internet import defer, protocol, reactor, ssl
+from twisted.internet.error import CannotListenError
+from twisted.internet.protocol import Factory
+from twisted.protocols.amp import AMP, Command, Integer, Boolean, String
+from twisted.python import log
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from gs_interface import GroundStationInterface
+from errors import WrongFormatNotification, SlotErrorNotification
+from client_amp import ClientProtocol, CtxFactory, ClientReconnectFactory, NotifyMsg
+import misc
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol")))
+from server_amp import SATNETServer
+# from rpcrequests import Satnet_RPC
+
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol/ampauth")))
+# from server import CredReceiver, CredAMPServerFactory
+# from errors import BadCredentials
+
+
 """
    Copyright 2015 Samuel Góngora García
 
@@ -20,38 +51,6 @@
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-import sys
-import os
-import unittest
-import mock
-import time
-
-from twisted.python import log
-from unittest import TestCase
-
-from mock import Mock, MagicMock
-
-from twisted.internet import defer, protocol, reactor, ssl
-from twisted.internet.error import CannotListenError
-from twisted.internet.protocol import Factory
-from twisted.protocols.amp import AMP, Command, Integer, Boolean, String
-from twisted.python import log
-from twisted.trial.unittest import TestCase
-from twisted.test.proto_helpers import StringTransport
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from gs_interface import GroundStationInterface
-from errors import WrongFormatNotification, SlotErrorNotification
-from client_amp import ClientProtocol, CtxFactory, ClientReconnectFactory, NotifyMsg
-import misc
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol")))
-from server_amp import SATNETServer
-# from rpcrequests import Satnet_RPC
-
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../protocol/ampauth")))
-# from server import CredReceiver, CredAMPServerFactory
-# from errors import BadCredentials
 
 
 class SendMsg(Command):
@@ -132,11 +131,12 @@ class SATNETServer(protocol.Protocol):
     SendMsg.responder(vSendMsg)
 
 
-"""
-Testing for one single client connection
-To-do. Test timeout
-"""
+
 class TestServerToClient(unittest.TestCase):
+    """
+    Testing for one single client connection
+    To-do. Test timeout
+    """
 
     def mock_callremote_true(self, NotifyMsg, sMsg):
 
@@ -144,7 +144,8 @@ class TestServerToClient(unittest.TestCase):
 
     def mock_callremote(self, NotifyMsg, sMsg):
 
-        CONNECTION_INFO = {'username':'s.gongoragarcia@gmail.com', 'connection':'serial'}
+        CONNECTION_INFO = {'username':'s.gongoragarcia@gmail.com',
+         'connection':'serial'}
         gsi = object
 
         ClientProtocol(CONNECTION_INFO, gsi).vNotifyMsg(sMsg)
@@ -152,10 +153,10 @@ class TestServerToClient(unittest.TestCase):
     def mock_processframe(self, frame):
         CONNECTION_INFO = {}
         gsi = object
-        
         clientprotocol = ClientProtocol(CONNECTION_INFO, gsi)
         # Mock callremote
-        clientprotocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote)
+        clientprotocol.callRemote = mock.MagicMock(
+            side_effect=self.mock_callremote)
         clientprotocol._processframe(frame)
 
     def mockLoginMethod(self, username, password):
@@ -163,15 +164,15 @@ class TestServerToClient(unittest.TestCase):
 
     def setUp(self):
         log.startLogging(sys.stdout)
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> Running tests")
+        log.msg(">>>>>>>>>>>>>>>>>>>>> Running tests")
         log.msg("")
 
         self.serverDisconnected = defer.Deferred()
         self.serverPort = self._listenServer(self.serverDisconnected)
         self.connected = defer.Deferred()
         self.clientDisconnected = defer.Deferred()
-        self.clientConnection = self._connectClient(self.connected,\
-         self.clientDisconnected)
+        self.clientConnection = self._connectClient(self.connected,
+                                                    self.clientDisconnected)
         return self.connected
 
     def _listenServer(self, d):
@@ -181,7 +182,8 @@ class TestServerToClient(unittest.TestCase):
 
             self.pf = CredAMPServerFactory()
             self.pf.protocol = CredReceiver()
-            self.pf.protocol.login = MagicMock(side_effect=self.mockLoginMethod)
+            self.pf.protocol.login = MagicMock(
+                side_effect=self.mockLoginMethod)
             self.pf.onConnectionLost = d
             cert = ssl.PrivateCertificate.loadPEM(
                 open('key/server.pem').read())
@@ -190,15 +192,13 @@ class TestServerToClient(unittest.TestCase):
             log.msg("Server already initialized")
 
     def _connectClient(self, d1, d2):
-        self.factory = protocol.ClientFactory.forProtocol(ClientProtocol)
-        
+        self.factory = protocol.ClientFactory.forProtocol(ClientProtocol) 
         log.msg(self.factory)
 
         self.factory.onConnectionMade = d1
         self.factory.onConnectionLost = d2
 
         cert = ssl.Certificate.loadPEM(open('key/public.pem').read())
-        
         options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
         return reactor.connectSSL("localhost", 1234, self.factory, options)
 
@@ -206,24 +206,19 @@ class TestServerToClient(unittest.TestCase):
         try:
             d = defer.maybeDeferred(self.serverPort.stopListening)
             self.clientConnection.disconnect()
-            return defer.gatherResults([d, self.clientDisconnected,\
-             self.serverDisconnected])
+            return defer.gatherResults([d, self.clientDisconnected, 
+                                        self.serverDisconnected])
         except AttributeError:
             self.clientConnection.disconnect()
-            return defer.gatherResults([self.clientDisconnected,\
-             self.serverDisconnected])            
+            return defer.gatherResults([self.clientDisconnected,
+                                         self.serverDisconnected])            
 
     """
     Send a correct frame with connection
     """
     def test_AMPPresentCorrectFrame(self):
-
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>> Running AMPpresentCorrectFrame test")
-
+        log.msg(">>>>>>>>>>>>>>>>>>>>> Running AMPpresentCorrectFrame test")
         frame = 'Frame'
-
-        # SATNETServer = mock.Mock()
-
 
         protocol = SATNETServer()
         protocol.factory = mock.Mock()

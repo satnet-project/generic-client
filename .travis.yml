@@ -40,6 +40,8 @@ install:
 
 script:
 #  - python setup.py install
+  - pwd
+  - ls
   - nosetests --with-coverage --cover-erase --cover-package=ampauth
 #  - coverage run test_clientToServer.py
 #  - coverage run test_serverToClient.py

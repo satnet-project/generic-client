@@ -113,8 +113,10 @@ class TestClientToServer(unittest.TestCase):
             ClientProtocol)   
         self.factory.onConnectionMade = d1
         self.factory.onConnectionLost = d2
+        from os import getcwd
+        print getcwd()
         cert = ssl.Certificate.loadPEM(
-            open('../key/public.pem').read())     
+            open('key/public.pem').read())     
         options = ssl.optionsForClientTLS(u'example.humsat.org', cert)
         return reactor.connectSSL("localhost", 1234, self.factory, options)
 

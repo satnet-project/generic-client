@@ -185,8 +185,12 @@ class TestServerToClient(unittest.TestCase):
             self.pf.protocol.login = MagicMock(
                 side_effect=self.mockLoginMethod)
             self.pf.onConnectionLost = d
+
+            from os import getcwd
+            print getcwd()
+
             cert = ssl.PrivateCertificate.loadPEM(
-                open('../key/server.pem').read())
+                open('key/server.pem').read())
             return reactor.listenSSL(1234, self.pf, cert.options())
         except CannotListenError:
             log.msg("Server already initialized")

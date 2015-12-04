@@ -151,6 +151,14 @@ then
 
     ls  ../tests
 
+    echo "antes de pwd"
+    pwd
+    cd ../tests
+    ls
+    cd ../
+    pwd
+    echo "despues de pwd"
+
     echo '>>> Python modules installation'
     pip install coveralls
     pip install coverage

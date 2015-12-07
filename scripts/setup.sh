@@ -137,10 +137,15 @@ then
     # 6: Generate clients bundle (Certificate)
     cp key/test.crt key/public.pem
 
-    mv key ../
-    echo "antes de pwd"
+    echo "El directorio actual es"
     pwd
-    cd ../tests/key
+    echo "los ficheros son"
+    ls
+
+#    mv key ../
+#    echo "antes de pwd"
+#    pwd
+#    cd ../tests/key
     cd ../../
     echo '>>> Python modules installation'
     pip install coveralls

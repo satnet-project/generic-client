@@ -143,6 +143,9 @@ then
     ls
 
 	mv key ../tests
+
+	echo "tests"
+	ls ../tests
 #    echo "antes de pwd"
 #    pwd
 #    cd ../tests/key

@@ -172,14 +172,7 @@ then
 	cat key/test.crt key/test.key > key/server.pem
 	# 6: Generate clients bundle (Certificate)
 	cp key/test.crt key/public.pem
-
-	echo "antes de pwd"
-	pwd
 	mv key ../tests
-
-	echo "despues de pwd"
-	ls ../tests
-
 
 	# Create a virtualenv
 	virtualenv $venv_path

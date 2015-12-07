@@ -1,4 +1,10 @@
 # coding=utf-8
+from twisted.python import log
+from PyQt4 import QtCore
+import time
+
+from errors import WrongFormatNotification
+
 """
    Copyright 2014, 2015 Xabier Crespo Álvarez
 
@@ -18,13 +24,6 @@
     Xabier Crespo Álvarez (xabicrespog@gmail.com)
 """
 __author__ = 'xabicrespog@gmail.com'
-
-
-from twisted.python import log
-from PyQt4 import QtCore
-import time
-
-from errors import WrongFormatNotification
 
 
 class GroundStationInterface():
@@ -80,7 +79,7 @@ class GroundStationInterface():
         if self.AMP is not None:
             if type(result) != str:
                 raise WrongFormatNotification("Bad format frame")
-          
+         
             try:
                 # self.AMP._processframe(self, result)
                 self.AMP._processframe(result)
@@ -98,9 +97,8 @@ class GroundStationInterface():
         filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
         with open(filename,"a+") as f:
             f.write(frame + ",\n")
-      
+     
         log.msg('---- Message saved to local file ----')
-
 
     # :ivar AMP:
     #     Client protocol to which received frames will be sent to be 
@@ -114,13 +112,12 @@ class GroundStationInterface():
     # Removes the reference to the protocol object (self.AMP). It shall 
     # be invocked when the connection to the SATNET server is lost.
     def disconnectProtocol(self):
-        log.msg("Protocol disconnected from the GS")  
+        log.msg("Protocol disconnected from the GS") 
         self.AMP = None
 
 
 # Class associated to UDP protocol
-class UDPThread(QtCore.QThread):
-   
+class UDPThread(QtCore.QThread):  
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
@@ -129,17 +126,17 @@ class UDPThread(QtCore.QThread):
         self.doWork()
         # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
-       
+      
     def doWork(self):
         return True
-   
+  
     def cleanUp(self):
         pass
 
 
 # Class associated to TCP protocol
 class TCPThread(QtCore.QThread):
-    
+   
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
 
@@ -147,7 +144,7 @@ class TCPThread(QtCore.QThread):
         self.doWork()
         # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
-    
+   
     def stop(self):
         log.msg('Stopping TCPSocket' + 
                 "..................................." +
@@ -155,10 +152,10 @@ class TCPThread(QtCore.QThread):
                 "..................................")
         self.TCPSocket.close()
         self.running = False
-    
+  
     def doWork(self):
         return True
-    
+   
     def cleanUp(self):
         pass
 
@@ -178,10 +175,10 @@ class KISSThread(QtCore.QThread):
         self.doWork()
         # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
-    
+  
     def doWork(self):
         return True
-    
+   
     def cleanUp(self):
         pass
 
@@ -232,7 +229,7 @@ class OperativeTCPThread(TCPThread):
             while True:
                 try:
                     con, address = self.TCPSocket.accept()
-                    frame = con.recv(1024) # buffer size is 1024 bytes
+                    frame = con.recv(1024)
                     self.catchValue(frame, address)
                 except Exception as e:
                     log.err('ErrorOperative TCP protocol')
@@ -249,13 +246,13 @@ class OperativeTCPThread(TCPThread):
                 " port: " + 
                 str(address[1]) +  " ------------------")      
         self.finished.emit(frame)
-  
-  
+ 
+ 
 class OperativeUDPThread(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, UDPSignal, 
-                CONNECTION_INFO, parent = None):
+    def __init__(self, queue, callback, UDPSignal,\
+     CONNECTION_INFO, parent = None):
         UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)

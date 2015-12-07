@@ -46,5 +46,5 @@ script:
 after_success:
   - cd ../
   - coverage combine
-  - coverage report --omit '/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/*' --omit 'protocol/*' --omit 'tests/*'
+  - coverage report --omit ['/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/*', 'protocol/*', 'tests/*']
   - 'coveralls'

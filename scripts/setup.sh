@@ -142,7 +142,7 @@ then
     echo "los ficheros son"
     ls
 
-#    mv key ../
+	mv key ../tests
 #    echo "antes de pwd"
 #    pwd
 #    cd ../tests/key

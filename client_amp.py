@@ -129,6 +129,9 @@ class ClientProtocol(AMP):
             # TCPSocket.send(sMsg)
 
             return {}
+        elif self.CONNECTION_INFO['connection'] == 'none':
+            log.msg(sMsg)
+
     NotifyMsg.responder(vNotifyMsg)
 
     # Method associated to frame processing.
@@ -267,6 +270,8 @@ class SATNetGUI(QtGui.QWidget):
         self.initLogo()
         self.initData(enviromentDesktop)
         self.initConsole()
+
+        #  Use a dict for passing arg.
         self.setArguments(username, password, slot, connection, serialPort,
                             baudRate, UDPIp, UDPPort)
 
@@ -332,6 +337,8 @@ class SATNetGUI(QtGui.QWidget):
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             self.CONNECTION_INFO['ip'] = self.LabelUDP.text()
             self.CONNECTION_INFO['tcpport'] = int(self.LabelUDPPort.text())
+        elif self.CONNECTION_INFO['connection'] == 'none':
+            log.msg('No GS connection established. The client will just listen.')
         else:
             print "error"
 
@@ -347,7 +354,9 @@ class SATNetGUI(QtGui.QWidget):
         elif self.CONNECTION_INFO['connection'] == 'udp':
             self.runUDPThread()
         elif self.CONNECTION_INFO['connection'] == 'tcp':
-            self.runTCPThread()  
+            self.runTCPThread()
+        elif self.CONNECTION_INFO['connection'] == 'none':
+            pass  
         else:
             log.err('Error choosing connection type')
 
@@ -421,7 +430,7 @@ class SATNetGUI(QtGui.QWidget):
         self.layout.addRow(QtGui.QLabel("slot_id:        "), self.LabelSlotID)
        
         self.LabelConnection = QtGui.QComboBox()
-        self.LabelConnection.addItems(['serial', 'udp', 'tcp'])
+        self.LabelConnection.addItems(['serial', 'udp', 'tcp', 'none'])
         self.LabelConnection.activated.connect(self.CheckConnection)
         self.layout.addRow(QtGui.QLabel("Connection:     "), self.LabelConnection)
        
@@ -506,6 +515,7 @@ class SATNetGUI(QtGui.QWidget):
         self.console.move(340, 10)
         self.console.resize(950, 780)
         self.console.setFont(QtGui.QFont('SansSerif', 11))
+
 
     def setArguments(self, username, password, slot, connection, serialPort,\
      baudRate, UDPIp, UDPPort):

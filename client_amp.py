@@ -199,6 +199,9 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     # Called when an established connection is lost
     def clientConnectionLost(self, connector, reason):
+
+        print self.CONNECTION_INFO
+
         if self.CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
         elif self.CONNECTION_INFO['reconnection'] == 'no':
@@ -259,7 +262,7 @@ class Client(object):
 # QDialog, QWidget or QMainWindow, which is better in this situation? TO-DO
 class SATNetGUI(QtGui.QWidget):
     def __init__(self, username, password, slot, connection, serialPort,\
-     baudRate, UDPIp, UDPPort, parent = None):
+     baudRate, UDPIp, UDPPort, parent=None):
         QtGui.QWidget.__init__(self, parent)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 18))
 
@@ -295,13 +298,13 @@ class SATNetGUI(QtGui.QWidget):
         self.workerUDPThread = OperativeUDPThread(self.udp_queue,\
          self.sendData, self.UDPSignal, self.CONNECTION_INFO)
         self.workerUDPThread.start()
-        
+       
     # Run threads associated to TCP protocol
     def runTCPThread(self):
         self.workerTCPThread = OperativeTCPThread(self.tcp_queue,\
          self.sendData, self.TCPSignal, self.CONNECTION_INFO)
         self.workerTCPThread.start()
-   
+  
     # Stop KISS thread
     def stopKISSThread(self):
         self.workerKISSThread.stop()
@@ -313,7 +316,7 @@ class SATNetGUI(QtGui.QWidget):
     # Stop TCP thread
     def stopTCPThread(self):
         self.workerTCPThread.stop()
-       
+      
     # Gets a string but can't format it! To-do
     def sendData(self, result):
         self.gsi._manageFrame(result)
@@ -321,8 +324,6 @@ class SATNetGUI(QtGui.QWidget):
     # Create a new connection by loading the connection parameters
     # from the interface window
     def NewConnection(self):
-        self.CONNECTION_INFO = {}
-
         self.CONNECTION_INFO['username'] = str(self.LabelUsername.text())
         self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
         self.CONNECTION_INFO['slot_id'] = int(self.LabelSlotID.text())
@@ -344,14 +345,9 @@ class SATNetGUI(QtGui.QWidget):
         else:
             print "error"
 
-        # self.CONNECTION_INFO['reconnection'],\
-        #  self.CONNECTION_INFO['parameters'], self.CONNECTION_INFO['name'],\
-        #   self.CONNECTION_INFO['attempts'] = self.LoadSettings()
-
         self.gsi, self.c = Client(self.CONNECTION_INFO).createConnection()
 
         # Start the selected connection
-        # self.connectionkind = self.CheckConnection()
         if self.CONNECTION_INFO['connection'] == 'serial':
             self.runKISSThread()
         elif self.CONNECTION_INFO['connection'] == 'udp':
@@ -359,12 +355,9 @@ class SATNetGUI(QtGui.QWidget):
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             self.runTCPThread()
         elif self.CONNECTION_INFO['connection'] == 'none':
-            # Tendria que modificar las etiquetas para el server y el puerto.
-            pass 
+            pass
         else:
             log.err('Error choosing connection type')
-
-        self.connectionkind = self.CONNECTION_INFO['connection']
 
         self.ButtonNew.setEnabled(False)
         self.ButtonCancel.setEnabled(True)
@@ -389,7 +382,6 @@ class SATNetGUI(QtGui.QWidget):
             pass
         else:
             warnings.warn("No parameters configuration found. Using default parameter - Yes")
-
 
     def initButtons(self):
         # Control buttons.
@@ -432,27 +424,29 @@ class SATNetGUI(QtGui.QWidget):
         buttons.move(10, 10)
 
     def initFields(self, enviromentDesktop):
-
-        # Parameters group.
         parameters = QtGui.QGroupBox(self)
         self.layout = QtGui.QFormLayout()
         parameters.setLayout(self.layout)
 
         self.LabelUsername = QtGui.QLineEdit()
         self.LabelUsername.setFixedWidth(190)
-        self.layout.addRow(QtGui.QLabel("Username:       "), self.LabelUsername)
+        self.layout.addRow(QtGui.QLabel("Username:       "),\
+         self.LabelUsername)
         self.LabelPassword = QtGui.QLineEdit()
         self.LabelPassword.setFixedWidth(190)
         self.LabelPassword.setEchoMode(QtGui.QLineEdit.Password)
-        self.layout.addRow(QtGui.QLabel("Password:       "), self.LabelPassword)
+        self.layout.addRow(QtGui.QLabel("Password:       "),\
+         self.LabelPassword)
         self.LabelSlotID = QtGui.QLineEdit()
-        self.layout.addRow(QtGui.QLabel("slot_id:        "), self.LabelSlotID)
-       
+        self.layout.addRow(QtGui.QLabel("slot_id:        "),\
+         self.LabelSlotID)
+      
         self.LabelConnection = QtGui.QComboBox()
         self.LabelConnection.addItems(['serial', 'udp', 'tcp', 'none'])
         self.LabelConnection.activated.connect(self.CheckConnection)
-        self.layout.addRow(QtGui.QLabel("Connection:     "), self.LabelConnection)
-      
+        self.layout.addRow(QtGui.QLabel("Connection:     "),\
+         self.LabelConnection)
+     
         parameters.setTitle("User data")
         parameters.move(10, 145)
 
@@ -872,21 +866,21 @@ class SATNetGUI(QtGui.QWidget):
                 pass
 
             try:
-                if self.connectionkind == 'udp':
+                if self.CONNECTION_INFO['connection'] == 'udp':
                     try:
                         self.stopUDPThread()
                     except Exception as e:
                         log.err(e)
                         log.err("Can't stop UDP thread")
 
-                elif self.connectionkind == 'tcp':
+                elif self.CONNECTION_INFO['connection'] == 'tcp':
                     try:
                         self.stopTCPThread()
                     except Exception as e:
                         log.err(e)
                         log.err("Can't stop TCP thread")
 
-                elif self.connectionkind == 'serial':
+                elif self.CONNECTION_INFO['connection'] == 'serial':
                     try:
                         self.stopKISSThread()
                     except Exception as e:
@@ -940,9 +934,7 @@ class DateDialog(QtGui.QDialog):
         confirmationButton.move(110, 185)
 
         self.setMinimumSize(400, 220)
-
         # 400x150 Mate
-
 
     def getConfiguration(self):
         configuration = [str(self.LabelClientname.text()),\
@@ -1081,7 +1073,7 @@ if __name__ == '__main__':
         UDPPort = ""
 
         queue = Queue()
-        # sys.stdout = WriteStream(queue)
+        sys.stdout = WriteStream(queue)
 
         log.startLogging(sys.stdout)
         log.msg('------------------------------------------------- ' + \

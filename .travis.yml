@@ -38,11 +38,8 @@ install:
   - cd ../ && rm -r -f PyQt-x11-gpl-4.11.4 && cd ../../
 
 script:
-  - pwd
   - nosetests --with-coverage --cover-erase
   - cd tests
-  - pwd
-  - ls
   - coverage run test_clientToServer.py
   - coverage run test_serverToClient.py
   - cd ../

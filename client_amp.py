@@ -376,7 +376,7 @@ class SATNetGUI(QtGui.QWidget):
         self.setWindowTitle("SATNet client - %s" %(name))
 
         if parameters == 'yes':
-            self.LoadParameters(enviromentDesktop)
+            self.LoadParameters(enviromentDesktop, 0)
             print self.CONNECTION_INFO
         elif parameters == 'no':
             pass
@@ -404,7 +404,7 @@ class SATNetGUI(QtGui.QWidget):
         ButtonLoad = QtGui.QPushButton("Load parameters from file")
         ButtonLoad.setToolTip("Load parameters from <i>.settings</i> file")
         ButtonLoad.setFixedWidth(296)
-        ButtonLoad.clicked.connect(self.LoadParameters)
+        ButtonLoad.clicked.connect(self.LoadParameters, 1)
         # Configuration
         ButtonConfiguration = QtGui.QPushButton("Configuration")
         ButtonConfiguration.setToolTip("Open configuration window")
@@ -631,8 +631,15 @@ class SATNetGUI(QtGui.QWidget):
         self.ButtonCancel.setEnabled(False)
 
     # Load connection parameters from .settings file.
-    def LoadParameters(self, enviromentDesktop):
+    def LoadParameters(self, enviromentDesktop, init_flag):
         self.CONNECTION_INFO = {}
+
+        if init_flag == 1:
+            self.CONNECTION_INFO['connection'] = str(self.LabelConnection.currentText())
+
+        print "ey"
+        print self.CONNECTION_INFO
+        print self.CONNECTION_INFO['connection']
 
         import ConfigParser
         config = ConfigParser.ConfigParser()
@@ -706,6 +713,11 @@ class SATNetGUI(QtGui.QWidget):
         log.msg("Attemps", attempts)
 
     def CheckConnection(self):
+        enviromentDesktop = os.environ.get('DESKTOP_SESSION')
+        self.LoadParameters(enviromentDesktop, 1)
+
+        print self.CONNECTION_INFO
+
         if str(self.LabelConnection.currentText()) == 'serial':
             try:
                 LabelIP = self.layout.labelForField(self.LabelIP)
@@ -728,13 +740,9 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelBaudrate = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Baudrate:       "), self.LabelBaudrate)
 
-            serialPort = config.get('Serial',\
-             'serialport')
-            index = self.LabelSerialPort.findText(serialPort)
+            index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
             self.LabelSerialPort.setCurrentIndex(index)
-            baudRate = config.get('Serial',\
-             'baudrate')
-            self.LabelBaudrate.setText(baudRate)
+            self.LabelBaudrate.setText(self.CONNECTION_INFO['baudrate'])
 
         elif str(self.LabelConnection.currentText()) == 'udp':
             try:
@@ -1065,7 +1073,7 @@ if __name__ == '__main__':
         UDPPort = ""
 
         queue = Queue()
-        sys.stdout = WriteStream(queue)
+        # sys.stdout = WriteStream(queue)
 
         log.startLogging(sys.stdout)
         log.msg('------------------------------------------------- ' + \

@@ -17,7 +17,8 @@ before_install:
   - git submodule update --init --recursive
 #  - cd protocol
 #  - git checkout jrpc_if
-#  - cd ../scripts 
+#  - cd ../scripts
+  - cd scripts 
 
 install:
   - bash ./setup.sh -travisCI

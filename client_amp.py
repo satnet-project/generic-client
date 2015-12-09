@@ -627,23 +627,6 @@ class SATNetGUI(QtGui.QWidget):
             self.CONNECTION_INFO['serverip'] = config.get('server', 'serverip')
             self.CONNECTION_INFO['serverport'] = int(config.get('server',\
              'serverport'))
-
-            if self.CONNECTION_INFO['connection'] == 'serial':
-                self.LabelSerialPort.setEnabled(True)
-                self.LabelBaudrate.setEnabled(True)
-                self.LabelIP.setEnabled(False)
-                self.LabelIPPort.setEnabled(False)
-            elif self.CONNECTION_INFO['connection'] == 'udp' or self.CONNECTION_INFO['connection']  == 'tcp':
-                self.LabelSerialPort.setEnabled(False)
-                self.LabelBaudrate.setEnabled(False)
-                self.LabelIP.setEnabled(True)
-                self.LabelIPPort.setEnabled(True)
-            elif self.CONNECTION_INFO['connection'] == 'none':
-                self.LabelSerialPort.setEnabled(False)
-                self.LabelBaudrate.setEnabled(False)
-                self.LabelIP.setEnabled(False)
-                self.LabelIPPort.setEnabled(False)
-
         elif enviromentDesktop == 'default':
             self.CONNECTION_INFO['serialport'] = config.get('Serial',
                                                             'serialport')

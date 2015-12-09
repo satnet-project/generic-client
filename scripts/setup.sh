@@ -1,9 +1,9 @@
 #!/bin/bash
+script_path="$( cd "$( dirname "$0" )" && pwd )"
+project_path=$( readlink -e "$script_path/.." )
 
 if [ $1 == '-i' ];
 then
-	script_path="$( cd "$( dirname "$0" )" && pwd )"
-	project_path=$( readlink -e "$script_path/.." )
 	venv_path="$project_path/.venv"
 
 	# Enable serial access
@@ -57,12 +57,8 @@ then
 	make man
 	cp _build/man/satnetclient.1 ../
 	deactivate
-
 elif [ $1 == '-circleCI' ];
 then
-	script_path="$( cd "$( dirname "$0" )" && pwd )"
-	project_path=$( readlink -e "$script_path/.." )
-
     mkdir key
     # 1: Generate a Private Key
     echo '>>> Generating a private key'
@@ -111,11 +107,8 @@ then
 	sudo make install
 	make install
 	cd ../ && rm -r -f PyQt*
-
 elif [ $1 == '-travisCI' ];
 then
-	script_path="$( cd "$( dirname "$0" )" && pwd )"
-	project_path=$( readlink -e "$script_path/.." )
     mkdir key
 
     # 1: Generate a Private Key
@@ -146,11 +139,8 @@ then
     pip install coverage
     pip install nose
 	pip install -r "$project_path/requirements-tests.txt"
-
 elif [ $1 == '-l' ];
 then
-	script_path="$( cd "$( dirname "$0" )" && pwd )"
-	project_path=$( readlink -e "$script_path/.." )
 	venv_path="$project_path/.venv_test"
 
 	mkdir key
@@ -200,7 +190,6 @@ then
 	sudo ldconfig
 	sudo make install
 	cd ../ && rm -r -f PyQt*
-
 fi
 
 

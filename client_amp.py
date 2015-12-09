@@ -652,11 +652,9 @@ class SATNetGUI(QtGui.QWidget):
         if enviromentDesktop == 'lightdm-xsession':
             self.CONNECTION_INFO['serialport'] = config.get('Serial',\
              'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial',\
-             'baudrate')
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial', 'baudrate')
             self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('UDP',\
-             'udpport'))
+            self.CONNECTION_INFO['udpport'] = int(config.get('UDP', 'udpport'))
 
             if self.CONNECTION_INFO['connection'] == 'serial':
                 self.LabelSerialPort.setEnabled(True)
@@ -691,12 +689,34 @@ class SATNetGUI(QtGui.QWidget):
     def SetConfiguration(self):
         # First draft
         client, attempts = DateDialog.buildWindow()
-
-        # Aqui deberia cargar los parametros. Mostrar un mensaje de aviso para decir
-        # que ya estan cargados
-
         log.msg("Client name", client)
         log.msg("Attemps", attempts)
+
+    def deleteMenu(self):
+        try:
+            SerialPort = self.layout.labelForField(self.LabelSerialPort)
+            if SerialPort is not None:
+                SerialPort.deleteLater()
+            self.LabelSerialPort.deleteLater()
+
+            BaudRate = self.layout.labelForField(self.LabelBaudrate)
+            if BaudRate is not None:
+                BaudRate.deleteLater()
+            self.LabelBaudrate.deleteLater()
+        except:
+            pass
+        try:
+            LabelIP = self.layout.labelForField(self.LabelIP)
+            if LabelIP is not None:
+                LabelIP.deleteLater()
+            self.LabelIP.deleteLater()
+
+            LabelIPPort = self.layout.labelForField(self.LabelIPPort)
+            if LabelIPPort is not None:
+                LabelIPPort.deleteLater()
+            self.LabelIPPort.deleteLater()
+        except:
+            pass
 
     def CheckConnection(self):
         import ConfigParser
@@ -707,30 +727,7 @@ class SATNetGUI(QtGui.QWidget):
         self.LoadParameters(enviromentDesktop, 1)
 
         if str(self.LabelConnection.currentText()) == 'serial':
-            try:
-                SerialPort = self.layout.labelForField(self.LabelSerialPort)
-                if SerialPort is not None:
-                    SerialPort.deleteLater()
-                self.LabelSerialPort.deleteLater()
-
-                BaudRate = self.layout.labelForField(self.LabelBaudrate)
-                if BaudRate is not None:
-                    BaudRate.deleteLater()
-                self.LabelBaudrate.deleteLater()
-            except AttributeError:
-                pass
-            try:
-                LabelIP = self.layout.labelForField(self.LabelIP)
-                if LabelIP is not None:
-                    LabelIP.deleteLater()
-                self.LabelIP.deleteLater()
-
-                LabelIPPort = self.layout.labelForField(self.LabelIPPort)
-                if LabelIPPort is not None:
-                    LabelIPPort.deleteLater()
-                self.LabelIPPort.deleteLater()
-            except AttributeError:
-                pass
+            self.deleteMenu()
 
             self.LabelSerialPort = QtGui.QComboBox()
             from glob import glob
@@ -745,31 +742,7 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelBaudrate.setText(self.CONNECTION_INFO['baudrate'])
 
         elif str(self.LabelConnection.currentText()) == 'udp':
-            try:
-                SerialPort = self.layout.labelForField(self.LabelSerialPort)
-                if SerialPort is not None:
-                    SerialPort.deleteLater()
-                self.LabelSerialPort.deleteLater()
-
-                BaudRate = self.layout.labelForField(self.LabelBaudrate)
-                if BaudRate is not None:
-                    BaudRate.deleteLater()
-                self.LabelBaudrate.deleteLater()
-            except AttributeError:
-                pass
-
-            try:
-                LabelIP = self.layout.labelForField(self.LabelIP)
-                if LabelIP is not None:
-                    LabelIP.deleteLater()
-                self.LabelIP.deleteLater()
-
-                LabelIPPort = self.layout.labelForField(self.LabelIPPort)
-                if LabelIPPort is not None:
-                    LabelIPPort.deleteLater()
-                self.LabelIPPort.deleteLater()
-            except AttributeError:
-                pass
+            self.deleteMenu()
 
             self.LabelIP = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Host:            "), self.LabelIP)
@@ -782,31 +755,7 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelIPPort.setText(str(udpport))
 
         elif str(self.LabelConnection.currentText()) == 'tcp':
-            try:
-                SerialPort = self.layout.labelForField(self.LabelSerialPort)
-                if SerialPort is not None:
-                    SerialPort.deleteLater()
-                self.LabelSerialPort.deleteLater()
-
-                BaudRate = self.layout.labelForField(self.LabelBaudrate)
-                if BaudRate is not None:
-                    BaudRate.deleteLater()
-                self.LabelBaudrate.deleteLater()
-            except AttributeError:
-                pass
-
-            try:
-                LabelIP = self.layout.labelForField(self.LabelIP)
-                if LabelIP is not None:
-                    LabelIP.deleteLater()
-                self.LabelIP.deleteLater()
-
-                LabelIPPort = self.layout.labelForField(self.LabelIPPort)
-                if LabelIPPort is not None:
-                    LabelIPPort.deleteLater()
-                self.LabelIPPort.deleteLater()
-            except AttributeError:
-                pass
+            self.deleteMenu()
 
             self.LabelIP = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Host:            "), self.LabelIP)
@@ -819,31 +768,7 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelIPPort.setText(str(tcpport))
 
         elif str(self.LabelConnection.currentText()) == 'none':
-            try:
-                SerialPort = self.layout.labelForField(self.LabelSerialPort)
-                if SerialPort is not None:
-                    SerialPort.deleteLater()
-                self.LabelSerialPort.deleteLater()
-
-                BaudRate = self.layout.labelForField(self.LabelBaudrate)
-                if BaudRate is not None:
-                    BaudRate.deleteLater()
-                self.LabelBaudrate.deleteLater()
-            except AttributeError:
-                pass
-
-            try:
-                LabelIP = self.layout.labelForField(self.LabelIP)
-                if LabelIP is not None:
-                    LabelIP.deleteLater()
-                self.LabelIP.deleteLater()
-
-                LabelIPPort = self.layout.labelForField(self.LabelIPPort)
-                if LabelIPPort is not None:
-                    LabelIPPort.deleteLater()
-                self.LabelIPPort.deleteLater()
-            except AttributeError:
-                pass
+            self.deleteMenu()
 
             self.LabelIP = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Server:            "), 
@@ -1012,7 +937,6 @@ class WriteStream(object):
     def flush(self):
         pass
 
-
 #  A QObject (to be run in a QThread) which sits waiting 
 #  for data to come  through a Queue.Queue().
 #  It blocks until data is available, and one it has got something from 
@@ -1052,7 +976,7 @@ if __name__ == '__main__':
             baudRate = ""
             UDPIp = ""
             UDPPort = ""
-          
+         
             import getopt
             try:
                 opts, args = getopt.getopt(sys.argv[1:],"hfgn:p:t:c:s:b:i:u:",\

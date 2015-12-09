@@ -474,7 +474,7 @@ class SATNetGUI(QtGui.QWidget):
                                     self.LabelIPPort)
             elif self.CONNECTION_INFO['connection'] == 'none':
                 self.LabelIP = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Server:          "), 
+                self.layout.addRow(QtGui.QLabel("SATNet host:     "), 
                                     self.LabelIP)
                 self.LabelIPPort = QtGui.QLineEdit()
                 self.layout.addRow(QtGui.QLabel("Port:       "), 
@@ -493,7 +493,7 @@ class SATNetGUI(QtGui.QWidget):
             self.layout.addRow(QtGui.QLabel("Baudrate:       "), 
                                 self.LabelBaudrate)
             self.LabelIP = QtGui.QLineEdit()
-            self.layout.addRow(QtGui.QLabel("Host:            "), 
+            self.layout.addRow(QtGui.QLabel("SATNet host:    "), 
                                 self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Port:       "), 
@@ -745,7 +745,7 @@ class SATNetGUI(QtGui.QWidget):
             self.deleteMenu()
 
             self.LabelIP = QtGui.QLineEdit()
-            self.layout.addRow(QtGui.QLabel("Host:            "), self.LabelIP)
+            self.layout.addRow(QtGui.QLabel("UDP host:        "), self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelIPPort)
 
@@ -758,7 +758,7 @@ class SATNetGUI(QtGui.QWidget):
             self.deleteMenu()
 
             self.LabelIP = QtGui.QLineEdit()
-            self.layout.addRow(QtGui.QLabel("Host:            "), self.LabelIP)
+            self.layout.addRow(QtGui.QLabel("TCP host:        "), self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelIPPort)
 
@@ -771,7 +771,7 @@ class SATNetGUI(QtGui.QWidget):
             self.deleteMenu()
 
             self.LabelIP = QtGui.QLineEdit()
-            self.layout.addRow(QtGui.QLabel("Server:            "), 
+            self.layout.addRow(QtGui.QLabel("SATNet server:"), 
                                 self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Port:       "),

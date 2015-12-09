@@ -57,6 +57,7 @@ then
 	make man
 	cp _build/man/satnetclient.1 ../
 	deactivate
+
 elif [ $1 == '-circleCI' ];
 then
     mkdir key
@@ -107,6 +108,7 @@ then
 	sudo make install
 	make install
 	cd ../ && rm -r -f PyQt*
+
 elif [ $1 == '-travisCI' ];
 then
     mkdir key
@@ -139,6 +141,8 @@ then
     pip install coverage
     pip install nose
 	pip install -r "$project_path/requirements-tests.txt"
+
+
 elif [ $1 == '-l' ];
 then
 	venv_path="$project_path/.venv_test"

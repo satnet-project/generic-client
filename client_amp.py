@@ -589,13 +589,13 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelSerialPort.setCurrentIndex(index)
             self.LabelBaudrate.setText(baudRate)
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.LabelIP.setText(self.CONNECTION_INFO['ip'])
+            self.LabelIP.setText(self.CONNECTION_INFO['udpip'])
             self.LabelIPPort.setText(self.CONNECTION_INFO['ipport'])
         elif self.CONNECTION_INFO['connection'] == 'tcp':
-            self.LabelIP.setText(self.CONNECTION_INFO['ip'])
+            self.LabelIP.setText(self.CONNECTION_INFO['tcpip'])
             self.LabelIPPort.setText(self.CONNECTION_INFO['ipport'])
         elif self.CONNECTION_INFO['connection'] == 'none':
-            self.LabelIP.setText(self.CONNECTION_INFO['ip'])
+            self.LabelIP.setText(self.CONNECTION_INFO['serverip'])
             self.LabelIPPort.setText(str(self.CONNECTION_INFO['serverport']))
         else:
             raise Exception
@@ -633,13 +633,8 @@ class SATNetGUI(QtGui.QWidget):
     # Load connection parameters from .settings file.
     def LoadParameters(self, enviromentDesktop, init_flag):
         self.CONNECTION_INFO = {}
-
         if init_flag == 1:
             self.CONNECTION_INFO['connection'] = str(self.LabelConnection.currentText())
-
-        print "ey"
-        print self.CONNECTION_INFO
-        print self.CONNECTION_INFO['connection']
 
         import ConfigParser
         config = ConfigParser.ConfigParser()
@@ -680,27 +675,18 @@ class SATNetGUI(QtGui.QWidget):
                 self.LabelIPPort.setEnabled(False)
 
         elif enviromentDesktop == 'default':
-            if self.CONNECTION_INFO['connection'] == 'serial':
-                self.CONNECTION_INFO['serialport'] = config.get('Serial',\
-                 'serialport')
-                #  index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
-                #  self.LabelSerialPort.setCurrentIndex(index)
-                self.CONNECTION_INFO['baudrate'] = config.get('Serial',\
-                 'baudrate')
-                self.LabelBaudrate.setText(self.CONNECTION_INFO['baudrate'])
-            elif self.CONNECTION_INFO['connection'] == 'udp':
-                self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
-                #  self.LabelIP.setText(self.CONNECTION_INFO['ip'])
-                self.CONNECTION_INFO['udpport'] = int(config.get('UDP',\
-                 'udpport'))
-                #  self.LabelIPPort.setText(config.get('UDP', 'udpport'))
-            elif self.CONNECTION_INFO['connection'] == 'none':
-                self.CONNECTION_INFO['ip'] = config.get('server', 'ip')
-                #  self.LabelServer.setText(self.CONNECTION_INFO['ip'])
-                self.CONNECTION_INFO['serverport'] = int(config.get('server',\
-                 'serverport'))
-            else:
-                print "Error en LoadParameters"
+            self.CONNECTION_INFO['serialport'] = config.get('Serial',
+                                                            'serialport')
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial', 'baudrate')
+            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
+            self.CONNECTION_INFO['udpport'] = int(config.get('udp', 'udpport'))
+            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
+            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp', 'tcpport'))
+            self.CONNECTION_INFO['serverip'] = config.get('server', 'serverip')
+            self.CONNECTION_INFO['serverport'] = int(config.get('server',\
+             'serverport'))
+        else:
+            print "Error en LoadParameters"
 
     def SetConfiguration(self):
         # First draft
@@ -713,12 +699,26 @@ class SATNetGUI(QtGui.QWidget):
         log.msg("Attemps", attempts)
 
     def CheckConnection(self):
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        config.read(".settings")
+
         enviromentDesktop = os.environ.get('DESKTOP_SESSION')
         self.LoadParameters(enviromentDesktop, 1)
 
-        print self.CONNECTION_INFO
-
         if str(self.LabelConnection.currentText()) == 'serial':
+            try:
+                SerialPort = self.layout.labelForField(self.LabelSerialPort)
+                if SerialPort is not None:
+                    SerialPort.deleteLater()
+                self.LabelSerialPort.deleteLater()
+
+                BaudRate = self.layout.labelForField(self.LabelBaudrate)
+                if BaudRate is not None:
+                    BaudRate.deleteLater()
+                self.LabelBaudrate.deleteLater()
+            except AttributeError:
+                pass
             try:
                 LabelIP = self.layout.labelForField(self.LabelIP)
                 if LabelIP is not None:
@@ -758,18 +758,65 @@ class SATNetGUI(QtGui.QWidget):
             except AttributeError:
                 pass
 
+            try:
+                LabelIP = self.layout.labelForField(self.LabelIP)
+                if LabelIP is not None:
+                    LabelIP.deleteLater()
+                self.LabelIP.deleteLater()
+
+                LabelIPPort = self.layout.labelForField(self.LabelIPPort)
+                if LabelIPPort is not None:
+                    LabelIPPort.deleteLater()
+                self.LabelIPPort.deleteLater()
+            except AttributeError:
+                pass
+
             self.LabelIP = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Host:            "), self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
             self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelIPPort)
 
-            ip = config.get('UDP', 'ip')
+            ip = config.get('udp', 'udpip')
             self.LabelIP.setText(ip)
-            udpport = int(config.get('UDP', 'udpport'))
+            udpport = int(config.get('udp', 'udpport'))
             self.LabelIPPort.setText(str(udpport))
 
         elif str(self.LabelConnection.currentText()) == 'tcp':
-            log.msg("TO-DO")
+            try:
+                SerialPort = self.layout.labelForField(self.LabelSerialPort)
+                if SerialPort is not None:
+                    SerialPort.deleteLater()
+                self.LabelSerialPort.deleteLater()
+
+                BaudRate = self.layout.labelForField(self.LabelBaudrate)
+                if BaudRate is not None:
+                    BaudRate.deleteLater()
+                self.LabelBaudrate.deleteLater()
+            except AttributeError:
+                pass
+
+            try:
+                LabelIP = self.layout.labelForField(self.LabelIP)
+                if LabelIP is not None:
+                    LabelIP.deleteLater()
+                self.LabelIP.deleteLater()
+
+                LabelIPPort = self.layout.labelForField(self.LabelIPPort)
+                if LabelIPPort is not None:
+                    LabelIPPort.deleteLater()
+                self.LabelIPPort.deleteLater()
+            except AttributeError:
+                pass
+
+            self.LabelIP = QtGui.QLineEdit()
+            self.layout.addRow(QtGui.QLabel("Host:            "), self.LabelIP)
+            self.LabelIPPort = QtGui.QLineEdit()
+            self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelIPPort)
+
+            ip = config.get('tcp', 'tcpip')
+            self.LabelIP.setText(ip)
+            tcpport = int(config.get('tcp', 'tcpport'))
+            self.LabelIPPort.setText(str(tcpport))
 
         elif str(self.LabelConnection.currentText()) == 'none':
             try:
@@ -805,7 +852,7 @@ class SATNetGUI(QtGui.QWidget):
             self.layout.addRow(QtGui.QLabel("Port:       "),
                                  self.LabelIPPort)
 
-            ip = config.get('server', 'ip')
+            ip = config.get('server', 'serverip')
             self.LabelIP.setText(ip)
             serverport = int(config.get('server', 'serverport'))
             self.LabelIPPort.setText(str(serverport))

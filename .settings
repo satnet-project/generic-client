@@ -6,11 +6,14 @@ connection: none
 [Serial]
 serialport: /dev/ttyUSB0
 baudrate: 500000
-[UDP]
-ip: 127.0.0.1
+[udp]
+udpip: 127.0.0.1
 udpport: 57008
+[tcp]
+tcpip: 127.0.0.1
+tcpport: 4321
 [server]
-ip: 127.0.0.1
+serverip: 127.0.0.1
 serverport: 1234
 [Connection]
 reconnection: no

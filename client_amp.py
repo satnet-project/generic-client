@@ -170,9 +170,6 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     # Called when an established connection is lost
     def clientConnectionLost(self, connector, reason):
-
-        print self.CONNECTION_INFO
-
         if self.CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
         elif self.CONNECTION_INFO['reconnection'] == 'no':
@@ -348,7 +345,6 @@ class SATNetGUI(QtGui.QWidget):
 
         if parameters == 'yes':
             self.LoadParameters(enviromentDesktop, 0)
-            print self.CONNECTION_INFO
         elif parameters == 'no':
             pass
         else:
@@ -519,7 +515,7 @@ class SATNetGUI(QtGui.QWidget):
         if password != "":
             self.LabelPassword.setText(password)
         if slot != "":
-            self.LabelSlotID.setText(slot)     
+            self.LabelSlotID.setText(slot)    
         if connection != "":
             index = self.LabelConnection.findText(connection)
             self.LabelConnection.setCurrentIndex(index)
@@ -1020,7 +1016,7 @@ if __name__ == '__main__':
         UDPPort = ""
 
         queue = Queue()
-        # sys.stdout = WriteStream(queue)
+        sys.stdout = WriteStream(queue)
 
         log.startLogging(sys.stdout)
         log.msg('------------------------------------------------- ' + \

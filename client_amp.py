@@ -64,19 +64,10 @@ class ClientProtocol(AMP):
          sUsername=self.CONNECTION_INFO['username'],\
           sPassword=self.CONNECTION_INFO['password'])
 
-        # if res['bAuthenticated'] == True:
-        #     # log.msg('bAuthenticated True')
-        #     res = yield self.callRemote(StartRemote,\
-        #      iSlotId=self.CONNECTION_INFO['slot_id'])
-
         if res['bAuthenticated'] == True:
-            # log.msg('bAuthenticated True')
-            res = yield self.callRemote(StartRemote,\
-             iSlotId='-1')
-
+            res = yield self.callRemote(StartRemote, iSlotId='-1')
         elif res['bAuthenticated'] == False:
             log.msg('False')
-
         else:
             log.msg('No data')
 
@@ -91,43 +82,23 @@ class ClientProtocol(AMP):
         # d.addErrback(notConnected)
         # return d
 
+    # To-do. Do we need a return connection?
     def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] +\
          ") --------- Notify Message ---------")
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             log.msg(sMsg)
-            # import kiss
-            # import aprs
-
-            # kissTNC = aprs.APRSKISS(port='/dev/ttyS1', speed='9000')
-            # kissTNC.start()
-            # kissTNC.write(sMsg)
 
             return {}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
             log.msg(sMsg)
-            # import socket
-
-            # UDPSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            # UDPSocket.bind((str(self.CONNECTION_INFO['ip']),\
-            #  int(self.CONNECTION_INFO['udpport']))
-            # UDPSocket.sendto(sMsg, (self.CONNECTION_INFO['ip'],\
-            #  self.CONNECTION_INFO['udpport']))
-            # UDPSocket.close()
 
             return {}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             log.msg(sMsg)
-            # import socket
-
-            # TCPSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # TCPSocket.bind((str(self.CONNECTION_INFO['ip']),\
-            #  int(self.CONNECTION_INFO['udpport'])))
-            # TCPSocket.listen(1)
-            # TCPSocket.send(sMsg)
 
             return {}
         elif self.CONNECTION_INFO['connection'] == 'none':
@@ -304,7 +275,7 @@ class SATNetGUI(QtGui.QWidget):
         self.workerTCPThread = OperativeTCPThread(self.tcp_queue,\
          self.sendData, self.TCPSignal, self.CONNECTION_INFO)
         self.workerTCPThread.start()
-  
+ 
     # Stop KISS thread
     def stopKISSThread(self):
         self.workerKISSThread.stop()

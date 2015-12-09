@@ -621,11 +621,16 @@ class SATNetGUI(QtGui.QWidget):
         self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
 
         if enviromentDesktop == 'lightdm-xsession':
-            self.CONNECTION_INFO['serialport'] = config.get('Serial',\
-             'serialport')
+            self.CONNECTION_INFO['serialport'] = config.get('Serial',
+                                                            'serialport')
             self.CONNECTION_INFO['baudrate'] = config.get('Serial', 'baudrate')
-            self.CONNECTION_INFO['ip'] = config.get('UDP', 'ip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('UDP', 'udpport'))
+            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
+            self.CONNECTION_INFO['udpport'] = int(config.get('udp', 'udpport'))
+            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
+            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp', 'tcpport'))
+            self.CONNECTION_INFO['serverip'] = config.get('server', 'serverip')
+            self.CONNECTION_INFO['serverport'] = int(config.get('server',\
+             'serverport'))
 
             if self.CONNECTION_INFO['connection'] == 'serial':
                 self.LabelSerialPort.setEnabled(True)

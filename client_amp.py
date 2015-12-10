@@ -849,7 +849,7 @@ class SATNetGUI(QtGui.QWidget):
             pass
 
 
-class DateDialog(QtGui.QDialog):
+class DateDialog(QtGui.):
     def __init__(self, parent = None):
         super(DateDialog, self).__init__(parent)
 
@@ -951,12 +951,17 @@ if __name__ == '__main__':
             baudRate = ""
             UDPIp = ""
             UDPPort = ""
-         
+        
             import getopt
             try:
-                opts, args = getopt.getopt(sys.argv[1:],"hfgn:p:t:c:s:b:i:u:",\
-                 ["name=", "password=", "slot=", "connection=", "serialport=",\
-                  "baudrate=", "ip=", "udpport="])
+                opts, args = getopt.getopt(sys.argv[1:],
+                                            "hfgn:p:t:c:s:b:i:u:",
+                                            ["name=", "password=",
+                                            "slot=", "connection=",
+                                            "serialport=", 
+                                            "baudrate=", "ip=", 
+                                            "udpport="]
+                                            )
             except getopt.GetoptError:
                 print "error"
 
@@ -1027,13 +1032,14 @@ if __name__ == '__main__':
           ' -------------------------------------------------')
 
         qapp = QtGui.QApplication(sys.argv)
-        app = SATNetGUI(username, password, slot, connection, serialPort,\
-         baudRate, UDPIp, UDPPort)
+        app = SATNetGUI(username, password,
+                        slot, connection, serialPort,
+                        baudRate, UDPIp, UDPPort)
         app.setWindowIcon(QtGui.QIcon('logo.png'))
         app.show()
 
-        # Create thread that will listen on the other end of the queue, and 
-        # send the text to the textedit in our application
+        # Create thread that will listen on the other end of the 
+        # queue, and send the text to the textedit in our application
         my_receiver = MyReceiver(queue)
         my_receiver.mysignal.connect(app.append_text)
         my_receiver.start()

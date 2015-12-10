@@ -157,14 +157,15 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     # Called when a connection has been started
     def startedConnecting(self, connector):
-        log.msg("Starting connection..........................." +\
-         "..........................." + "..........................." +\
-          "........................")
+        log.msg("Starting connection............................" +
+                "..............................................." +
+                "..............................")
 
     # Create an instance of a subclass of Protocol
     def buildProtocol(self, addr):
-        log.msg("Building protocol.............................." +\
-         "................................................................")
+        log.msg("Building protocol.............................." +
+                "..............................................." +
+                ".................")
         self.resetDelay()
         return ClientProtocol(self.CONNECTION_INFO, self.gsi)
 
@@ -204,8 +205,9 @@ class Client(object):
     """
     This class starts the client using the data provided by user interface.
     :ivar CONNECTION_INFO:
-        This variable contains the following data: username, password, slot_id, 
-        connection (either 'serial' or 'udp'), serialport, baudrate, ip, port.
+        This variable contains the following data: username, password,
+        slot_id, connection (either 'serial' or 'udp'), serialport, 
+        baudrate, ip, port.
     :type CONNECTION_INFO:
         L{Dictionary}
     :ivar
@@ -215,22 +217,22 @@ class Client(object):
 
     def createConnection(self):
         # New interface
-        gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",\
-         ClientProtocol)
+        gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
+                                        ClientProtocol)
 
         global connector
 
-        connector = reactor.connectSSL('localhost', 1234,\
-         ClientReconnectFactory(self.CONNECTION_INFO, gsi),\
-          CtxFactory())
+        connector = reactor.connectSSL('localhost',
+            1234, ClientReconnectFactory(self.CONNECTION_INFO, gsi),
+            CtxFactory())
 
         return gsi, connector
 
 
 # QDialog, QWidget or QMainWindow, which is better in this situation? TO-DO
 class SATNetGUI(QtGui.QWidget):
-    def __init__(self, username, password, slot, connection, serialPort,\
-     baudRate, UDPIp, UDPPort, parent=None):
+    def __init__(self, username, password, slot, connection,
+                    serialPort, baudRate, UDPIp, UDPPort, parent=None):
         QtGui.QWidget.__init__(self, parent)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 18))
 
@@ -245,8 +247,8 @@ class SATNetGUI(QtGui.QWidget):
         self.initConsole()
 
         #  Use a dict for passing arg.
-        self.setArguments(username, password, slot, connection, serialPort,\
-         baudRate, UDPIp, UDPPort)
+        self.setArguments(username, password, slot, connection,
+                            serialPort, baudRate, UDPIp, UDPPort)
 
         self.serialSignal = True
         self.UDPSignal = True
@@ -258,8 +260,10 @@ class SATNetGUI(QtGui.QWidget):
 
     # Run threads associated to KISS protocol
     def runKISSThread(self):
-        self.workerKISSThread = OperativeKISSThread(self.serial_queue,\
-            self.sendData, self.serialSignal, self.CONNECTION_INFO)
+        self.workerKISSThread = OperativeKISSThread(self.serial_queue, 
+                                                    self.sendData,
+                                                    self.serialSignal,
+                                                    self.CONNECTION_INFO)
         self.workerKISSThread.start()
 
     def runUDPThread(self):
@@ -272,7 +276,7 @@ class SATNetGUI(QtGui.QWidget):
         self.workerTCPThread = OperativeTCPThread(self.tcp_queue,\
          self.sendData, self.TCPSignal, self.CONNECTION_INFO)
         self.workerTCPThread.start()
- 
+
     # Stop KISS thread
     def stopKISSThread(self):
         self.workerKISSThread.stop()
@@ -284,7 +288,7 @@ class SATNetGUI(QtGui.QWidget):
     # Stop TCP thread
     def stopTCPThread(self):
         self.workerTCPThread.stop()
-      
+    
     # Gets a string but can't format it! To-do
     def sendData(self, result):
         self.gsi._manageFrame(result)
@@ -397,23 +401,25 @@ class SATNetGUI(QtGui.QWidget):
 
         self.LabelUsername = QtGui.QLineEdit()
         self.LabelUsername.setFixedWidth(190)
-        self.layout.addRow(QtGui.QLabel("Username:       "),\
-         self.LabelUsername)
+        self.layout.addRow(QtGui.QLabel("Username:       "),
+                            self.LabelUsername)
         self.LabelPassword = QtGui.QLineEdit()
         self.LabelPassword.setFixedWidth(190)
         self.LabelPassword.setEchoMode(QtGui.QLineEdit.Password)
-        self.layout.addRow(QtGui.QLabel("Password:       "),\
-         self.LabelPassword)
+        self.layout.addRow(QtGui.QLabel("Password:       "),
+                             self.LabelPassword)
         self.LabelSlotID = QtGui.QLineEdit()
-        self.layout.addRow(QtGui.QLabel("slot_id:        "),\
-         self.LabelSlotID)
-      
+        self.LabelSlotID.setFixedWidth(190)
+        self.layout.addRow(QtGui.QLabel("slot_id:        "),
+                             self.LabelSlotID)
+     
         self.LabelConnection = QtGui.QComboBox()
+        self.LabelConnection.setFixedWidth(190)
         self.LabelConnection.addItems(['serial', 'udp', 'tcp', 'none'])
         self.LabelConnection.activated.connect(self.CheckConnection)
-        self.layout.addRow(QtGui.QLabel("Connection:     "),\
-         self.LabelConnection)
-     
+        self.layout.addRow(QtGui.QLabel("Connection:     "),
+                           self.LabelConnection)
+    
         parameters.setTitle("User data")
         parameters.move(10, 145)
 
@@ -424,14 +430,16 @@ class SATNetGUI(QtGui.QWidget):
             #  GNOME desktops
             if self.CONNECTION_INFO['connection'] == 'serial':
                 self.LabelSerialPort = QtGui.QComboBox()
+                self.LabelSerialPort.setFixedWidth(190)
                 from glob import glob
                 ports = glob('/dev/tty[A-Za-z]*')
                 self.LabelSerialPort.addItems(ports)
-                self.layout.addRow(QtGui.QLabel("Serial port:    "), 
-                                    self.LabelSerialPort)
+                self.layout.addRow(QtGui.QLabel("Serial port:    "),
+                                   self.LabelSerialPort)
                 self.LabelBaudrate = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Baudrate:       "), 
-                                    self.LabelBaudrate)
+                self.LabelBaudrate.setFixedWidth(190)
+                self.layout.addRow(QtGui.QLabel("Baudrate:       "),
+                                   self.LabelBaudrate)
             elif self.CONNECTION_INFO['connection'] == 'udp' or self.CONNECTION_INFO['connection'] == 'tcp':
                 self.LabelIP = QtGui.QLineEdit()
                 self.layout.addRow(QtGui.QLabel("Host:            "), 
@@ -681,15 +689,21 @@ class SATNetGUI(QtGui.QWidget):
         enviromentDesktop = os.environ.get('DESKTOP_SESSION')
         self.LoadParameters(enviromentDesktop, 1)
 
+        self.LabelSlotID.setFixedWidth(190)
+        self.LabelConnection.setFixedWidth(190)
+
         if str(self.LabelConnection.currentText()) == 'serial':
             self.deleteMenu()
 
             self.LabelSerialPort = QtGui.QComboBox()
+            self.LabelSerialPort.setFixedWidth(190)
+
             from glob import glob
             ports = glob('/dev/tty[A-Za-z]*')
             self.LabelSerialPort.addItems(ports)
             self.layout.addRow(QtGui.QLabel("Serial port:    "), self.LabelSerialPort)
             self.LabelBaudrate = QtGui.QLineEdit()
+            self.LabelBaudrate.setFixedWidth(190)
             self.layout.addRow(QtGui.QLabel("Baudrate:       "), self.LabelBaudrate)
 
             index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
@@ -700,8 +714,10 @@ class SATNetGUI(QtGui.QWidget):
             self.deleteMenu()
 
             self.LabelIP = QtGui.QLineEdit()
+            self.LabelIP.setFixedWidth(190)
             self.layout.addRow(QtGui.QLabel("UDP host:        "), self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
+            self.LabelIPPort.setFixedWidth(190)
             self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelIPPort)
 
             ip = config.get('udp', 'udpip')
@@ -713,8 +729,10 @@ class SATNetGUI(QtGui.QWidget):
             self.deleteMenu()
 
             self.LabelIP = QtGui.QLineEdit()
+            self.LabelIP.setFixedWidth(190)
             self.layout.addRow(QtGui.QLabel("TCP host:        "), self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
+            self.LabelIPPort.setFixedWidth(190)
             self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelIPPort)
 
             ip = config.get('tcp', 'tcpip')
@@ -726,11 +744,13 @@ class SATNetGUI(QtGui.QWidget):
             self.deleteMenu()
 
             self.LabelIP = QtGui.QLineEdit()
-            self.layout.addRow(QtGui.QLabel("SATNet server:"), 
-                                self.LabelIP)
+            self.LabelIP.setFixedWidth(190)
+            self.layout.addRow(QtGui.QLabel("SATNet server:"),
+                               self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
+            self.LabelIPPort.setFixedWidth(190)
             self.layout.addRow(QtGui.QLabel("Port:       "),
-                                 self.LabelIPPort)
+                               self.LabelIPPort)
 
             ip = config.get('server', 'serverip')
             self.LabelIP.setText(ip)

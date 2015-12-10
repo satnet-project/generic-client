@@ -419,7 +419,7 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelConnection.activated.connect(self.CheckConnection)
         self.layout.addRow(QtGui.QLabel("Connection:     "),
                            self.LabelConnection)
-    
+   
         parameters.setTitle("User data")
         parameters.move(10, 145)
 
@@ -442,7 +442,7 @@ class SATNetGUI(QtGui.QWidget):
                                    self.LabelBaudrate)
             elif self.CONNECTION_INFO['connection'] == 'udp' or self.CONNECTION_INFO['connection'] == 'tcp':
                 self.LabelIP = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Host:            "), 
+                self.layout.addRow(QtGui.QLabel("Host:            "),
                                     self.LabelIP)
                 self.LabelIPPort = QtGui.QLineEdit()
                 self.layout.addRow(QtGui.QLabel("Port:       "), 
@@ -651,9 +651,7 @@ class SATNetGUI(QtGui.QWidget):
 
     def SetConfiguration(self):
         # First draft
-        client, attempts = DateDialog.buildWindow()
-        log.msg("Client name", client)
-        log.msg("Attemps", attempts)
+        configuration = ConfigurationWindow()
 
     def deleteMenu(self):
         try:
@@ -849,9 +847,9 @@ class SATNetGUI(QtGui.QWidget):
             pass
 
 
-class DateDialog(QtGui.):
-    def __init__(self, parent = None):
-        super(DateDialog, self).__init__(parent)
+class ConfigurationWindow(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
 
         parameters = QtGui.QGroupBox(self)
         layout_parameters = QtGui.QFormLayout()
@@ -876,29 +874,13 @@ class DateDialog(QtGui.):
 
         confirmationButton = QtGui.QPushButton("Engrave data", self)
         confirmationButton.setToolTip("Engrave current data")
-        confirmationButton.clicked.connect(DateDialog.exec_)
         confirmationButton.setFixedWidth(190)
         confirmationButton.move(110, 185)
 
         self.setMinimumSize(400, 220)
         # 400x150 Mate
 
-    def getConfiguration(self):
-        configuration = [str(self.LabelClientname.text()),\
-         str(self.LabelPassword.text()), str(self.LabelServer.text(),\
-          str(self.LabelPort.text()))]
-
-        return configuration
-
-    # static method to create the dialog and return (client, attempts)
-    @staticmethod
-    def buildWindow(parent = None):
-        dialog = DateDialog(parent)
-        dialog.exec_()
-        configuration = dialog.getConfiguration()
-
-        return (configuration[0], configuration[1], configuration[2],\
-         configuration[3])
+        self.show()
 
 
 # Objects designed for output the information
@@ -988,9 +970,9 @@ if __name__ == '__main__':
             sys.stdout = WriteStream(queue)
 
             log.startLogging(sys.stdout)
-            log.msg('------------------------------------------------- ' + \
-             'SATNet - Generic client' +\
-              ' -------------------------------------------------')
+            log.msg('------------------------------------------------- ' + 
+                    'SATNet - Generic client' +
+                    ' -------------------------------------------------')
 
             qapp = QtGui.QApplication(sys.argv)
             app = SATNetGUI(username, password, slot, connection, serialPort,\
@@ -1027,9 +1009,9 @@ if __name__ == '__main__':
         sys.stdout = WriteStream(queue)
 
         log.startLogging(sys.stdout)
-        log.msg('------------------------------------------------- ' + \
-         'SATNet - Generic client' +\
-          ' -------------------------------------------------')
+        log.msg('------------------------------------------------- ' +
+                'SATNet - Generic client' +
+                ' -------------------------------------------------')
 
         qapp = QtGui.QApplication(sys.argv)
         app = SATNetGUI(username, password,

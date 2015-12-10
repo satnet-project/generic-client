@@ -260,7 +260,7 @@ class SATNetGUI(QtGui.QWidget):
 
     # Run threads associated to KISS protocol
     def runKISSThread(self):
-        self.workerKISSThread = OperativeKISSThread(self.serial_queue, 
+        self.workerKISSThread = OperativeKISSThread(self.serial_queue,
                                                     self.sendData,
                                                     self.serialSignal,
                                                     self.CONNECTION_INFO)
@@ -402,17 +402,17 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelUsername = QtGui.QLineEdit()
         self.LabelUsername.setFixedWidth(190)
         self.layout.addRow(QtGui.QLabel("Username:       "),
-                            self.LabelUsername)
+                                        self.LabelUsername)
         self.LabelPassword = QtGui.QLineEdit()
         self.LabelPassword.setFixedWidth(190)
         self.LabelPassword.setEchoMode(QtGui.QLineEdit.Password)
         self.layout.addRow(QtGui.QLabel("Password:       "),
-                             self.LabelPassword)
+                            self.LabelPassword)
         self.LabelSlotID = QtGui.QLineEdit()
         self.LabelSlotID.setFixedWidth(190)
         self.layout.addRow(QtGui.QLabel("slot_id:        "),
-                             self.LabelSlotID)
-     
+                            self.LabelSlotID)
+    
         self.LabelConnection = QtGui.QComboBox()
         self.LabelConnection.setFixedWidth(190)
         self.LabelConnection.addItems(['serial', 'udp', 'tcp', 'none'])

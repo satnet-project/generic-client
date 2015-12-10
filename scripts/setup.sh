@@ -2,7 +2,7 @@
 script_path="$( cd "$( dirname "$0" )" && pwd )"
 project_path=$( readlink -e "$script_path/.." )
 
-if [ $1 == '-i' ];
+if [ $1 == '-install' ];
 then
 	venv_path="$project_path/.venv"
 
@@ -144,7 +144,7 @@ then
 	pip install -r "$project_path/requirements-tests.txt"
 
 
-elif [ $1 == '-l' ];
+elif [ $1 == '-local' ];
 then
 	venv_path="$project_path/.venv_test"
 

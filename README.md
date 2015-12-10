@@ -17,7 +17,7 @@ Steps to install the generic client for the SATNet network:
 
 1. To install the dependencies run, from the Scripts folder:
 
-`./setup.sh -i`
+`./setup.sh -install`
 
 You will need root privileges.
 
@@ -50,7 +50,7 @@ For help about script usage enter:
 
 #### Tests
 
-Local tests needs special dependencies. For get them run `setup.sh -l` from the scripts folder.
+Local tests needs special dependencies. For get them run `setup.sh -local` from the scripts folder.
 You will get a new virtual enviroment called `venv_test` that must be activated before tests.
 
 

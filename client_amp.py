@@ -222,8 +222,6 @@ class Client(object):
 
         global connector
 
-        print self.CONNECTION_INFO['serverip']
-
         connector = reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),\
          int(self.CONNECTION_INFO['serverport']),\
           ClientReconnectFactory(self.CONNECTION_INFO, gsi), CtxFactory())
@@ -233,8 +231,7 @@ class Client(object):
 
 # QDialog, QWidget or QMainWindow, which is better in this situation? TO-DO
 class SATNetGUI(QtGui.QWidget):
-    def __init__(self, username, password, slot, connection,
-                    serialPort, baudRate, UDPIp, UDPPort, parent=None):
+    def __init__(self, argumentsDict, parent=None):
         QtGui.QWidget.__init__(self, parent)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 18))
 
@@ -249,8 +246,7 @@ class SATNetGUI(QtGui.QWidget):
         self.initConsole()
 
         #  Use a dict for passing arg.
-        self.setArguments(username, password, slot, connection,
-                          serialPort, baudRate, UDPIp, UDPPort)
+        self.setArguments(argumentsDict)
 
         self.serialSignal = True
         self.UDPSignal = True
@@ -398,6 +394,8 @@ class SATNetGUI(QtGui.QWidget):
         buttons.setTitle("Connection")
         buttons.move(10, 10)
 
+        self.dialogTextBrowser = ConfigurationWindow(self)
+
     def initFields(self, enviromentDesktop):
         parameters = QtGui.QGroupBox(self)
         self.layout = QtGui.QFormLayout()
@@ -406,17 +404,17 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelUsername = QtGui.QLineEdit()
         self.LabelUsername.setFixedWidth(190)
         self.layout.addRow(QtGui.QLabel("Username:       "),
-                                        self.LabelUsername)
+                           self.LabelUsername)
         self.LabelPassword = QtGui.QLineEdit()
         self.LabelPassword.setFixedWidth(190)
         self.LabelPassword.setEchoMode(QtGui.QLineEdit.Password)
         self.layout.addRow(QtGui.QLabel("Password:       "),
-                            self.LabelPassword)
+                           self.LabelPassword)
         self.LabelSlotID = QtGui.QLineEdit()
         self.LabelSlotID.setFixedWidth(190)
         self.layout.addRow(QtGui.QLabel("slot_id:        "),
-                            self.LabelSlotID)
-    
+                           self.LabelSlotID) 
+
         self.LabelConnection = QtGui.QComboBox()
         self.LabelConnection.setFixedWidth(190)
         self.LabelConnection.addItems(['serial', 'udp', 'tcp', 'none'])
@@ -519,27 +517,25 @@ class SATNetGUI(QtGui.QWidget):
         self.console.setFont(QtGui.QFont('SansSerif', 11))
 
     # Set parameters form arguments list.
-    def setArguments(self, username, password, slot, connection, 
-                        serialPort, baudRate, UDPIp, UDPPort):
-
-        if username != "":
-            self.LabelUsername.setText(username)
-        if password != "":
-            self.LabelPassword.setText(password)
-        if slot != "":
-            self.LabelSlotID.setText(slot)    
-        if connection != "":
-            index = self.LabelConnection.findText(connection)
+    def setArguments(self, argumentsDict):
+        if argumentsDict['username'] != "":
+            self.LabelUsername.setText(argumentsDict['username'])
+        if argumentsDict['password'] != "":
+            self.LabelPassword.setText(argumentsDict['password'])
+        if argumentsDict['slot'] != "":
+            self.LabelSlotID.setText(argumentsDict['slot'])
+        if argumentsDict['connection'] != "":
+            index = self.LabelConnection.findText(argumentsDict['connection'])
             self.LabelConnection.setCurrentIndex(index)
-        if serialPort != "":
-            index = self.LabelSerialPort.findText(serialPort)
+        if argumentsDict['serialPort'] != "":
+            index = self.LabelSerialPort.findText(argumentsDict['serialPort'])
             self.LabelSerialPort.setCurrentIndex(index)
-        if baudRate !=  "":
-            self.LabelBaudrate.setText(baudRate)
-        if UDPIp != "":
-            self.LabelIP.setText(UDPIp)
-        if UDPPort != "":
-            self.LabelIPPort.setText(UDPPort)
+        if argumentsDict['baudRate'] != "":
+            self.LabelBaudrate.setText(argumentsDict['baudRate'])
+        if argumentsDict['UDPIp'] != "":
+            self.LabelIP.setText(argumentsDict['UDPIp'])
+        if argumentsDict['UDPPort'] != "":
+            self.LabelIPPort.setText(argumentsDict['UDPPort'])
 
     # Set parameters from CONNECTION_INFO dict.
     def setParameters(self):
@@ -653,9 +649,10 @@ class SATNetGUI(QtGui.QWidget):
         else:
             print "Error en LoadParameters"
 
+
+    @QtCore.pyqtSlot()
     def SetConfiguration(self):
-        # First draft
-        configuration = ConfigurationWindow()
+        self.dialogTextBrowser.exec_()
 
     def deleteMenu(self):
         try:
@@ -763,7 +760,7 @@ class SATNetGUI(QtGui.QWidget):
         log.msg("USAGE of client_amp.py")
         log.msg("Usage: python client_amp.py [-u <username>]")
         log.msg("Set SATNET username to login")
-        print ("\n"          
+        print ("\n"
                 "Usage: python client_amp.py [-p <password>] # Set SATNET user password to login\n"
                 "Usage: python client_amp.py [-t <slot_ID>] # Set the slot id corresponding to the pass you will track\n"
                 "Usage: python client_amp.py [-c <connection>] # Set the type of interface with the GS (serial or udp)\n"
@@ -801,7 +798,7 @@ class SATNetGUI(QtGui.QWidget):
         self.console.moveCursor(QtGui.QTextCursor.End)
         self.console.insertPlainText(text)
 
-    def closeEvent(self, event):       
+    def closeEvent(self, event):
         reply = QtGui.QMessageBox.question(self, 'Exit confirmation',
             "Are you sure to quit?", QtGui.QMessageBox.Yes | 
             QtGui.QMessageBox.No, QtGui.QMessageBox.No)
@@ -846,45 +843,61 @@ class SATNetGUI(QtGui.QWidget):
             except Exception as e:
                 log.err(e)
                 log.err("Reactor not running")
-                event.ignore()      
+                event.ignore()
         elif reply == QtGui.QMessageBox.No:
             pass
 
 
-class ConfigurationWindow(QtGui.QWidget):
+class ConfigurationWindow(QtGui.QDialog):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        super(ConfigurationWindow, self).__init__(parent)
 
         parameters = QtGui.QGroupBox(self)
-        layout_parameters = QtGui.QFormLayout()
-        parameters.setLayout(layout_parameters)
+        grid = QtGui.QGridLayout(parameters)
+        parameters.setLayout(grid)
 
-        self.LabelClientname = QtGui.QLineEdit()
-        self.LabelClientname.setFixedWidth(200)
-        layout_parameters.addRow(QtGui.QLabel("Client name:           "),\
-         self.LabelClientname)
-        self.LabelPassword = QtGui.QLineEdit()
-        self.LabelPassword.setFixedWidth(200)
-        layout_parameters.addRow(QtGui.QLabel("Reconnection attempts: "),\
-         self.LabelPassword)
-        self.LabelServer = QtGui.QLineEdit()
-        self.LabelServer.setFixedWidth(200)
-        layout_parameters.addRow(QtGui.QLabel("Server address:        "),\
-            self.LabelServer)
-        self.LabelPort = QtGui.QLineEdit()
-        self.LabelPort.setFixedWidth(200)
-        layout_parameters.addRow(QtGui.QLabel("Server port:           "),\
-            self.LabelPort)
+        LabelClientname = QtGui.QLabel("Client name:           ")
+        self.FieldClientname = QtGui.QLineEdit()
+        self.FieldClientname.setFixedWidth(200)
 
-        confirmationButton = QtGui.QPushButton("Engrave data", self)
-        confirmationButton.setToolTip("Engrave current data")
-        confirmationButton.setFixedWidth(190)
-        confirmationButton.move(110, 185)
+        LabelPassword = QtGui.QLabel("Reconnection attempts: ")
+        self.FieldLabelPassword = QtGui.QLineEdit()
+        self.FieldLabelPassword.setFixedWidth(200)
 
-        self.setMinimumSize(400, 220)
-        # 400x150 Mate
+        LabelServer = QtGui.QLabel("Server address:        ")
+        self.FieldLabelServer = QtGui.QLineEdit()
+        self.FieldLabelServer.setFixedWidth(200)
 
-        self.show()
+        LabelPort = QtGui.QLabel("Server port:           ")
+        self.FieldLabelPort = QtGui.QLineEdit()
+        self.FieldLabelPort.setFixedWidth(200)
+
+        buttonBox = QtGui.QDialogButtonBox(self)
+        buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Save)
+
+        buttonBox.button(QtGui.QDialogButtonBox.Close).clicked.connect(self.close)
+        buttonBox.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.save)
+
+        grid.addWidget(LabelClientname, 0, 0, 1, 1)
+        grid.addWidget(self.FieldClientname, 0, 1, 1, 1)
+        grid.addWidget(LabelPassword, 1, 0, 1, 1)
+        grid.addWidget(self.FieldLabelPassword, 1, 1, 1, 1)
+        grid.addWidget(LabelServer, 2, 0, 1, 1)
+        grid.addWidget(self.FieldLabelServer, 2, 1, 1, 1)
+        grid.addWidget(LabelPort, 3, 0, 1, 1)
+        grid.addWidget(self.FieldLabelPort, 3, 1, 1, 1)
+        grid.addWidget(buttonBox, 4, 0, 1, 2)
+
+        self.setMinimumSize(405, 260)
+        parameters.setTitle("Connection")
+        parameters.move(10, 10)
+
+    def close(self):
+        self.close()
+
+    def save(self):
+        print "save"
 
 
 # Objects designed for output the information
@@ -898,10 +911,11 @@ class WriteStream(object):
     def flush(self):
         pass
 
-#  A QObject (to be run in a QThread) which sits waiting 
+#  A QObject (to be run in a QThread) which sits waiting
 #  for data to come  through a Queue.Queue().
-#  It blocks until data is available, and one it has got something from 
-#  the queue, it sends it to the "MainThread" by emitting a Qt Signal 
+#  It blocks until data is available, and one it has got something from
+#  the queue, it sends it to the "MainThread" by emitting a Qt Signal
+
 
 class MyReceiver(QtCore.QThread):
     mysignal = QtCore.pyqtSignal(str)
@@ -937,54 +951,54 @@ if __name__ == '__main__':
             baudRate = ""
             UDPIp = ""
             UDPPort = ""
-        
+
             import getopt
             try:
                 opts, args = getopt.getopt(sys.argv[1:],
-                                            "hfgn:p:t:c:s:b:i:u:",
-                                            ["name=", "password=",
+                                           "hfgn:p:t:c:s:b:i:u:",
+                                           ["name=", "password=",
                                             "slot=", "connection=",
-                                            "serialport=", 
-                                            "baudrate=", "ip=", 
+                                            "serialport=",
+                                            "baudrate=", "ip=",
                                             "udpport="]
-                                            )
+                                           )
             except getopt.GetoptError:
                 print "error"
 
+            argumentsDict = {}
             if ('-g', '') in opts:
                 for opt, arg in opts:
                     if opt == "-n":
-                        username = arg
+                        argumentsDict['username'] = arg
                     elif opt == "-p":
-                        password = arg
+                        argumentsDict['password'] = arg
                     elif opt == "-t":
-                        slot = arg
+                        argumentsDict['slot'] = arg
                     elif opt == "-c":
-                        connection = arg
+                        argumentsDict['connection'] = arg
                     elif opt == "-s":
-                        serialPort = arg
+                        argumentsDict['serialPort'] = arg
                     elif opt == "-b":
-                        baudRate = arg
+                        argumentsDict['baudRate'] = arg
                     elif opt == "-i":
-                        UDPIp = arg
+                        argumentsDict['UDPIp'] = arg
                     elif opt == "-u":
-                        UDPPort = arg
+                        argumentsDict['UDPPort'] = arg
 
             queue = Queue()
             sys.stdout = WriteStream(queue)
 
             log.startLogging(sys.stdout)
-            log.msg('------------------------------------------------- ' + 
+            log.msg('------------------------------------------------- ' +
                     'SATNet - Generic client' +
                     ' -------------------------------------------------')
 
             qapp = QtGui.QApplication(sys.argv)
-            app = SATNetGUI(username, password, slot, connection, serialPort,\
-             baudRate, UDPIp, UDPPort)
+            app = SATNetGUI(argumentsDict)
             app.setWindowIcon(QtGui.QIcon('logo.png'))
             app.show()
 
-            # Create thread that will listen on the other end of the queue, and 
+            # Create thread that will listen on the other end of the queue, and
             # send the text to the textedit in our application
             my_receiver = MyReceiver(queue)
             my_receiver.mysignal.connect(app.append_text)
@@ -992,25 +1006,20 @@ if __name__ == '__main__':
 
             from qtreactor import pyqt4reactor
             pyqt4reactor.install()
-
             from twisted.internet import reactor
             reactor.run()
         elif sys.argv[1] != "-g" and sys.argv[1] != "-help":
             print "Unknown option: %s" %(sys.argv[1])
-            print "Try 'python client_amp.py -help' for more information."
-    
+            print "Try 'python client_amp.py -help' for more information."   
     except IndexError:
-        username = ""
-        password = ""
-        slot = ""
-        connection = ""
-        serialPort = ""
-        baudRate = ""
-        UDPIp = ""
-        UDPPort = ""
+        argumentsDict = {}
+        arguments = ['username', 'password', 'slot', 'connection',
+                     'serialPort', 'baudRate', 'UDPIp', 'UDPPort']
+        for i in range(len(arguments)):
+            argumentsDict[arguments[i]] = ""
 
         queue = Queue()
-        sys.stdout = WriteStream(queue)
+        # sys.stdout = WriteStream(queue)
 
         log.startLogging(sys.stdout)
         log.msg('------------------------------------------------- ' +
@@ -1018,9 +1027,7 @@ if __name__ == '__main__':
                 ' -------------------------------------------------')
 
         qapp = QtGui.QApplication(sys.argv)
-        app = SATNetGUI(username, password,
-                        slot, connection, serialPort,
-                        baudRate, UDPIp, UDPPort)
+        app = SATNetGUI(argumentsDict)
         app.setWindowIcon(QtGui.QIcon('logo.png'))
         app.show()
 

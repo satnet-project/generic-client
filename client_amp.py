@@ -71,21 +71,10 @@ class ClientProtocol(AMP):
         else:
             log.msg('No data')
 
-        # d = self.callRemote(Login, sUsername=self.CONNECTION_INFO['username'],\
-        #  sPassword=self.CONNECTION_INFO['password'] )
-        # def connected(self):
-        #     self.callRemote(StartRemote,\
-        #      iSlotId=self.CONNECTION_INFO['slot_id'])
-        # d.addCallback(connected, self)
-        # def notConnected(failure):
-        #     log.err("Error during connection")
-        # d.addErrback(notConnected)
-        # return d
-
     # To-do. Do we need a return connection?
     def vNotifyMsg(self, sMsg):
-        log.msg("(" + self.CONNECTION_INFO['username'] +\
-         ") --------- Notify Message ---------")
+        log.msg("(" + self.CONNECTION_INFO['username'] +
+                ") --------- Notify Message ---------")
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             log.msg(sMsg)
@@ -111,7 +100,8 @@ class ClientProtocol(AMP):
 
         frameProcessed = []
         frameProcessed = list(frame)
-        frameProcessed = ":".join("{:02x}".format(ord(c)) for c in frameProcessed)
+        frameProcessed = ":".join("{:02x}".format(ord(c))
+                                  for c in frameProcessed)
 
         log.msg('Received frame: ', frameProcessed)
 
@@ -120,15 +110,15 @@ class ClientProtocol(AMP):
     @inlineCallbacks
     def processFrame(self, frameProcessed):
         try:
-            yield self.callRemote(SendMsg, sMsg=frameProcessed,\
-             iTimestamp=misc.get_utc_timestamp())
+            yield self.callRemote(SendMsg, sMsg=frameProcessed,
+                                  iTimestamp=misc.get_utc_timestamp())
         except Exception as e:
             log.err(e)
             log.err("Error")
 
     def vNotifyEvent(self, iEvent, sDetails):
-        log.msg("(" + self.CONNECTION_INFO['username'] +\
-         ") --------- Notify Event ---------")
+        log.msg("(" + self.CONNECTION_INFO['username'] +
+                ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
             log.msg("Disconnection because the slot has ended")
             # log.msg(sDetails)
@@ -177,8 +167,9 @@ class ClientReconnectFactory(ReconnectingClientFactory):
             self.continueTrying = None
 
         log.msg('Lost connection. Reason: ', reason)
-        ReconnectingClientFactory.clientConnectionLost(self,\
-         connector, reason)
+        ReconnectingClientFactory.clientConnectionLost(self,
+                                                       connector,
+                                                       reason)
 
     # Called when a connection has failed to connect
     def clientConnectionFailed(self, connector, reason):
@@ -188,8 +179,9 @@ class ClientReconnectFactory(ReconnectingClientFactory):
             self.continueTrying = None
 
         log.msg('Connection failed. Reason: ', reason)
-        ReconnectingClientFactory.clientConnectionFailed(self,\
-         connector, reason)
+        ReconnectingClientFactory.clientConnectionFailed(self,
+                                                         connector,
+                                                         reason)
 
 
 class CtxFactory(ClientContextFactory):
@@ -206,7 +198,7 @@ class Client(object):
     This class starts the client using the data provided by user interface.
     :ivar CONNECTION_INFO:
         This variable contains the following data: username, password,
-        slot_id, connection (either 'serial' or 'udp'), serialport, 
+        slot_id, connection (either 'serial' or 'udp'), serialport,
         baudrate, ip, port.
     :type CONNECTION_INFO:
         L{Dictionary}
@@ -218,13 +210,15 @@ class Client(object):
     def createConnection(self):
         # New interface
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
-                                        ClientProtocol)
+                                     ClientProtocol)
 
         global connector
 
-        connector = reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),\
-         int(self.CONNECTION_INFO['serverport']),\
-          ClientReconnectFactory(self.CONNECTION_INFO, gsi), CtxFactory())
+        connector = reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
+                                       int(self.CONNECTION_INFO['serverport']),
+                                       ClientReconnectFactory(self.CONNECTION_INFO,
+                                                              gsi),
+                                       CtxFactory())
 
         return gsi, connector
 
@@ -447,12 +441,12 @@ class SATNetGUI(QtGui.QWidget):
                 self.layout.addRow(QtGui.QLabel("Host:            "),
                                     self.LabelIP)
                 self.LabelIPPort = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Port:       "), 
-                                    self.LabelIPPort)
+                self.layout.addRow(QtGui.QLabel("Port:       "),
+                                   self.LabelIPPort)
             elif self.CONNECTION_INFO['connection'] == 'none':
                 self.LabelIP = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("SATNet host:     "), 
-                                    self.LabelIP)
+                self.layout.addRow(QtGui.QLabel("SATNet host:     "),
+                                   self.LabelIP)
                 self.LabelIPPort = QtGui.QLineEdit()
                 self.layout.addRow(QtGui.QLabel("Port:       "),
                                    self.LabelIPPort)
@@ -464,17 +458,17 @@ class SATNetGUI(QtGui.QWidget):
             from glob import glob
             ports = glob('/dev/tty[A-Za-z]*')
             self.LabelSerialPort.addItems(ports)
-            self.layout.addRow(QtGui.QLabel("Serial port:    "), 
-                                self.LabelSerialPort)
+            self.layout.addRow(QtGui.QLabel("Serial port:    "),
+                               self.LabelSerialPort)
             self.LabelBaudrate = QtGui.QLineEdit()
-            self.layout.addRow(QtGui.QLabel("Baudrate:       "), 
-                                self.LabelBaudrate)
+            self.layout.addRow(QtGui.QLabel("Baudrate:       "),
+                               self.LabelBaudrate)
             self.LabelIP = QtGui.QLineEdit()
-            self.layout.addRow(QtGui.QLabel("SATNet host:    "), 
-                                self.LabelIP)
+            self.layout.addRow(QtGui.QLabel("SATNet host:    "),
+                               self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
-            self.layout.addRow(QtGui.QLabel("Port:       "), 
-                                self.LabelIPPort)
+            self.layout.addRow(QtGui.QLabel("Port:       "),
+                               self.LabelIPPort)
         else:
             raise Exception
 
@@ -629,23 +623,31 @@ class SATNetGUI(QtGui.QWidget):
         if enviromentDesktop == 'lightdm-xsession':
             self.CONNECTION_INFO['serialport'] = config.get('Serial',
                                                             'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial', 'baudrate')
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
+                                                          'baudrate')
             self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('udp', 'udpport'))
+            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
+                                                             'udpport'))
             self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp', 'tcpport'))
-            self.CONNECTION_INFO['serverip'] = config.get('server', 'serverip')
+            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
+                                                             'tcpport'))
+            self.CONNECTION_INFO['serverip'] = config.get('server',
+                                                          'serverip')
             self.CONNECTION_INFO['serverport'] = int(config.get('server',
                                                      'serverport'))
         elif enviromentDesktop == 'default':
             self.CONNECTION_INFO['serialport'] = config.get('Serial',
                                                             'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial', 'baudrate')
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
+                                                          'baudrate')
             self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('udp', 'udpport'))
+            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
+                                                             'udpport'))
             self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp', 'tcpport'))
-            self.CONNECTION_INFO['serverip'] = config.get('server', 'serverip')
+            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
+                                                             'tcpport'))
+            self.CONNECTION_INFO['serverip'] = config.get('server',
+                                                          'serverip')
             self.CONNECTION_INFO['serverport'] = int(config.get('server',
                                                      'serverport'))
         else:
@@ -685,6 +687,11 @@ class SATNetGUI(QtGui.QWidget):
         import ConfigParser
         config = ConfigParser.ConfigParser()
         config.read(".settings")
+
+        username = config.get('User', 'username')
+        self.LabelUsername.setText(username)
+        password = config.get('User', 'password')
+        self.LabelPassword.setText(password)
 
         enviromentDesktop = os.environ.get('DESKTOP_SESSION')
         self.LoadParameters(enviromentDesktop, 1)
@@ -895,14 +902,55 @@ class ConfigurationWindow(QtGui.QDialog):
         parameters.setTitle("Connection")
         parameters.move(10, 10)
 
+        # Read fields
+        name, password, server, port = self.readFields()
+        self.FieldClientname.setText(name)
+        self.FieldLabelPassword.setText(password)
+        self.FieldLabelServer.setText(server)
+        self.FieldLabelPort.setText(port)
+
     def closeWindow(self):
         self.close()
 
+    def readFields(self):
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        config.read(".settings")
+        name = config.get('User', 'username')
+        password = config.get('User', 'password')
+        server = config.get('server', 'serverip')
+        port = config.get('server', 'serverport')
+
+        return name, password, server, port
+
     def save(self):
+        import ConfigParser
+        config = ConfigParser.SafeConfigParser()
+        config.read(".settings")
+
         name = self.FieldClientname.text()
         password = self.FieldLabelPassword.text()
         server = self.FieldLabelServer.text()
         port = self.FieldLabelPort.text()
+
+        nameSet, passwordSet, serverSet, portSet = self.readFields()
+        if nameSet != name:
+            config.set('User', 'username', str(name))
+            with open('.settings', 'wb') as configfile:
+                config.write(configfile)
+        if passwordSet != password:
+            config.set('User', 'password', str(password))
+            with open('.settings', 'wb') as configfile:
+                config.write(configfile)
+        if serverSet != server:
+            config.set('server', 'serverip', str(server))
+            with open('.settings', 'wb') as configfile:
+                config.write(configfile)
+        if portSet != port:
+            config.set('server', 'serverport', str(port))
+            with open('.settings', 'wb') as configfile:
+                config.write(configfile)
+
         self.close()
 
 
@@ -949,15 +997,6 @@ if __name__ == '__main__':
             import subprocess
             subprocess.call(["man", "./satnetclient.1"])
         elif sys.argv[1] == "-g":
-            username = ""
-            password = ""
-            slot = ""
-            connection = ""
-            serialPort = ""
-            baudRate = ""
-            UDPIp = ""
-            UDPPort = ""
-
             import getopt
             try:
                 opts, args = getopt.getopt(sys.argv[1:],
@@ -1025,7 +1064,7 @@ if __name__ == '__main__':
             argumentsDict[arguments[i]] = ""
 
         queue = Queue()
-        # sys.stdout = WriteStream(queue)
+        sys.stdout = WriteStream(queue)
 
         log.startLogging(sys.stdout)
         log.msg('------------------------------------------------- ' +

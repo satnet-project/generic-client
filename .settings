@@ -1,23 +1,30 @@
 [User]
-username: test-sc-user
-password: sgongarpass
-slot_id: -1
-connection: none
+username = user
+password = sgongarpass
+slot_id = -1
+connection = none
+
 [Serial]
-serialport: /dev/ttyUSB0
-baudrate: 500000
+serialport = /dev/ttyUSB0
+baudrate = 500000
+
 [udp]
-udpip: 127.0.0.1
-udpport: 57008
+udpip = 127.0.0.1
+udpport = 57008
+
 [tcp]
-tcpip: 127.0.0.1
-tcpport: 4321
+tcpip = 127.0.0.1
+tcpport = 4321
+
 [server]
-serverip: 127.0.0.1
-serverport: 1234
+serverip = 127.0.0.1
+serverport = 1234
+
 [Connection]
-reconnection: no
-parameters: yes
+reconnection = no
+parameters = yes
+
 [Client]
-name: UVigo
-attempts: 10
+name = UVigo
+attempts = 10
+

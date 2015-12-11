@@ -222,9 +222,11 @@ class Client(object):
 
         global connector
 
-        connector = reactor.connectSSL('localhost',
-            1234, ClientReconnectFactory(self.CONNECTION_INFO, gsi),
-            CtxFactory())
+        print self.CONNECTION_INFO['serverip']
+
+        connector = reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),\
+         int(self.CONNECTION_INFO['serverport']),\
+          ClientReconnectFactory(self.CONNECTION_INFO, gsi), CtxFactory())
 
         return gsi, connector
 
@@ -248,7 +250,7 @@ class SATNetGUI(QtGui.QWidget):
 
         #  Use a dict for passing arg.
         self.setArguments(username, password, slot, connection,
-                            serialPort, baudRate, UDPIp, UDPPort)
+                          serialPort, baudRate, UDPIp, UDPPort)
 
         self.serialSignal = True
         self.UDPSignal = True
@@ -307,13 +309,15 @@ class SATNetGUI(QtGui.QWidget):
              str(self.LabelSerialPort.currentText())
             self.CONNECTION_INFO['baudrate'] = str(self.LabelBaudrate.text())
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.CONNECTION_INFO['ip'] = self.LabelIP.text()
+            self.CONNECTION_INFO['udpip'] = self.LabelIP.text()
             self.CONNECTION_INFO['udpport'] = int(self.LabelIPPort.text())
         elif self.CONNECTION_INFO['connection'] == 'tcp':
-            self.CONNECTION_INFO['ip'] = self.LabelIP.text()
+            self.CONNECTION_INFO['tcpip'] = self.LabelIP.text()
             self.CONNECTION_INFO['tcpport'] = int(self.LabelIPPort.text())
         elif self.CONNECTION_INFO['connection'] == 'none':
-            log.msg('No GS connection established. The client will just listen.')
+            log.msg('No GS connection. The client will just listen.')
+            self.CONNECTION_INFO['serverip'] == self.LabelIP.text()
+            self.CONNECTION_INFO['serverport'] == int(self.LabelIPPort.text())
         else:
             print "error"
 

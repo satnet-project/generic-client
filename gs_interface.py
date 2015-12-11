@@ -193,7 +193,7 @@ class OperativeTCPThread(TCPThread):
         self.finished.connect(callback)
         self.TCPSignal = TCPSignal
 
-        server_address = (str(CONNECTION_INFO['ip']),
+        server_address = (str(CONNECTION_INFO['tcpip']),
                              int(CONNECTION_INFO['tcpport']))
 
         from socket import socket, AF_INET, SOCK_STREAM
@@ -213,7 +213,7 @@ class OperativeTCPThread(TCPThread):
             log.err('Error starting TCP protocol')
             log.err(e)
 
-        log.msg('Listening on ' + str(self.CONNECTION_INFO['ip']) +\
+        log.msg('Listening on ' + str(self.CONNECTION_INFO['tcpip']) +\
          " port: " + str(self.CONNECTION_INFO['tcpport']))
         try:
             self.running = True
@@ -260,16 +260,16 @@ class OperativeUDPThread(UDPThread):
         self.CONNECTION_INFO = CONNECTION_INFO
 
     def doWork(self):
-        server_address = (str(self.CONNECTION_INFO['ip']),\
-         int(self.CONNECTION_INFO['udpport']))
-
-        if self.CONNECTION_INFO['ip'] == '':
-            ip = 'localhost'
-        else:
-            ip = str(self.CONNECTION_INFO['ip'])
-
-        log.msg('Listening on ' + ip +\
+        log.msg('Listening on ' + self.CONNECTION_INFO['udpip'] +\
          " port: " + str(self.CONNECTION_INFO['udpport']))
+
+        if self.CONNECTION_INFO['udpip'] == 'localhost' or self.CONNECTION_INFO['udpip'] == '127.0.0.1':
+            ip = ''
+        else:
+            ip = str(self.CONNECTION_INFO['udpip'])
+
+        server_address = (str(self.CONNECTION_INFO['udpip']),\
+         int(self.CONNECTION_INFO['udpport']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
@@ -281,8 +281,8 @@ class OperativeUDPThread(UDPThread):
             log.err('Error opening UPD socket')
             log.err(e)
 
-        self.CONNECTION_INFO = {'ip':'', 'udpport':'57008'}
-        server_address = (str(self.CONNECTION_INFO['ip']),
+        # self.CONNECTION_INFO = {'ip':'', 'udpport':'57008'}
+        server_address = (str(self.CONNECTION_INFO['udpip']),
                             int(self.CONNECTION_INFO['udpport']))
 
         self.UDPSocket.bind(server_address)

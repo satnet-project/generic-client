@@ -60,13 +60,13 @@ class ClientProtocol(AMP):
 
     @inlineCallbacks
     def user_login(self):
-        res = yield self.callRemote(Login,\
-         sUsername=self.CONNECTION_INFO['username'],\
-          sPassword=self.CONNECTION_INFO['password'])
+        res = yield self.callRemote(Login,
+                                    sUsername=self.CONNECTION_INFO['username'],
+                                    sPassword=self.CONNECTION_INFO['password'])
 
-        if res['bAuthenticated'] == True:
+        if res['bAuthenticated'] is True:
             res = yield self.callRemote(StartRemote, iSlotId='-1')
-        elif res['bAuthenticated'] == False:
+        elif res['bAuthenticated'] is False:
             log.msg('False')
         else:
             log.msg('No data')
@@ -268,7 +268,7 @@ class SATNetGUI(QtGui.QWidget):
         self.workerUDPThread = OperativeUDPThread(self.udp_queue,\
          self.sendData, self.UDPSignal, self.CONNECTION_INFO)
         self.workerUDPThread.start()
-       
+
     # Run threads associated to TCP protocol
     def runTCPThread(self):
         self.workerTCPThread = OperativeTCPThread(self.tcp_queue,\
@@ -286,7 +286,7 @@ class SATNetGUI(QtGui.QWidget):
     # Stop TCP thread
     def stopTCPThread(self):
         self.workerTCPThread.stop()
-    
+
     # Gets a string but can't format it! To-do
     def sendData(self, result):
         self.gsi._manageFrame(result)
@@ -312,8 +312,8 @@ class SATNetGUI(QtGui.QWidget):
             self.CONNECTION_INFO['tcpport'] = int(self.LabelIPPort.text())
         elif self.CONNECTION_INFO['connection'] == 'none':
             log.msg('No GS connection. The client will just listen.')
-            self.CONNECTION_INFO['serverip'] == self.LabelIP.text()
-            self.CONNECTION_INFO['serverport'] == int(self.LabelIPPort.text())
+            self.CONNECTION_INFO['serverip'] = self.LabelIP.text()
+            self.CONNECTION_INFO['serverport'] = int(self.LabelIPPort.text())
         else:
             print "error"
 
@@ -345,7 +345,7 @@ class SATNetGUI(QtGui.QWidget):
 
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         self.setFixedSize(1300, 800)
-        self.setWindowTitle("SATNet client - %s" %(name))
+        self.setWindowTitle("SATNet client - %s" %( name ))
 
         if parameters == 'yes':
             self.LoadParameters(enviromentDesktop, 0)
@@ -413,7 +413,7 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelSlotID = QtGui.QLineEdit()
         self.LabelSlotID.setFixedWidth(190)
         self.layout.addRow(QtGui.QLabel("slot_id:        "),
-                           self.LabelSlotID) 
+                           self.LabelSlotID)
 
         self.LabelConnection = QtGui.QComboBox()
         self.LabelConnection.setFixedWidth(190)
@@ -421,7 +421,7 @@ class SATNetGUI(QtGui.QWidget):
         self.LabelConnection.activated.connect(self.CheckConnection)
         self.layout.addRow(QtGui.QLabel("Connection:     "),
                            self.LabelConnection)
-   
+
         parameters.setTitle("User data")
         parameters.move(10, 145)
 
@@ -454,10 +454,10 @@ class SATNetGUI(QtGui.QWidget):
                 self.layout.addRow(QtGui.QLabel("SATNet host:     "), 
                                     self.LabelIP)
                 self.LabelIPPort = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Port:       "), 
-                                    self.LabelIPPort)
+                self.layout.addRow(QtGui.QLabel("Port:       "),
+                                   self.LabelIPPort)
             else:
-                log.msg("Error opening a connection interface")       
+                log.msg("Error opening a connection interface")
         elif enviromentDesktop == 'lightdm-xsession':
             #  Mate desktop
             self.LabelSerialPort = QtGui.QComboBox()
@@ -583,7 +583,7 @@ class SATNetGUI(QtGui.QWidget):
             except Exception as e:
                 log.err(e)
                 log.err("Can't stop UDP thread")
-      
+
         if self.CONNECTION_INFO['connection'] == 'tcp':
             try:
                 self.stopTCPThread()
@@ -615,8 +615,10 @@ class SATNetGUI(QtGui.QWidget):
         config = ConfigParser.ConfigParser()
         config.read('.settings')
 
-        self.CONNECTION_INFO['reconnection'] = config.get('Connection', 'reconnection')
-        self.CONNECTION_INFO['parameters'] = config.get('Connection', 'parameters')
+        self.CONNECTION_INFO['reconnection'] = config.get('Connection',
+                                                          'reconnection')
+        self.CONNECTION_INFO['parameters'] = config.get('Connection',
+                                                        'parameters')
         self.CONNECTION_INFO['name'] = config.get('Client', 'name')
         self.CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
         self.CONNECTION_INFO['username'] = config.get('User', 'username')
@@ -633,8 +635,8 @@ class SATNetGUI(QtGui.QWidget):
             self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
             self.CONNECTION_INFO['tcpport'] = int(config.get('tcp', 'tcpport'))
             self.CONNECTION_INFO['serverip'] = config.get('server', 'serverip')
-            self.CONNECTION_INFO['serverport'] = int(config.get('server',\
-             'serverport'))
+            self.CONNECTION_INFO['serverport'] = int(config.get('server',
+                                                     'serverport'))
         elif enviromentDesktop == 'default':
             self.CONNECTION_INFO['serialport'] = config.get('Serial',
                                                             'serialport')
@@ -644,11 +646,10 @@ class SATNetGUI(QtGui.QWidget):
             self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
             self.CONNECTION_INFO['tcpport'] = int(config.get('tcp', 'tcpport'))
             self.CONNECTION_INFO['serverip'] = config.get('server', 'serverip')
-            self.CONNECTION_INFO['serverport'] = int(config.get('server',\
-             'serverport'))
+            self.CONNECTION_INFO['serverport'] = int(config.get('server',
+                                                     'serverport'))
         else:
             print "Error en LoadParameters"
-
 
     @QtCore.pyqtSlot()
     def SetConfiguration(self):
@@ -700,10 +701,12 @@ class SATNetGUI(QtGui.QWidget):
             from glob import glob
             ports = glob('/dev/tty[A-Za-z]*')
             self.LabelSerialPort.addItems(ports)
-            self.layout.addRow(QtGui.QLabel("Serial port:    "), self.LabelSerialPort)
+            self.layout.addRow(QtGui.QLabel("Serial port:    "),
+                               self.LabelSerialPort)
             self.LabelBaudrate = QtGui.QLineEdit()
             self.LabelBaudrate.setFixedWidth(190)
-            self.layout.addRow(QtGui.QLabel("Baudrate:       "), self.LabelBaudrate)
+            self.layout.addRow(QtGui.QLabel("Baudrate:       "),
+                               self.LabelBaudrate)
 
             index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
             self.LabelSerialPort.setCurrentIndex(index)
@@ -800,8 +803,10 @@ class SATNetGUI(QtGui.QWidget):
 
     def closeEvent(self, event):
         reply = QtGui.QMessageBox.question(self, 'Exit confirmation',
-            "Are you sure to quit?", QtGui.QMessageBox.Yes | 
-            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+                                           "Are you sure to quit?",
+                                           QtGui.QMessageBox.Yes |
+                                           QtGui.QMessageBox.No,
+                                           QtGui.QMessageBox.No)
 
         # Non asynchronous way. Need to re implement this. TO-DO
         if reply == QtGui.QMessageBox.Yes:
@@ -859,24 +864,21 @@ class ConfigurationWindow(QtGui.QDialog):
         LabelClientname = QtGui.QLabel("Client name:           ")
         self.FieldClientname = QtGui.QLineEdit()
         self.FieldClientname.setFixedWidth(200)
-
         LabelPassword = QtGui.QLabel("Reconnection attempts: ")
         self.FieldLabelPassword = QtGui.QLineEdit()
         self.FieldLabelPassword.setFixedWidth(200)
-
         LabelServer = QtGui.QLabel("Server address:        ")
         self.FieldLabelServer = QtGui.QLineEdit()
         self.FieldLabelServer.setFixedWidth(200)
-
         LabelPort = QtGui.QLabel("Server port:           ")
         self.FieldLabelPort = QtGui.QLineEdit()
         self.FieldLabelPort.setFixedWidth(200)
 
-        buttonBox = QtGui.QDialogButtonBox(self)
+        buttonBox = QtGui.QDialogButtonBox()
         buttonBox.setOrientation(QtCore.Qt.Horizontal)
         buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Save)
 
-        buttonBox.button(QtGui.QDialogButtonBox.Close).clicked.connect(self.close)
+        buttonBox.button(QtGui.QDialogButtonBox.Close).clicked.connect(self.closeWindow)
         buttonBox.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.save)
 
         grid.addWidget(LabelClientname, 0, 0, 1, 1)
@@ -893,11 +895,15 @@ class ConfigurationWindow(QtGui.QDialog):
         parameters.setTitle("Connection")
         parameters.move(10, 10)
 
-    def close(self):
+    def closeWindow(self):
         self.close()
 
     def save(self):
-        print "save"
+        name = self.FieldClientname.text()
+        password = self.FieldLabelPassword.text()
+        server = self.FieldLabelServer.text()
+        port = self.FieldLabelPort.text()
+        self.close()
 
 
 # Objects designed for output the information
@@ -1031,7 +1037,7 @@ if __name__ == '__main__':
         app.setWindowIcon(QtGui.QIcon('logo.png'))
         app.show()
 
-        # Create thread that will listen on the other end of the 
+        # Create thread that will listen on the other end of the
         # queue, and send the text to the textedit in our application
         my_receiver = MyReceiver(queue)
         my_receiver.mysignal.connect(app.append_text)

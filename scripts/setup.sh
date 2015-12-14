@@ -41,6 +41,7 @@ then
 	sudo apt --assume-yes install libffi-dev
 	sudo apt --assume-yes install libssl-dev
  	sudo apt --asumme-yes install libcanberra-gtk-module
+ 	sudo apt --assume-yes install shc
 
 	# Create a virtualenv
 	virtualenv $venv_path
@@ -78,7 +79,7 @@ then
 	cp _build/man/satnetclient.1 ../
 	
 	# binary creation
-	cd scripts/
+	pwd
 	sudo shc -f satnet.sh
 	sudo mv satnet.sh.x /usr/local/bin
 	cd ../

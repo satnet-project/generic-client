@@ -259,14 +259,18 @@ class SATNetGUI(QtGui.QWidget):
         self.workerKISSThread.start()
 
     def runUDPThread(self):
-        self.workerUDPThread = OperativeUDPThread(self.udp_queue,\
-         self.sendData, self.UDPSignal, self.CONNECTION_INFO)
+        self.workerUDPThread = OperativeUDPThread(self.udp_queue,
+                                                  self.sendData,
+                                                  self.UDPSignal,
+                                                  self.CONNECTION_INFO)
         self.workerUDPThread.start()
 
     # Run threads associated to TCP protocol
     def runTCPThread(self):
-        self.workerTCPThread = OperativeTCPThread(self.tcp_queue,\
-         self.sendData, self.TCPSignal, self.CONNECTION_INFO)
+        self.workerTCPThread = OperativeTCPThread(self.tcp_queue,
+                                                  self.sendData,
+                                                  self.TCPSignal,
+                                                  self.CONNECTION_INFO)
         self.workerTCPThread.start()
 
     # Stop KISS thread
@@ -292,7 +296,7 @@ class SATNetGUI(QtGui.QWidget):
         self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
         self.CONNECTION_INFO['slot_id'] = int(self.LabelSlotID.text())
         self.CONNECTION_INFO['connection'] =\
-         str(self.LabelConnection.currentText())
+            str(self.LabelConnection.currentText())
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             self.CONNECTION_INFO['serialport'] =\
@@ -339,7 +343,7 @@ class SATNetGUI(QtGui.QWidget):
 
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         self.setFixedSize(1300, 800)
-        self.setWindowTitle("SATNet client - %s" %( name ))
+        self.setWindowTitle("SATNet client - %s" %(name))
 
         if parameters == 'yes':
             self.LoadParameters(enviromentDesktop, 0)
@@ -439,7 +443,7 @@ class SATNetGUI(QtGui.QWidget):
             elif self.CONNECTION_INFO['connection'] == 'udp' or self.CONNECTION_INFO['connection'] == 'tcp':
                 self.LabelIP = QtGui.QLineEdit()
                 self.layout.addRow(QtGui.QLabel("Host:            "),
-                                    self.LabelIP)
+                                   self.LabelIP)
                 self.LabelIPPort = QtGui.QLineEdit()
                 self.layout.addRow(QtGui.QLabel("Port:       "),
                                    self.LabelIPPort)
@@ -478,10 +482,10 @@ class SATNetGUI(QtGui.QWidget):
         configuration.setLayout(configurationLayout)
 
         self.LoadDefaultSettings =\
-         QtGui.QCheckBox("Automatically load settings from '.settings'")
+            QtGui.QCheckBox("Automatically load settings from '.settings'")
         configurationLayout.addWidget(self.LoadDefaultSettings)
         self.AutomaticReconnection =\
-         QtGui.QCheckBox("Reconnect after a failure")
+            QtGui.QCheckBox("Reconnect after a failure")
         configurationLayout.addWidget(self.AutomaticReconnection)
 
         configuration.move(10, 380)
@@ -1054,8 +1058,8 @@ if __name__ == '__main__':
             from twisted.internet import reactor
             reactor.run()
         elif sys.argv[1] != "-g" and sys.argv[1] != "-help":
-            print "Unknown option: %s" %(sys.argv[1])
-            print "Try 'python client_amp.py -help' for more information."   
+            print "Unknown option: %s" % (sys.argv[1])
+            print "Try 'python client_amp.py -help' for more information."
     except IndexError:
         argumentsDict = {}
         arguments = ['username', 'password', 'slot', 'connection',

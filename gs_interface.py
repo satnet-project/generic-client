@@ -136,34 +136,34 @@ class UDPThread(QtCore.QThread):
 
 # Class associated to TCP protocol
 class TCPThread(QtCore.QThread):
-   
-    def __init__(self, parent = None):
+
+    def __init__(self, parent=None):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
         self.doWork()
         # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
-   
+
     def stop(self):
-        log.msg('Stopping TCPSocket' + 
+        log.msg('Stopping TCPSocket' +
                 "..................................." +
                 ".................................." +
                 "..................................")
         self.TCPSocket.close()
         self.running = False
-  
+
     def doWork(self):
         return True
-   
+
     def cleanUp(self):
         pass
 
 
 # Class associated to KISS protocol
 class KISSThread(QtCore.QThread):
-    
-    def __init__(self, parent = None):
+
+    def __init__(self, parent=None):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
@@ -175,10 +175,10 @@ class KISSThread(QtCore.QThread):
         self.doWork()
         # success = self.doWork(self.kissTNC)
         # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
-  
+
     def doWork(self):
         return True
-   
+
     def cleanUp(self):
         pass
 
@@ -187,14 +187,14 @@ class OperativeTCPThread(TCPThread):
     finished = QtCore.pyqtSignal(object)
 
     def __init__(self, queue, callback, TCPSignal,
-                 CONNECTION_INFO, parent = None):
+                 CONNECTION_INFO, parent=None):
         TCPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
         self.TCPSignal = TCPSignal
 
         server_address = (str(CONNECTION_INFO['tcpip']),
-                             int(CONNECTION_INFO['tcpport']))
+                          int(CONNECTION_INFO['tcpport']))
 
         from socket import socket, AF_INET, SOCK_STREAM
         try:

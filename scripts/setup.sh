@@ -1,4 +1,24 @@
 #!/bin/bash
+"""
+   Copyright 2015 Samuel Góngora García
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+:Author:
+    Samuel Góngora García (s.gongoragarcia@gmail.com)
+"""
+__author__ = 's.gongoragarcia@gmail.com'
+
 script_path="$( cd "$( dirname "$0" )" && pwd )"
 project_path=$( readlink -e "$script_path/.." )
 
@@ -43,7 +63,7 @@ then
 	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
 	tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
 	cd PyQt-x11-gpl-4.11.4
-	python ./configure.py --confirm-license -q /usr/bin/qmake-qt4
+	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
 	make
 	# Bug. Needed ldconfig, copy it from /usr/sbin
 	cp /sbin/ldconfig ../../bin/
@@ -56,6 +76,14 @@ then
 	cd "$project_path/docs"
 	make man
 	cp _build/man/satnetclient.1 ../
+	
+	# binary creation
+	cd scripts/
+	sudo shc -f satnet.sh
+	sudo mv satnet.sh.x /usr/local/bin
+	cd ../
+
+	# Deactivate virtualenv
 	deactivate
 
 elif [ $1 == '-circleCI' ];

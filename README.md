@@ -22,6 +22,8 @@ Steps to install the generic client for the SATNet network:
 
 You will need root privileges.
 
+2. The script and all his dependencies will be at ~/.satnet/client folder.
+
 #### Dependencies
 
 Before starting the script should be activate the corresponding virtualenv to satisfy the required dependencies.
@@ -34,7 +36,7 @@ To run this script you have the following options:
 
 1. If you want to enter data connection from the user interface.
 
-    python client_amp.py
+    Run the satnet command from anywhere using the terminal or click in the desktop icon.
 
 2. To start a serial connection directly from the command line will have to enter 
 the parameters as follows:

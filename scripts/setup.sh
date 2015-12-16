@@ -79,9 +79,10 @@ then
 	cp _build/man/satnetclient.1 ../
 	
 	# binary creation
-	pwd
 	sudo shc -f satnet.sh
-	sudo mv satnet.sh.x /usr/local/bin
+	sudo chmod +rx satnet.sh
+	mv satnet.sh.x /usr/bin
+	cp -r -f ../* ~/.satnet/client/ 
 	cd ../
 
 	# Deactivate virtualenv
@@ -224,6 +225,10 @@ then
 	sudo ldconfig
 	sudo make install
 	cd ../ && rm -r -f PyQt*
+
+else
+	echo "Need an argument"
+
 fi
 
 

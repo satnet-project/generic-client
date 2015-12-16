@@ -80,8 +80,8 @@ then
 	
 	# binary creation
 	sudo shc -f satnet.sh
-	sudo chmod +rx satnet.sh
-	mv satnet.sh.x /usr/bin
+	sudo chmod +rx satnet.sh.x
+	mv satnet.sh.x ~/bin/
 	cp -r -f ../* ~/.satnet/client/ 
 	cd ../
 

@@ -90,6 +90,8 @@ then
 	mkdir ~/.satnet/client/
 
 	sudo mkdir /opt/satnet/
+
+	pwd
 	sudo cp logo.png /opt/satnet/
 
 	cp satnet.desktop ~/Escritorio

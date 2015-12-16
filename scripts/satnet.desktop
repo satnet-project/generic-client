@@ -1,0 +1,7 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Encoding=UTF-8
+Name=SATNet
+Exec=satnet
+Icon=/opt/satnet/logo.png
+Type=Application

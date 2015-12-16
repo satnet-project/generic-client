@@ -89,6 +89,12 @@ then
 	mkdir ~/.satnet/
 	mkdir ~/.satnet/client/
 
+	sudo mkdir /opt/satnet/
+	sudo cp logo.png /opt/satnet/
+
+	cp satnet.desktop ~/Escritorio
+	cp satnet.destkop ~/Desktop
+
 	mv satnet ~/bin/
 	cp -r -f ../ ~/.satnet/client/ 
 	cd ../

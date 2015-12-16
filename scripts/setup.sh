@@ -79,16 +79,20 @@ then
 	cp _build/man/satnetclient.1 ../
 	
 	# binary creation
+	cd ../scripts
+	pwd
 	sudo shc -f satnet.sh
 	sudo chmod +rx satnet.sh.x
-	mv satnet.sh.x ~/bin/
-	cp -r -f ../* ~/.satnet/client/ 
+	mv satnet.sh.x satnet
+	mv satnet ~/bin/
+	cp -r -f ../ ~/.satnet/client/ 
 	cd ../
 
 	# Deactivate virtualenv
 	deactivate
+fi
 
-elif [ $1 == '-circleCI' ];
+if [ $1 == '-circleCI' ];
 then
     mkdir key
     # 1: Generate a Private Key
@@ -139,8 +143,9 @@ then
 	sudo make install
 	make install
 	cd ../ && rm -r -f PyQt*
+fi
 
-elif [ $1 == '-travisCI' ];
+if [ $1 == '-travisCI' ];
 then
     mkdir key
 
@@ -172,9 +177,9 @@ then
     pip install coverage
     pip install nose
 	pip install -r "$project_path/requirements-tests.txt"
+fi
 
-
-elif [ $1 == '-local' ];
+if [ $1 == '-local' ];
 then
 	venv_path="$project_path/.venv_test"
 
@@ -225,10 +230,30 @@ then
 	sudo ldconfig
 	sudo make install
 	cd ../ && rm -r -f PyQt*
+fi
 
-else
-	echo "Need an argument"
+if [ $1 == '-uninstall' ];
+then
+	sudo apt --assume-yes remove build-essential 
+	sudo apt --assume-yes remove virtualenv
+	sudo apt --assume-yes remove python-qt4
+	sudo apt --assume-yes remove libqt4-dev 
+	sudo apt --assume-yes remove unzip
+	sudo apt --assume-yes remove python-pip
+	sudo apt --assume-yes remove python-dev
+	sudo apt --assume-yes remove libffi-dev
+	sudo apt --assume-yes remove libssl-dev
+ 	sudo apt --asumme-yes remove libcanberra-gtk-module
+ 	sudo apt --assume-yes remove shc
 
+ 	echo '>>> Do you wish to remove all program files?'
+
+ 	echo '>>> do you with to remove configuration files?'
+fi
+
+if [ $1 == '-help' ];
+then
+	echo '>>> No argument'
 fi
 
 

@@ -81,7 +81,8 @@ then
 	# binary creation
 	cd ../scripts
 	sudo shc -f satnet.sh
-	sudo chmod +rx satnet.sh.x
+	sudo chmod 777 satnet.sh.x
+	sudo chown $currentUser satnet.sh.x
 	mv satnet.sh.x satnet
 
 	mkdir ~/bin/

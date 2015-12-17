@@ -109,6 +109,7 @@ then
 	if [ $OPTION == 'yes' ];
 	then
 		sudo reboot
+	fi
 
 fi
 
@@ -275,7 +276,3 @@ if [ $1 == '-help' ];
 then
 	echo '>>> No argument'
 fi
-
-
-
-

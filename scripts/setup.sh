@@ -81,6 +81,7 @@ then
 	# binary creation
 	cd ../scripts
 	sudo shc -f satnet.sh
+	sudo rm satnet.sh.x.c
 	sudo chmod 777 satnet.sh.x
 	sudo chown $currentUser satnet.sh.x
 	mv satnet.sh.x satnet
@@ -91,6 +92,7 @@ then
 
 	sudo mkdir /opt/satnet/
 	sudo cp ../logo.png /opt/satnet/
+	# To-do. Move .desktop file according system language.
 	cp satnet.desktop ~/Escritorio
 	cp satnet.desktop ~/Desktop
 
@@ -100,6 +102,14 @@ then
 
 	# Deactivate virtualenv
 	deactivate
+
+	echo ">>> For apply changes you must reboot your system"
+	echo ">>> Reboot now? (yes/no)"
+	read OPTION
+	if [ $OPTION == 'yes' ];
+	then
+		sudo reboot
+
 fi
 
 if [ $1 == '-circleCI' ];

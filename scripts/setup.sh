@@ -288,10 +288,126 @@ fi
 
 if [ $1 == '-update' ];
 then
-	echo ">>> This script will update protocol files and directories"
 	echo ">>> Removing program files"
 	sudo rm -r -f ~/.satnet/client/
 
+	echo ">>> Removing executables"
+	rm ~/bin/satnet
+
+	echo ">>> Removing links"
+	rm ~/Desktop/satnet.desktop
+	rm ~/Escritorio/satnet.desktop
+
+	echo ">>> Removing dependencies"
+	sudo apt --assume-yes remove build-essential 
+	sudo apt --assume-yes remove virtualenv
+	sudo apt --assume-yes remove python-qt4
+	sudo apt --assume-yes remove libqt4-dev 
+	sudo apt --assume-yes remove unzip
+	sudo apt --assume-yes remove python-pip
+	sudo apt --assume-yes remove python-dev
+	sudo apt --assume-yes remove libffi-dev
+	sudo apt --assume-yes remove libssl-dev
+ 	sudo apt --asumme-yes remove libcanberra-gtk-module
+ 	sudo apt --assume-yes remove shc
+
+ 	echo ">>> Do you wish to remove all configuration files? (yes/no)"
+ 	read OPTION
+ 	if [ $OPTION == 'yes' ];
+ 	then
+ 		rm -r -f ~/.satnet
+ 	fi
+
 	echo ">>> Downloading new data"
-	wget 
+	wget https://github.com/satnet-project/generic-client/archive/master.zip
+	unzip master.zip
+
+	echo ">>> Installing new client"
+	venv_path="$project_path/.venv"
+
+	# Enable serial access
+	currentUser=$(whoami)
+	sudo usermod -a -G dialout $currentUser 
+
+	# Install required packages
+	sudo apt --assume-yes install build-essential 
+	sudo apt --assume-yes install virtualenv
+	sudo apt --assume-yes install python-qt4
+	sudo apt --assume-yes install libqt4-dev 
+	sudo apt --assume-yes install unzip
+	sudo apt --assume-yes install python-pip
+	sudo apt --assume-yes install python-dev
+	sudo apt --assume-yes install libffi-dev
+	sudo apt --assume-yes install libssl-dev
+ 	sudo apt --asumme-yes install libcanberra-gtk-module
+	sudo apt --assume-yes --force-yes install unzip
+
+	# Create a virtualenv
+	virtualenv $venv_path
+	source "$venv_path/bin/activate"
+	pip install -r "$project_path/requirements.txt"
+
+	# Downloading packages for GUI
+	# Needed to install SIP first
+	cd $venv_path
+	mkdir build && cd build
+	pip install SIP --allow-unverified SIP --download="."
+	unzip sip*
+	cd sip*
+	python configure.py
+	make
+	sudo make install
+	cd ../ && rm -r -f sip*
+
+	# PyQt4 installation.
+	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
+	tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
+	cd PyQt-x11-gpl-4.11.4
+	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
+	make
+	# Bug. Needed ldconfig, copy it from /usr/sbin
+	cp /sbin/ldconfig ../../bin/
+	sudo ldconfig
+	sudo make install
+	cd ../ && rm -r -f PyQt*
+
+	# man page creation
+	source "$venv_path/bin/activate"
+	cd "$project_path/docs"
+	make man
+	cp _build/man/satnetclient.1 ../
+	
+	# binary creation
+	cd ../scripts
+	sudo shc -f satnet.sh
+	sudo rm satnet.sh.x.c
+	sudo chmod 777 satnet.sh.x
+	sudo chown $currentUser satnet.sh.x
+	mv satnet.sh.x satnet
+
+	mkdir ~/bin/
+	mkdir ~/.satnet/
+	mkdir ~/.satnet/client/
+
+	sudo mkdir /opt/satnet/
+	sudo cp ../icono.png /opt/satnet/
+	# To-do. Move .desktop file according system language.
+	cp satnet.desktop ~/Escritorio
+	cp satnet.desktop ~/Desktop
+
+	mv satnet ~/bin/
+	cp -r -f ../ ~/.satnet/client/ 
+	cd ../
+
+	# Deactivate virtualenv
+	deactivate
+
+	echo ">>> For apply changes you must reboot your system"
+	echo ">>> Reboot now? (yes/no)"
+	read OPTION
+	if [ $OPTION == 'yes' ];
+	then
+		sudo reboot
+	fi
+
 fi

@@ -334,7 +334,7 @@ then
 	sudo apt --assume-yes install virtualenv
 	sudo apt --assume-yes install python-qt4
 	sudo apt --assume-yes install libqt4-dev 
-	sudo apt --assume-yes install unzip
+	sudo apt --assume-yes install shc
 	sudo apt --assume-yes install python-pip
 	sudo apt --assume-yes install python-dev
 	sudo apt --assume-yes install libffi-dev

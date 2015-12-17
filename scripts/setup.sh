@@ -41,6 +41,7 @@ then
 	sudo apt --assume-yes install libffi-dev
 	sudo apt --assume-yes install libssl-dev
  	sudo apt --asumme-yes install libcanberra-gtk-module
+ 	sudo apt --assume-yes install shc
 	sudo apt --assume-yes --force-yes install unzip
 
 	# Create a virtualenv

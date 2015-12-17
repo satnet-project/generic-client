@@ -91,7 +91,7 @@ then
 	mkdir ~/.satnet/client/
 
 	sudo mkdir /opt/satnet/
-	sudo cp ../logo.png /opt/satnet/
+	sudo cp ../icono.png /opt/satnet/
 	# To-do. Move .desktop file according system language.
 	cp satnet.desktop ~/Escritorio
 	cp satnet.desktop ~/Desktop

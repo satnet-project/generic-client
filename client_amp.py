@@ -343,7 +343,7 @@ class SATNetGUI(QtGui.QWidget):
 
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         self.setFixedSize(1300, 800)
-        self.setWindowTitle("SATNet client - %s" %(name))
+        self.setWindowTitle("SATNet client - %s" % (name))
 
         if parameters == 'yes':
             self.LoadParameters(enviromentDesktop, 0)
@@ -493,7 +493,7 @@ class SATNetGUI(QtGui.QWidget):
     def initLogo(self):
         # Logo.
         LabelLogo = QtGui.QLabel(self)
-        LabelLogo.move(20, 490)
+        LabelLogo.move(40, 490)
         pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
         LabelLogo.setPixmap(pic)
         LabelLogo.show()
@@ -1044,7 +1044,7 @@ if __name__ == '__main__':
 
             qapp = QtGui.QApplication(sys.argv)
             app = SATNetGUI(argumentsDict)
-            app.setWindowIcon(QtGui.QIcon('logo.png'))
+            app.setWindowIcon(QtGui.QIcon('icono.png'))
             app.show()
 
             # Create thread that will listen on the other end of the queue, and
@@ -1077,7 +1077,7 @@ if __name__ == '__main__':
 
         qapp = QtGui.QApplication(sys.argv)
         app = SATNetGUI(argumentsDict)
-        app.setWindowIcon(QtGui.QIcon('logo.png'))
+        app.setWindowIcon(QtGui.QIcon('icono.png'))
         app.show()
 
         # Create thread that will listen on the other end of the

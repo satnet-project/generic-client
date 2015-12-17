@@ -255,6 +255,17 @@ fi
 
 if [ $1 == '-uninstall' ];
 then
+	echo ">>> Removing program files"
+	sudo rm -r -f ~/.satnet/client/
+
+	echo ">>> Removing executables"
+	rm ~/bin/satnet
+
+	echo ">>> Removing links"
+	rm ~/Desktop/satnet.desktop
+	rm ~/Escritorio/satnet.desktop
+
+	echo ">>> Removing dependencies"
 	sudo apt --assume-yes remove build-essential 
 	sudo apt --assume-yes remove virtualenv
 	sudo apt --assume-yes remove python-qt4
@@ -267,12 +278,19 @@ then
  	sudo apt --asumme-yes remove libcanberra-gtk-module
  	sudo apt --assume-yes remove shc
 
- 	echo '>>> Do you wish to remove all program files?'
-
- 	echo '>>> do you with to remove configuration files?'
+ 	echo ">>> Do you wish to remove all configuration files? (yes/no)"
+ 	read OPTION
+ 	if [ $OPTION == 'yes' ];
+ 	then
+ 		rm -r -f ~/.satnet
+ 	fi
 fi
 
-if [ $1 == '-help' ];
+if [ $1 == '-update' ];
 then
-	echo '>>> No argument'
+	echo ">>> This script will update protocol files and directories"
+	echo ">>> Removing program files"
+	sudo rm -r -f ~/.satnet/client/
+
+	echo ">>> Downloading new data"
 fi

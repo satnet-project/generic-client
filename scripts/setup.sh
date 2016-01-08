@@ -22,6 +22,41 @@
 script_path="$( cd "$( dirname "$0" )" && pwd )"
 project_path=$( readlink -e "$script_path/.." )
 
+function install_sip()
+{
+
+        # Downloading packages for GUI
+        # Needed to install SIP first
+        mkdir build && cd build
+        pip install SIP --allow-unverified SIP --download="."
+        unzip sip*
+        pwd
+        ls
+        cd sip*
+        python configure.py
+        make
+        sudo make install
+        cd ../ && rm -r -f sip*
+
+}
+
+function install_pyqt4()
+{
+
+        # PyQt4 installation.
+        wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
+        tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
+        cd PyQt-x11-gpl-4.11.4
+        python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
+        make
+        # Bug. Needed ldconfig, copy it from /usr/sbin
+        cp /sbin/ldconfig ../../bin/
+        sudo ldconfig
+        sudo make install
+        cd ../ && rm -r -f PyQt*
+
+}
+
 if [ $1 == '-install' ];
 then
 	venv_path="$project_path/.venv"
@@ -53,13 +88,13 @@ then
 	# Needed to install SIP first
 	cd $venv_path
 	mkdir build && cd build
-	pip install SIP --allow-unverified SIP --download="."
-	unzip sip*
-	cd sip*
+	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz	
+	tar -xvf sip-4.17.tar.gz
+	cd sip-4.17
 	python configure.py
 	make
 	sudo make install
-	cd ../ && rm -r -f sip*
+	cd ../ && rm -rf sip-4.17
 
 	# PyQt4 installation.
 	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz

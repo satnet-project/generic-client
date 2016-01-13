@@ -19,24 +19,28 @@
 
 # __author__ = 's.gongoragarcia@gmail.com'
 
-script_path="$( cd "$( dirname "$0" )" && pwd )"
-project_path=$( readlink -e "$script_path/.." )
+function install_packages()
+{
+	echo ">>> Installing system packages..."
+	sudo aptitude update && sudo aptitude dist-upgrade -y
+	sudo aptitude install $( cat "$linux_packages" ) -y
+}
 
 function install_sip()
 {
 
         # Downloading packages for GUI
         # Needed to install SIP first
-        mkdir build && cd build
-        pip install SIP --allow-unverified SIP --download="."
-        unzip sip*
-        pwd
-        ls
-        cd sip*
-        python configure.py
-        make
-        sudo make install
-        cd ../ && rm -r -f sip*
+	cd $venv_path
+	mkdir build && cd build
+	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz	
+	tar -xvf sip-4.17.tar.gz
+	cd sip-4.17
+	python configure.py
+	make
+	sudo make install
+	cd ../ && rm -rf sip-4.17
+
 
 }
 
@@ -57,9 +61,49 @@ function install_pyqt4()
 
 }
 
+function install_venv()
+{
+	[[ -d $venv_dir ]] || {
+
+    	echo ">>> Creating virtual environment..."
+    	virtualenv --python=python2.7 $venv_dir
+    	source "$venv_dir/bin/activate"
+	    pip install -r "$project_path/requirements.txt"
+	    deactivate
+
+	} && {
+	    echo ">>> Python Virtual environment found, skipping"
+	}
+}
+
+script_path="$( cd "$( dirname "$0" )" && pwd )"
+project_path=$( readlink -e "$script_path/.." )
+
+linux_packages="$script_path/debian.packages"
+venv_dir="$project_path/.venv"
+
 if [ $1 == '-install' ];
 then
-	venv_path="$project_path/.venv"
+
+    [[ $_install_packages == 'true' ]] && install_packages
+    [[ $_install_venv == 'true' ]] && install_venv
+
+	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
+    [[ $_create_logs == 'true' ]] && create_logs_dir
+
+    [[ $_config_supervisor == 'true' ]] && configure_supervisor
+
+    [[ $_reboot == 'true' ]] && {
+ 
+    	echo ">>> To apply changes you must reboot your system"
+    	echo ">>> Reboot now? (yes/no)"
+    	read OPTION
+    	[[ $OPTION == 'yes' ]] && sudo reboot
+
+    }
+fi
+
+
 
 	# Enable serial access
 	currentUser=$(whoami)

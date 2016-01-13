@@ -84,27 +84,6 @@ venv_dir="$project_path/.venv"
 
 if [ $1 == '-install' ];
 then
-
-    [[ $_install_packages == 'true' ]] && install_packages
-    [[ $_install_venv == 'true' ]] && install_venv
-
-	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
-    [[ $_create_logs == 'true' ]] && create_logs_dir
-
-    [[ $_config_supervisor == 'true' ]] && configure_supervisor
-
-    [[ $_reboot == 'true' ]] && {
- 
-    	echo ">>> To apply changes you must reboot your system"
-    	echo ">>> Reboot now? (yes/no)"
-    	read OPTION
-    	[[ $OPTION == 'yes' ]] && sudo reboot
-
-    }
-fi
-
-
-
 	# Enable serial access
 	currentUser=$(whoami)
 	sudo usermod -a -G dialout $currentUser 

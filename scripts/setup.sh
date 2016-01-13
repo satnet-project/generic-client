@@ -29,9 +29,9 @@ function install_packages()
 function install_sip()
 {
 
-        # Downloading packages for GUI
-        # Needed to install SIP first
-	cd $venv_path
+    # Downloading packages for GUI
+    # Needed to install SIP first
+	cd $venv_dir
 	mkdir build && cd build
 	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz	
 	tar -xvf sip-4.17.tar.gz
@@ -40,25 +40,22 @@ function install_sip()
 	make
 	sudo make install
 	cd ../ && rm -rf sip-4.17
-
-
 }
 
 function install_pyqt4()
 {
 
-        # PyQt4 installation.
-        wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
-        tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
-        cd PyQt-x11-gpl-4.11.4
-        python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
-        make
-        # Bug. Needed ldconfig, copy it from /usr/sbin
-        cp /sbin/ldconfig ../../bin/
-        sudo ldconfig
-        sudo make install
-        cd ../ && rm -r -f PyQt*
-
+    # PyQt4 installation.
+    wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
+    tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
+    cd PyQt-x11-gpl-4.11.4
+    python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
+    make
+    # Bug. Needed ldconfig, copy it from /usr/sbin
+    cp /sbin/ldconfig ../../bin/
+    sudo ldconfig
+    sudo make install
+    cd ../ && rm -r -f PyQt*
 }
 
 function install_venv()
@@ -103,13 +100,13 @@ then
 	sudo apt --assume-yes --force-yes install unzip
 
 	# Create a virtualenv
-	virtualenv $venv_path
-	source "$venv_path/bin/activate"
+	virtualenv $venv_dir
+	source "$venv_dir/bin/activate"
 	pip install -r "$project_path/requirements.txt"
 
 	# Downloading packages for GUI
 	# Needed to install SIP first
-	cd $venv_path
+	cd $venv_dir
 	mkdir build && cd build
 	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz	
 	tar -xvf sip-4.17.tar.gz
@@ -132,7 +129,7 @@ then
 	cd ../ && rm -r -f PyQt*
 
 	# man page creation
-	source "$venv_path/bin/activate"
+	source "$venv_dir/bin/activate"
 	cd "$project_path/docs"
 	make man
 	cp _build/man/satnetclient.1 ../
@@ -261,7 +258,7 @@ fi
 
 if [ $1 == '-local' ];
 then
-	venv_path="$project_path/.venv_test"
+	venv_dir="$project_path/.venv_test"
 
 	mkdir key
 	# 1: Generate a Private Key
@@ -285,8 +282,8 @@ then
 	mv key ../tests
 
 	# Create a virtualenv
-	virtualenv $venv_path
-	source "$venv_path/bin/activate"
+	virtualenv $venv_dir
+	source "$venv_dir/bin/activate"
 	pip install -r "$project_path/requirements.txt"
 
 	echo '>>> SIP installation'
@@ -382,7 +379,7 @@ then
 	unzip master.zip
 
 	echo ">>> Installing new client"
-	venv_path="$project_path/.venv"
+	venv_dir="$project_path/.venv"
 
 	# Enable serial access
 	currentUser=$(whoami)
@@ -402,13 +399,13 @@ then
 	sudo apt --assume-yes --force-yes install unzip
 
 	# Create a virtualenv
-	virtualenv $venv_path
-	source "$venv_path/bin/activate"
+	virtualenv $venv_dir
+	source "$venv_dir/bin/activate"
 	pip install -r "$project_path/requirements.txt"
 
 	# Downloading packages for GUI
 	# Needed to install SIP first
-	cd $venv_path
+	cd $venv_dir
 	mkdir build && cd build
 	pip install SIP --allow-unverified SIP --download="."
 	unzip sip*
@@ -431,7 +428,7 @@ then
 	cd ../ && rm -r -f PyQt*
 
 	# man page creation
-	source "$venv_path/bin/activate"
+	source "$venv_dir/bin/activate"
 	cd "$project_path/docs"
 	make man
 	cp _build/man/satnetclient.1 ../

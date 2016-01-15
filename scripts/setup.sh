@@ -119,6 +119,14 @@ project_path=$( readlink -e "$script_path/.." )
 linux_packages="$script_path/debian.packages"
 venv_dir="$project_path/.venv"
 
+key_dir="$project_path/key"
+keys_private="$keys_dir/test.key"
+keys_csr="$keys_dir/test.csr"
+keys_crt="$keys_dir/test.crt"
+keys_server_pem="$keys_dir/server.pem"
+keys_public_pem="$keys_dir/public.pem"
+keys_CN="edu.calpoly.aero.satnet"
+
 _install_venv='true'
 _install_packages='true'
 _generate_keys='true'

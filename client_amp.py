@@ -208,16 +208,15 @@ class Client(object):
         self.CONNECTION_INFO = CONNECTION_INFO
 
     def createConnection(self):
-        # New interface
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
                                      ClientProtocol)
 
         global connector
-
         connector = reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
                                        int(self.CONNECTION_INFO['serverport']),
-                                       ClientReconnectFactory(self.CONNECTION_INFO,
-                                                              gsi),
+                                       ClientReconnectFactory(
+                                        self.CONNECTION_INFO,
+                                        gsi),
                                        CtxFactory())
 
         return gsi, connector
@@ -350,7 +349,8 @@ class SATNetGUI(QtGui.QWidget):
         elif parameters == 'no':
             pass
         else:
-            warnings.warn("No parameters configuration found. Using default parameter - Yes")
+            warnings.warn("No parameters configuration found." +
+                          " Using default parameter - Yes")
 
     def initButtons(self):
         # Control buttons.
@@ -360,7 +360,8 @@ class SATNetGUI(QtGui.QWidget):
 
         # New connection.
         self.ButtonNew = QtGui.QPushButton("Connection")
-        self.ButtonNew.setToolTip("Start a new connection using the selected connection")
+        self.ButtonNew.setToolTip("Start a new connection using " +
+                                  " the selected connection")
         self.ButtonNew.setFixedWidth(145)
         self.ButtonNew.clicked.connect(self.NewConnection)
         # Close connection.

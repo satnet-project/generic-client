@@ -1,5 +1,5 @@
 [User]
-username = user
+username = test-sc-user
 password = sgongarpass
 slot_id = -1
 connection = none
@@ -17,8 +17,8 @@ tcpip = 127.0.0.1
 tcpport = 4321
 
 [server]
-serverip = 127.0.0.1
-serverport = 1234
+serverip = satnet.aero.calpoly.edu
+serverport = 443
 
 [Connection]
 reconnection = no

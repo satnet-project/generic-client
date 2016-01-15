@@ -19,6 +19,42 @@
 
 # __author__ = 's.gongoragarcia@gmail.com'
 
+function create_selfsigned_keys()
+{
+    [[ -d $keys_dir ]] || {
+        echo '>>> Creating keys directory...'
+        mkdir -p $keys_dir
+    } && {
+        echo ">>> $keys_dir exists, skipping..."
+    }
+
+    [[ -f $keys_server_pem ]] && [[ -f $keys_public_pem ]] && {
+        echo ">>> Keys already exist, skipping key generation..."
+        return
+    }
+
+    # 1: Generate a Private Key
+    echo '>>> Generating a private key'
+    openssl genrsa -des3 -passout pass:satnet -out $keys_private 1024
+    # 2: Generate a CSR (Certificate Signing Request)
+    echo '>>> Generating a CSR'
+    openssl req -new -key $keys_private -passin pass:satnet\
+    	-out $keys_csr -subj "/CN=$keys_CN"
+    # 3: Remove Passphrase from Private Key
+    echo '>>> Removing passphrase from private key'
+    openssl rsa -in $keys_private -passin pass:satnet -out $keys_private
+    # 4: Generating a Self-Signed Certificate
+    echo '>>> Generating a public key (certificate)'
+    openssl x509 -req -days 365 -in $keys_csr -signkey $keys_private\
+    	-out $keys_crt
+
+    echo '>>> Generating key bundles'
+    # 5: Generate server bundle (Certificate + Private key)
+    cat $keys_crt $keys_private > $keys_server_pem
+    # 6: Generate clients bundle (Certificate)
+    cp $keys_crt $keys_public_pem
+}
+
 function install_packages()
 {
 	echo ">>> Installing system packages..."
@@ -26,11 +62,15 @@ function install_packages()
 	sudo aptitude install $( cat "$linux_packages" ) -y
 }
 
+function uninstall_packages()
+{
+	echo ">>> Uninstalling system packages..."
+	sudo aptitude remove $( cat "$linux_packages" ) -y
+}
+
 function install_sip()
 {
 
-    # Downloading packages for GUI
-    # Needed to install SIP first
 	cd $venv_dir
 	mkdir build && cd build
 	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz	
@@ -79,82 +119,63 @@ project_path=$( readlink -e "$script_path/.." )
 linux_packages="$script_path/debian.packages"
 venv_dir="$project_path/.venv"
 
+_install_venv='true'
+_install_packages='true'
+_generate_keys='true'
+_install_sip='true'
+_install_pyqt4='true'
+
 if [ $1 == '-install' ];
 then
 	# Enable serial access
 	currentUser=$(whoami)
 	sudo usermod -a -G dialout $currentUser 
 
-	# Install required packages
-	sudo apt --assume-yes install build-essential 
-	sudo apt --assume-yes install virtualenv
-	sudo apt --assume-yes install python-qt4
-	sudo apt --assume-yes install libqt4-dev 
-	sudo apt --assume-yes install unzip
-	sudo apt --assume-yes install python-pip
-	sudo apt --assume-yes install python-dev
-	sudo apt --assume-yes install libffi-dev
-	sudo apt --assume-yes install libssl-dev
- 	sudo apt --asumme-yes install libcanberra-gtk-module
- 	sudo apt --assume-yes install shc
-	sudo apt --assume-yes --force-yes install unzip
+	echo '>>> Installing packages'
+	[[ $_install_packages == 'true' ]] && install_packages	
 
-	# Create a virtualenv
-	virtualenv $venv_dir
-	source "$venv_dir/bin/activate"
-	pip install -r "$project_path/requirements.txt"
+	echo '>>> Installing virtualenv'
+	[[ $_install_venv == 'true' ]] && install_venv
 
-	# Downloading packages for GUI
-	# Needed to install SIP first
-	cd $venv_dir
-	mkdir build && cd build
-	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz	
-	tar -xvf sip-4.17.tar.gz
-	cd sip-4.17
-	python configure.py
-	make
-	sudo make install
-	cd ../ && rm -rf sip-4.17
+	echo '>>> SIP installation'
+	[[ $_install_sip == 'true' ]] && install_sip
 
-	# PyQt4 installation.
-	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
-	tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
-	cd PyQt-x11-gpl-4.11.4
-	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
-	make
-	# Bug. Needed ldconfig, copy it from /usr/sbin
-	cp /sbin/ldconfig ../../bin/
-	sudo ldconfig
-	sudo make install
-	cd ../ && rm -r -f PyQt*
+	echo '>>> PyQt4 installation'
+	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
 
 	# man page creation
 	source "$venv_dir/bin/activate"
 	cd "$project_path/docs"
 	make man
 	cp _build/man/satnetclient.1 ../
-	
-	# binary creation
-	cd ../scripts
-	sudo shc -f satnet.sh
-	sudo rm satnet.sh.x.c
-	sudo chmod 777 satnet.sh.x
-	sudo chown $currentUser satnet.sh.x
-	mv satnet.sh.x satnet
 
-	mkdir ~/bin/
-	mkdir ~/.satnet/
-	mkdir ~/.satnet/client/
+	os=`cat /etc/issue.net`
 
-	sudo mkdir /opt/satnet/
-	sudo cp ../icono.png /opt/satnet/
-	# To-do. Move .desktop file according system language.
-	cp satnet.desktop ~/Escritorio
-	cp satnet.desktop ~/Desktop
+	if [[ "$os" =~ "Debian" ]]; then
+		# binary creation
+		cd ../scripts
+		sudo shc -f satnet.sh
+		sudo rm satnet.sh.x.c
+		sudo chmod 777 satnet.sh.x
+		sudo chown $currentUser satnet.sh.x
+		mv satnet.sh.x satnet
 
-	mv satnet ~/bin/
-	cp -r -f ../ ~/.satnet/client/ 
-	cd ../
+		mkdir ~/bin/
+		mkdir ~/.satnet/
+		mkdir ~/.satnet/client/
+
+		sudo mkdir /opt/satnet/
+		sudo cp ../icono.png /opt/satnet/
+		# To-do. Move .desktop file according system language.
+		cp satnet.desktop ~/Escritorio
+		cp satnet.desktop ~/Desktop
+
+		mv satnet ~/bin/
+		cp -r -f ../ ~/.satnet/client/ 
+		cd ../
+	else
+	    echo "Not Debian";
+	fi
 
 	# Deactivate virtualenv
 	deactivate
@@ -171,80 +192,23 @@ fi
 
 if [ $1 == '-circleCI' ];
 then
-    mkdir key
-    # 1: Generate a Private Key
-    echo '>>> Generating a private key'
-    openssl genrsa -des3 -passout pass:satnet -out key/test.key 1024
-    # 2: Generate a CSR (Certificate Signing Request)
-    echo '>>> Generating a CSR'
-    openssl req -new -key key/test.key -passin pass:satnet -out key/test.csr -subj /CN=example.humsat.org/ 
-    # 3: Remove Passphrase from Private Key
-    echo '>>> Removing passphrase from private key'
-    openssl rsa -in key/test.key -passin pass:satnet -out key/test.key
-    # 4: Generating a Self-Signed Certificate
-    echo '>>> Generating a public key (certificate)'
-    openssl x509 -req -days 365 -in key/test.csr -signkey key/test.key -out key/test.crt
-
-    echo '>>> Generating key bundles'
-    # 5: Generate server bundle (Certificate + Private key)
-    cat key/test.crt key/test.key > key/server.pem
-    # 6: Generate clients bundle (Certificate)
-    cp key/test.crt key/public.pem
-
+	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
     mv key ../tests
+    
     echo '>>> Python modules installation'
 	pip install -r "$project_path/requirements-tests.txt"
 
 	echo '>>> SIP installation'
-	mkdir build && cd build
-	pip install SIP --allow-unverified SIP --download="."
-	unzip sip*
-	cd sip*
-	python configure.py
-	make
-	make install
-	sudo make install
-	cd ../ && rm -r -f sip*
+	[[ $_install_sip == 'true' ]] && install_sip
 
 	echo '>>> PyQt4 installation'
-	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
-	tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
-	cd PyQt-x11-gpl-4.11.4
- 	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
+	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
 
-	make
-	# Bug. Needed ldconfig, copy it from /usr/sbin
-	cp /sbin/ldconfig ../../bin/
-
-	sudo ldconfig
-	sudo make install
-	make install
-	cd ../ && rm -r -f PyQt*
 fi
 
 if [ $1 == '-travisCI' ];
 then
-    mkdir key
-
-    # 1: Generate a Private Key
-    echo '>>> Generating a private key'
-    openssl genrsa -des3 -passout pass:satnet -out key/test.key 1024
-    # 2: Generate a CSR (Certificate Signing Request)
-    echo '>>> Generating a CSR'
-    openssl req -new -key key/test.key -passin pass:satnet -out key/test.csr -subj /CN=example.humsat.org/ 
-    # 3: Remove Passphrase from Private Key
-    echo '>>> Removing passphrase from private key'
-    openssl rsa -in key/test.key -passin pass:satnet -out key/test.key
-    # 4: Generating a Self-Signed Certificate
-    echo '>>> Generating a public key (certificate)'
-    openssl x509 -req -days 365 -in key/test.csr -signkey key/test.key -out key/test.crt
-
-    echo '>>> Generating key bundles'
-    # 5: Generate server bundle (Certificate + Private key)
-    cat key/test.crt key/test.key > key/server.pem
-    # 6: Generate clients bundle (Certificate)
-    cp key/test.crt key/public.pem
-
+	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
     cp -r key ../
 	cp -r key ../tests
 
@@ -260,53 +224,17 @@ if [ $1 == '-local' ];
 then
 	venv_dir="$project_path/.venv_test"
 
-	mkdir key
-	# 1: Generate a Private Key
-	echo '>>> Generating a private key'
-	openssl genrsa -des3 -passout pass:satnet -out key/test.key 1024
-	# 2: Generate a CSR (Certificate Signing Request)
-	echo '>>> Generating a CSR'
-	openssl req -new -key key/test.key -passin pass:satnet -out key/test.csr -subj /CN=example.humsat.org/ 
-	# 3: Remove Passphrase from Private Key
-	echo '>>> Removing passphrase from private key'
-	openssl rsa -in key/test.key -passin pass:satnet -out key/test.key
-	# 4: Generating a Self-Signed Certificate
-	echo '>>> Generating a public key (certificate)'
-	openssl x509 -req -days 365 -in key/test.csr -signkey key/test.key -out key/test.crt
-
-	echo '>>> Generating key bundles'
-	# 5: Generate server bundle (Certificate + Private key)
-	cat key/test.crt key/test.key > key/server.pem
-	# 6: Generate clients bundle (Certificate)
-	cp key/test.crt key/public.pem
+	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
 	mv key ../tests
 
-	# Create a virtualenv
-	virtualenv $venv_dir
-	source "$venv_dir/bin/activate"
-	pip install -r "$project_path/requirements.txt"
+	echo '>>> Installing virtualenv'
+	[[ $_install_venv == 'true' ]] && install_venv
 
 	echo '>>> SIP installation'
-	mkdir build && cd build
-	pip install SIP --allow-unverified SIP --download="."
-	unzip sip*
-	cd sip*
-	python configure.py
-	make
-	sudo make install
-	cd ../ && rm -r -f sip*
+	[[ $_install_sip == 'true' ]] && install_sip
 
 	echo '>>> PyQt4 installation'
-	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
-	tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
-	cd PyQt-x11-gpl-4.11.4
-	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4
-	make
-	# Bug. Needed ldconfig, copy it from /usr/sbin
-	cp /sbin/ldconfig ../../bin/
-	sudo ldconfig
-	sudo make install
-	cd ../ && rm -r -f PyQt*
+	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
 fi
 
 if [ $1 == '-uninstall' ];
@@ -322,17 +250,7 @@ then
 	rm ~/Escritorio/satnet.desktop
 
 	echo ">>> Removing dependencies"
-	sudo apt --assume-yes remove build-essential 
-	sudo apt --assume-yes remove virtualenv
-	sudo apt --assume-yes remove python-qt4
-	sudo apt --assume-yes remove libqt4-dev 
-	sudo apt --assume-yes remove unzip
-	sudo apt --assume-yes remove python-pip
-	sudo apt --assume-yes remove python-dev
-	sudo apt --assume-yes remove libffi-dev
-	sudo apt --assume-yes remove libssl-dev
- 	sudo apt --asumme-yes remove libcanberra-gtk-module
- 	sudo apt --assume-yes remove shc
+	[[ $_install_packages == 'true' ]] && uninstall_packages
 
  	echo ">>> Do you wish to remove all configuration files? (yes/no)"
  	read OPTION
@@ -340,130 +258,4 @@ then
  	then
  		rm -r -f ~/.satnet
  	fi
-fi
-
-if [ $1 == '-update' ];
-then
-	echo ">>> Removing program files"
-	sudo rm -r -f ~/.satnet/client/
-
-	echo ">>> Removing executables"
-	rm ~/bin/satnet
-
-	echo ">>> Removing links"
-	rm ~/Desktop/satnet.desktop
-	rm ~/Escritorio/satnet.desktop
-
-	echo ">>> Removing dependencies"
-	sudo apt --assume-yes remove build-essential 
-	sudo apt --assume-yes remove virtualenv
-	sudo apt --assume-yes remove python-qt4
-	sudo apt --assume-yes remove libqt4-dev 
-	sudo apt --assume-yes remove unzip
-	sudo apt --assume-yes remove python-pip
-	sudo apt --assume-yes remove python-dev
-	sudo apt --assume-yes remove libffi-dev
-	sudo apt --assume-yes remove libssl-dev
- 	sudo apt --asumme-yes remove libcanberra-gtk-module
- 	sudo apt --assume-yes remove shc
-
- 	echo ">>> Do you wish to remove all configuration files? (yes/no)"
- 	read OPTION
- 	if [ $OPTION == 'yes' ];
- 	then
- 		rm -r -f ~/.satnet
- 	fi
-
-	echo ">>> Downloading new data"
-	wget https://github.com/satnet-project/generic-client/archive/master.zip
-	unzip master.zip
-
-	echo ">>> Installing new client"
-	venv_dir="$project_path/.venv"
-
-	# Enable serial access
-	currentUser=$(whoami)
-	sudo usermod -a -G dialout $currentUser 
-
-	# Install required packages
-	sudo apt --assume-yes install build-essential 
-	sudo apt --assume-yes install virtualenv
-	sudo apt --assume-yes install python-qt4
-	sudo apt --assume-yes install libqt4-dev 
-	sudo apt --assume-yes install shc
-	sudo apt --assume-yes install python-pip
-	sudo apt --assume-yes install python-dev
-	sudo apt --assume-yes install libffi-dev
-	sudo apt --assume-yes install libssl-dev
- 	sudo apt --asumme-yes install libcanberra-gtk-module
-	sudo apt --assume-yes --force-yes install unzip
-
-	# Create a virtualenv
-	virtualenv $venv_dir
-	source "$venv_dir/bin/activate"
-	pip install -r "$project_path/requirements.txt"
-
-	# Downloading packages for GUI
-	# Needed to install SIP first
-	cd $venv_dir
-	mkdir build && cd build
-	pip install SIP --allow-unverified SIP --download="."
-	unzip sip*
-	cd sip*
-	python configure.py
-	make
-	sudo make install
-	cd ../ && rm -r -f sip*
-
-	# PyQt4 installation.
-	wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
-	tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
-	cd PyQt-x11-gpl-4.11.4
-	python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
-	make
-	# Bug. Needed ldconfig, copy it from /usr/sbin
-	cp /sbin/ldconfig ../../bin/
-	sudo ldconfig
-	sudo make install
-	cd ../ && rm -r -f PyQt*
-
-	# man page creation
-	source "$venv_dir/bin/activate"
-	cd "$project_path/docs"
-	make man
-	cp _build/man/satnetclient.1 ../
-	
-	# binary creation
-	cd ../scripts
-	sudo shc -f satnet.sh
-	sudo rm satnet.sh.x.c
-	sudo chmod 777 satnet.sh.x
-	sudo chown $currentUser satnet.sh.x
-	mv satnet.sh.x satnet
-
-	mkdir ~/bin/
-	mkdir ~/.satnet/
-	mkdir ~/.satnet/client/
-
-	sudo mkdir /opt/satnet/
-	sudo cp ../icono.png /opt/satnet/
-	# To-do. Move .desktop file according system language.
-	cp satnet.desktop ~/Escritorio
-	cp satnet.desktop ~/Desktop
-
-	mv satnet ~/bin/
-	cp -r -f ../ ~/.satnet/client/ 
-	cd ../
-
-	# Deactivate virtualenv
-	deactivate
-
-	echo ">>> For apply changes you must reboot your system"
-	echo ">>> Reboot now? (yes/no)"
-	read OPTION
-	if [ $OPTION == 'yes' ];
-	then
-		sudo reboot
-	fi
-
 fi

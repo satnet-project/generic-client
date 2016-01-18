@@ -17,7 +17,8 @@ from twisted.python import log
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from gs_interface import GroundStationInterface
-from errors import WrongFormatNotification, SlotErrorNotification
+from errors import WrongFormatNotification
+from errors import SlotErrorNotification
 from client_amp import ClientProtocol, CtxFactory, ClientReconnectFactory, NotifyMsg
 import misc
 
@@ -51,10 +52,7 @@ from server_amp import SATNETServer
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-
-
 class SendMsg(Command):
-    
     arguments = [('sMsg', String()),
                  ('iTimestamp', Integer())]
     response = [('bResult', Boolean())]
@@ -115,7 +113,6 @@ class SATNETServer(protocol.Protocol):
             sc_channel = slot['sc_channel']
 
             log.msg("Saved message")
-            
             slot_id = 2
             upwards = True
             forwarded = True
@@ -123,13 +120,12 @@ class SATNETServer(protocol.Protocol):
 
             Satnet_StoreMessage = mock.Mock()
 
-            Message = Satnet_StoreMessage(slot_id, upwards, forwarded,\
-             timestamp, sMsg, debug = True)
+            Message = Satnet_StoreMessage(slot_id, upwards, forwarded,
+                                          timestamp, sMsg, debug=True)
 
             return {'bResult': True}
 
     SendMsg.responder(vSendMsg)
-
 
 
 class TestServerToClient(unittest.TestCase):
@@ -144,8 +140,8 @@ class TestServerToClient(unittest.TestCase):
 
     def mock_callremote(self, NotifyMsg, sMsg):
 
-        CONNECTION_INFO = {'username':'s.gongoragarcia@gmail.com',
-         'connection':'serial'}
+        CONNECTION_INFO = {'username': 's.gongoragarcia@gmail.com',
+                           'connection': 'serial'}
         gsi = object
 
         ClientProtocol(CONNECTION_INFO, gsi).vNotifyMsg(sMsg)
@@ -196,7 +192,7 @@ class TestServerToClient(unittest.TestCase):
             log.msg("Server already initialized")
 
     def _connectClient(self, d1, d2):
-        self.factory = protocol.ClientFactory.forProtocol(ClientProtocol) 
+        self.factory = protocol.ClientFactory.forProtocol(ClientProtocol)
         log.msg(self.factory)
 
         self.factory.onConnectionMade = d1
@@ -210,12 +206,12 @@ class TestServerToClient(unittest.TestCase):
         try:
             d = defer.maybeDeferred(self.serverPort.stopListening)
             self.clientConnection.disconnect()
-            return defer.gatherResults([d, self.clientDisconnected, 
+            return defer.gatherResults([d, self.clientDisconnected,
                                         self.serverDisconnected])
         except AttributeError:
             self.clientConnection.disconnect()
             return defer.gatherResults([self.clientDisconnected,
-                                         self.serverDisconnected])            
+                                        self.serverDisconnected])
 
     """
     Send a correct frame with connection
@@ -226,12 +222,13 @@ class TestServerToClient(unittest.TestCase):
 
         protocol = SATNETServer()
         protocol.factory = mock.Mock()
-        protocol.factory.active_connections = {'localUsr':'s.gongoragarcia@gmail.com'}
+        protocol.factory.active_connections = {'localUsr': 's.gongoragarcia@gmail.com'}
         protocol.sUsername = 's.gongoragarcia@gmail.com'
         protocol.callRemote = mock.MagicMock(side_effect=self.mock_callremote)
 
-        protocol.vSendMsg(sMsg='hola', iTimestamp=misc.get_utc_timestamp())
+        protocol.vSendMsg(sMsg='Hello, this is a message',
+                          iTimestamp=misc.get_utc_timestamp())
 
 
 if __name__ == '__main__':
-    unittest.main()   
+    unittest.main()

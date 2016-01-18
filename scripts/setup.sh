@@ -145,6 +145,9 @@ then
 	echo '>>> Installing virtualenv'
 	[[ $_install_venv == 'true' ]] && install_venv
 
+	# Activate virtualenv
+	source "$venv_dir/bin/activate"
+
 	echo '>>> SIP installation'
 	[[ $_install_sip == 'true' ]] && install_sip
 

@@ -249,6 +249,8 @@ class SATNetGUI(QtGui.QWidget):
         self.udp_queue = Queue()
         self.tcp_queue = Queue()
 
+        log.msg(self.CONNECTION_INFO)
+
     # Run threads associated to KISS protocol
     def runKISSThread(self):
         self.workerKISSThread = OperativeKISSThread(self.serial_queue,
@@ -428,7 +430,6 @@ class SATNetGUI(QtGui.QWidget):
         Create a new 'set' of labels for connection parameters
         """
         if self.enviromentDesktop == 'default':
-            #  GNOME desktops
             if self.CONNECTION_INFO['connection'] == 'serial':
                 self.LabelSerialPort = QtGui.QComboBox()
                 self.LabelSerialPort.setFixedWidth(190)
@@ -441,7 +442,14 @@ class SATNetGUI(QtGui.QWidget):
                 self.LabelBaudrate.setFixedWidth(190)
                 self.layout.addRow(QtGui.QLabel("Baudrate:       "),
                                    self.LabelBaudrate)
-            elif self.CONNECTION_INFO['connection'] == 'udp' or self.CONNECTION_INFO['connection'] == 'tcp':
+            elif self.CONNECTION_INFO['connection'] == 'udp':
+                self.LabelIP = QtGui.QLineEdit()
+                self.layout.addRow(QtGui.QLabel("Host:            "),
+                                   self.LabelIP)
+                self.LabelIPPort = QtGui.QLineEdit()
+                self.layout.addRow(QtGui.QLabel("Port:       "),
+                                   self.LabelIPPort)
+            elif self.CONNECTION_INFO['connection'] == 'tcp':
                 self.LabelIP = QtGui.QLineEdit()
                 self.layout.addRow(QtGui.QLabel("Host:            "),
                                    self.LabelIP)
@@ -475,7 +483,41 @@ class SATNetGUI(QtGui.QWidget):
             self.layout.addRow(QtGui.QLabel("Port:       "),
                                self.LabelIPPort)
         else:
-            raise Exception
+            if self.CONNECTION_INFO['connection'] == 'serial':
+                self.LabelSerialPort = QtGui.QComboBox()
+                self.LabelSerialPort.setFixedWidth(190)
+                from glob import glob
+                ports = glob('/dev/tty[A-Za-z]*')
+                self.LabelSerialPort.addItems(ports)
+                self.layout.addRow(QtGui.QLabel("Serial port:    "),
+                                   self.LabelSerialPort)
+                self.LabelBaudrate = QtGui.QLineEdit()
+                self.LabelBaudrate.setFixedWidth(190)
+                self.layout.addRow(QtGui.QLabel("Baudrate:       "),
+                                   self.LabelBaudrate)
+            elif self.CONNECTION_INFO['connection'] == 'udp':
+                self.LabelIP = QtGui.QLineEdit()
+                self.layout.addRow(QtGui.QLabel("Host:            "),
+                                   self.LabelIP)
+                self.LabelIPPort = QtGui.QLineEdit()
+                self.layout.addRow(QtGui.QLabel("Port:       "),
+                                   self.LabelIPPort)
+            elif self.CONNECTION_INFO['connection'] == 'tcp':
+                self.LabelIP = QtGui.QLineEdit()
+                self.layout.addRow(QtGui.QLabel("Host:            "),
+                                   self.LabelIP)
+                self.LabelIPPort = QtGui.QLineEdit()
+                self.layout.addRow(QtGui.QLabel("Port:       "),
+                                   self.LabelIPPort)
+            elif self.CONNECTION_INFO['connection'] == 'none':
+                self.LabelIP = QtGui.QLineEdit()
+                self.layout.addRow(QtGui.QLabel("SATNet host:     "),
+                                   self.LabelIP)
+                self.LabelIPPort = QtGui.QLineEdit()
+                self.layout.addRow(QtGui.QLabel("Port:       "),
+                                   self.LabelIPPort)
+            else:
+                log.msg("Error opening a connection interface")
 
         # Configuration group.
         configuration = QtGui.QGroupBox(self)
@@ -561,7 +603,7 @@ class SATNetGUI(QtGui.QWidget):
         if self.CONNECTION_INFO['connection'] == 'serial':
             index = self.LabelSerialPort.findText(serialPort)
             self.LabelSerialPort.setCurrentIndex(index)
-            self.LabelBaudrate.setText(baudRate)
+            self.LabelBaudrate.setText(self.CONNECTION_INFO['baudRate'])
         elif self.CONNECTION_INFO['connection'] == 'udp':
             self.LabelIP.setText(self.CONNECTION_INFO['udpip'])
             self.LabelIPPort.setText(self.CONNECTION_INFO['ipport'])
@@ -620,38 +662,20 @@ class SATNetGUI(QtGui.QWidget):
         self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
         self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
 
-        if self.enviromentDesktop == 'lightdm-xsession':
-            self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                            'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                          'baudrate')
-            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                             'udpport'))
-            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                             'tcpport'))
-            self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                          'serverip')
-            self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                     'serverport'))
-        elif self.enviromentDesktop == 'default':
-            self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                            'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                          'baudrate')
-            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                             'udpport'))
-            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                             'tcpport'))
-            self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                          'serverip')
-            self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                     'serverport'))
-        else:
-            print "Error en LoadParameters"
+        self.CONNECTION_INFO['serialport'] = config.get('Serial',
+                                                        'serialport')
+        self.CONNECTION_INFO['baudrate'] = config.get('Serial',
+                                                      'baudrate')
+        self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
+        self.CONNECTION_INFO['udpport'] = int(config.get('udp',
+                                                         'udpport'))
+        self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
+        self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
+                                                         'tcpport'))
+        self.CONNECTION_INFO['serverip'] = config.get('server',
+                                                      'serverip')
+        self.CONNECTION_INFO['serverport'] = int(config.get('server',
+                                                 'serverport'))
 
         #  To-do. Improve try-except with errors catching.
         try:
@@ -693,7 +717,35 @@ class SATNetGUI(QtGui.QWidget):
     def LoadParameters(self, init_flag):
         self.CONNECTION_INFO = {}
         if init_flag == 1:
+            import ConfigParser
+            config = ConfigParser.ConfigParser()
+            config.read('.settings')
+
+            self.CONNECTION_INFO['reconnection'] = config.get('Connection',
+                                                              'reconnection')
+            self.CONNECTION_INFO['parameters'] = config.get('Connection',
+                                                            'parameters')
+            self.CONNECTION_INFO['name'] = config.get('Client', 'name')
+            self.CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
+            self.CONNECTION_INFO['username'] = config.get('User', 'username')
+            self.CONNECTION_INFO['password'] = config.get('User', 'password')
+            self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
             self.CONNECTION_INFO['connection'] = str(self.LabelConnection.currentText())
+
+            self.CONNECTION_INFO['serialport'] = config.get('Serial',
+                                                            'serialport')
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
+                                                          'baudrate')
+            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
+            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
+                                                             'udpport'))
+            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
+            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
+                                                             'tcpport'))
+            self.CONNECTION_INFO['serverip'] = config.get('server',
+                                                          'serverip')
+            self.CONNECTION_INFO['serverport'] = int(config.get('server',
+                                                     'serverport'))
 
         elif init_flag == 0:
             import ConfigParser
@@ -711,39 +763,20 @@ class SATNetGUI(QtGui.QWidget):
             self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
             self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
 
-            if self.enviromentDesktop == 'lightdm-xsession':
-                self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                                'serialport')
-                self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                              'baudrate')
-                self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-                self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                                 'udpport'))
-                self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-                self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                                 'tcpport'))
-                self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                              'serverip')
-                self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                         'serverport'))
-            elif self.enviromentDesktop == 'default':
-                self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                                'serialport')
-                self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                              'baudrate')
-                self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-                self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                                 'udpport'))
-                self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-                self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                                 'tcpport'))
-                self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                              'serverip')
-                self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                         'serverport'))
-            else:
-                print "Error en LoadParameters"
-
+            self.CONNECTION_INFO['serialport'] = config.get('Serial',
+                                                            'serialport')
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
+                                                          'baudrate')
+            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
+            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
+                                                             'udpport'))
+            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
+            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
+                                                             'tcpport'))
+            self.CONNECTION_INFO['serverip'] = config.get('server',
+                                                          'serverip')
+            self.CONNECTION_INFO['serverport'] = int(config.get('server',
+                                                     'serverport'))
         elif init_flag == 2:
             import ConfigParser
             config = ConfigParser.ConfigParser()
@@ -760,43 +793,22 @@ class SATNetGUI(QtGui.QWidget):
             self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
             self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
 
-            if self.enviromentDesktop == 'lightdm-xsession':
-                self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                                'serialport')
-                self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                              'baudrate')
-                self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-                self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                                 'udpport'))
-                self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-                self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                                 'tcpport'))
-                self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                              'serverip')
-                self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                         'serverport'))
-            elif self.enviromentDesktop == 'default':
-                self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                                'serialport')
-                self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                              'baudrate')
-                self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-                self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                                 'udpport'))
-                self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-                self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                                 'tcpport'))
-                self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                              'serverip')
-                self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                         'serverport'))
-            else:
-                print "Error en LoadParameters"
-
-            log.msg("hoooola")
-
+            self.CONNECTION_INFO['serialport'] = config.get('Serial',
+                                                            'serialport')
+            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
+                                                          'baudrate')
+            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
+            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
+                                                             'udpport'))
+            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
+            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
+                                                             'tcpport'))
+            self.CONNECTION_INFO['serverip'] = config.get('server',
+                                                          'serverip')
+            self.CONNECTION_INFO['serverport'] = int(config.get('server',
+                                                     'serverport'))
         else:
-            log.msg("Patata")
+            log.msg("Error")
 
     @QtCore.pyqtSlot()
     def SetConfiguration(self):
@@ -873,6 +885,8 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelIPPort.setFixedWidth(190)
             self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelIPPort)
 
+            # Gets data from .settings file not from user interface
+            # To-do
             ip = config.get('udp', 'udpip')
             self.LabelIP.setText(ip)
             udpport = int(config.get('udp', 'udpport'))
@@ -888,6 +902,8 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelIPPort.setFixedWidth(190)
             self.layout.addRow(QtGui.QLabel("Port:       "), self.LabelIPPort)
 
+            # Gets data from .settings file not from user interface
+            # To-do
             ip = config.get('tcp', 'tcpip')
             self.LabelIP.setText(ip)
             tcpport = int(config.get('tcp', 'tcpport'))

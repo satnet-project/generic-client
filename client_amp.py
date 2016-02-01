@@ -77,6 +77,7 @@ class ClientProtocol(AMP):
                 ") --------- Notify Message ---------")
 
         if self.CONNECTION_INFO['connection'] == 'serial':
+            log.msg("Message received via serial")
             log.msg(sMsg)
 
             return {}
@@ -212,6 +213,8 @@ class Client(object):
                                      ClientProtocol)
 
         global connector
+        log.msg(self.CONNECTION_INFO['serverip'])
+        log.msg(self.CONNECTION_INFO['serverport'])
         connector = reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
                                        int(self.CONNECTION_INFO['serverport']),
                                        ClientReconnectFactory(

@@ -18,14 +18,15 @@ from twisted.protocols.amp import AMP
 from twisted.internet.defer import inlineCallbacks
 
 from ampCommands import Login, StartRemote, NotifyMsg
-from ampCommands import NotifyEvent, SendMsg
+from ampCommands import NotifyEvent, SendMsg, EndRemote
 
-from gs_interface import GroundStationInterface, OperativeUDPThread
+from gs_interface import GroundStationInterface, OperativeUDPThreadReceive
+from gs_interface import OperativeUDPThreadSend
 from gs_interface import OperativeTCPThread, OperativeKISSThread
 
 
 """
-   Copyright 2015 Samuel Góngora García
+   Copyright 2015, 2016 Samuel Góngora García
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
@@ -65,7 +66,9 @@ class ClientProtocol(AMP):
                                     sPassword=self.CONNECTION_INFO['password'])
 
         if res['bAuthenticated'] is True:
-            res = yield self.callRemote(StartRemote, iSlotId='-1')
+            res = yield self.callRemote(StartRemote,
+                                        iSlotId=self.CONNECTION_INFO['slot_id']
+                                        )
         elif res['bAuthenticated'] is False:
             log.msg('False')
         else:
@@ -78,26 +81,25 @@ class ClientProtocol(AMP):
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             log.msg(sMsg)
-
             return {}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
             log.msg(sMsg)
-
             return {}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             log.msg(sMsg)
-
             return {}
+
         elif self.CONNECTION_INFO['connection'] == 'none':
             log.msg(sMsg)
+
+        return {'bResult': True}
 
     NotifyMsg.responder(vNotifyMsg)
 
     # Method associated to frame processing.
     def _processframe(self, frame):
-
         frameProcessed = []
         frameProcessed = list(frame)
         frameProcessed = ":".join("{:02x}".format(ord(c))
@@ -121,13 +123,13 @@ class ClientProtocol(AMP):
                 ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
             log.msg("Disconnection because the slot has ended")
-            # log.msg(sDetails)
+            self.callRemote(EndRemote)
         elif iEvent == NotifyEvent.REMOTE_DISCONNECTED:
             log.msg("Remote client has lost the connection")
-            # log.msg(sDetails)
+            self.callRemote(EndRemote)
         elif iEvent == NotifyEvent.END_REMOTE:
             log.msg("The remote client has closed the connection")
-            # log.msg(sDetails)
+            self.callRemote(EndRemote)
         elif iEvent == NotifyEvent.REMOTE_CONNECTED:
             log.msg("The remote client has just connected")
             # log.msg(sDetails)
@@ -149,13 +151,13 @@ class ClientReconnectFactory(ReconnectingClientFactory):
     def startedConnecting(self, connector):
         log.msg("Starting connection............................" +
                 "..............................................." +
-                "..............................")
+                "..........................................")
 
     # Create an instance of a subclass of Protocol
     def buildProtocol(self, addr):
         log.msg("Building protocol.............................." +
                 "..............................................." +
-                ".................")
+                "..........................")
         self.resetDelay()
         return ClientProtocol(self.CONNECTION_INFO, self.gsi)
 
@@ -249,8 +251,6 @@ class SATNetGUI(QtGui.QWidget):
         self.udp_queue = Queue()
         self.tcp_queue = Queue()
 
-        log.msg(self.CONNECTION_INFO)
-
     # Run threads associated to KISS protocol
     def runKISSThread(self):
         self.workerKISSThread = OperativeKISSThread(self.serial_queue,
@@ -259,12 +259,19 @@ class SATNetGUI(QtGui.QWidget):
                                                     self.CONNECTION_INFO)
         self.workerKISSThread.start()
 
-    def runUDPThread(self):
-        self.workerUDPThread = OperativeUDPThread(self.udp_queue,
-                                                  self.sendData,
-                                                  self.UDPSignal,
-                                                  self.CONNECTION_INFO)
-        self.workerUDPThread.start()
+    def runUDPThreadReceive(self):
+        self.workerUDPThreadReceive = OperativeUDPThreadReceive(self.udp_queue,
+                                                                self.sendData,
+                                                                self.UDPSignal,
+                                                                self.CONNECTION_INFO)
+        self.workerUDPThreadReceive.start()
+
+    def runUDPThreadSend(self):
+        self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
+                                                          self.sendData,
+                                                          self.UDPSignal,
+                                                          self.CONNECTION_INFO)
+        self.workerUDPThreadSend.start()
 
     # Run threads associated to TCP protocol
     def runTCPThread(self):
@@ -279,8 +286,12 @@ class SATNetGUI(QtGui.QWidget):
         self.workerKISSThread.stop()
 
     # Stop UDP thread
-    def stopUDPThread(self):
-        self.workerUDPThread.stop()
+    def stopUDPThreadReceive(self):
+        self.workerUDPThreadReceive.stop()
+
+    # Stop UDP thread
+    def stopUDPThreadSend(self):
+        self.workerUDPThreadSend.stop()
 
     # Stop TCP thread
     def stopTCPThread(self):
@@ -322,7 +333,8 @@ class SATNetGUI(QtGui.QWidget):
         if self.CONNECTION_INFO['connection'] == 'serial':
             self.runKISSThread()
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.runUDPThread()
+            self.runUDPThreadReceive()
+            self.runUDPThreadSend()
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             self.runTCPThread()
         elif self.CONNECTION_INFO['connection'] == 'none':
@@ -429,43 +441,7 @@ class SATNetGUI(QtGui.QWidget):
         """
         Create a new 'set' of labels for connection parameters
         """
-        if self.enviromentDesktop == 'default':
-            if self.CONNECTION_INFO['connection'] == 'serial':
-                self.LabelSerialPort = QtGui.QComboBox()
-                self.LabelSerialPort.setFixedWidth(190)
-                from glob import glob
-                ports = glob('/dev/tty[A-Za-z]*')
-                self.LabelSerialPort.addItems(ports)
-                self.layout.addRow(QtGui.QLabel("Serial port:    "),
-                                   self.LabelSerialPort)
-                self.LabelBaudrate = QtGui.QLineEdit()
-                self.LabelBaudrate.setFixedWidth(190)
-                self.layout.addRow(QtGui.QLabel("Baudrate:       "),
-                                   self.LabelBaudrate)
-            elif self.CONNECTION_INFO['connection'] == 'udp':
-                self.LabelIP = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Host:            "),
-                                   self.LabelIP)
-                self.LabelIPPort = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Port:       "),
-                                   self.LabelIPPort)
-            elif self.CONNECTION_INFO['connection'] == 'tcp':
-                self.LabelIP = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Host:            "),
-                                   self.LabelIP)
-                self.LabelIPPort = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Port:       "),
-                                   self.LabelIPPort)
-            elif self.CONNECTION_INFO['connection'] == 'none':
-                self.LabelIP = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("SATNet host:     "),
-                                   self.LabelIP)
-                self.LabelIPPort = QtGui.QLineEdit()
-                self.layout.addRow(QtGui.QLabel("Port:       "),
-                                   self.LabelIPPort)
-            else:
-                log.msg("Error opening a connection interface")
-        elif self.enviromentDesktop == 'lightdm-xsession':
+        if self.enviromentDesktop == 'lightdm-xsession':
             #  Mate desktop
             self.LabelSerialPort = QtGui.QComboBox()
             from glob import glob
@@ -531,6 +507,7 @@ class SATNetGUI(QtGui.QWidget):
             QtGui.QCheckBox("Reconnect after a failure")
         configurationLayout.addWidget(self.AutomaticReconnection)
 
+        configuration.setTitle("Basic configuration")
         configuration.move(10, 380)
 
     def initLogo(self):
@@ -619,7 +596,8 @@ class SATNetGUI(QtGui.QWidget):
     def CloseConnection(self):
         if self.CONNECTION_INFO['connection'] == 'udp':
             try:
-                self.stopUDPThread()
+                self.stopUDPThreadReceive()
+                self.stopUDPThreadSend()
                 log.msg("Stopping UDP connection")
             except Exception as e:
                 log.err(e)
@@ -791,7 +769,8 @@ class SATNetGUI(QtGui.QWidget):
             self.CONNECTION_INFO['username'] = config.get('User', 'username')
             self.CONNECTION_INFO['password'] = config.get('User', 'password')
             self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
-            self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
+            self.CONNECTION_INFO['connection'] = config.get('User', 
+                                                            'connection')
 
             self.CONNECTION_INFO['serialport'] = config.get('Serial',
                                                             'serialport')
@@ -928,31 +907,37 @@ class SATNetGUI(QtGui.QWidget):
 
     def usage(self):
         log.msg("USAGE of client_amp.py")
-        log.msg("Usage: python client_amp.py [-u <username>]")
-        log.msg("Set SATNET username to login")
-        print ("\n"
-                "Usage: python client_amp.py [-p <password>] # Set SATNET user password to login\n"
-                "Usage: python client_amp.py [-t <slot_ID>] # Set the slot id corresponding to the pass you will track\n"
-                "Usage: python client_amp.py [-c <connection>] # Set the type of interface with the GS (serial or udp)\n"
-                "Usage: python client_amp.py [-s <serialport>] # Set serial port\n"
-                "Usage: python client_amp.py [-b <baudrate>] # Set serial port baudrate\n"
-                "Usage: python client_amp.py [-i <ip>] # Set ip direction\n"
-                "Usage: python client_amp.py [-u <udpport>] # Set udp port\n"
-                "\n"
-                "Example for serial config: python client_amp.py -g -n crespo -p cre.spo -t 2 -c serial -s /dev/ttyS1 -b 115200\n"
-                "Example for udp config: python client_amp.py -g -n crespo -p cre.spo -t 2 -c udp -i 127.0.0.1 -u 5001\n"
-                "\n"
-                "[User]\n"
-                "username: crespo\n"
-                "password: cre.spo\n"
-                "slot_id: 2\n"
-                "connection: udp\n"
-                "[Serial]\n"
-                "serialport: /dev/ttyUSB0\n"
-                "baudrate: 9600\n"
-                "[UDP]\n"
-                "ip: 127.0.0.1\n"
-                "udpport: 5005")
+        log.msg("")
+        log.msg("python client_amp.py")
+        log.msg("       [-n <username>] # Set SATNET username to login")
+        log.msg("       [-p <password>] # Set SATNET user password to login")
+        log.msg("       [-t <slot_ID>] # Set the slot id corresponding to "
+                "the pass you will track")
+        log.msg("       [-c <connection>] # Set the type of interface with "
+                "the GS (serial, udp or tcp)")
+        log.msg("       [-s <serialport>] # Set serial port")
+        log.msg("       [-b <baudrate>] # Set serial port baudrate")
+        log.msg("       [-i <ip>] # Set ip direction")
+        log.msg("       [-u <udpport>] # Set port address")
+        log.msg("")
+        log.msg("Example for serial config:")
+        log.msg("python client_amp.py -g -n crespo -p cre.spo -t 2 -c serial"
+                "-s /dev/ttyS1 -b 115200")
+        log.msg("Example for udp config:")
+        log.msg("python client_amp.py -g -n crespo -p cre.spo -t 2 -c udp -i"
+                "127.0.0.1 -u 5001")
+        log.msg("")
+        log.msg("[User]")
+        log.msg("username: test-sc-user")
+        log.msg("password: password")
+        log.msg("slot_id: -1")
+        log.msg("connection: udp")
+        log.msg("[Serial]")
+        log.msg("serialport: /dev/ttyUSB0")
+        log.msg("baudrate: 500000")
+        log.msg("[UDP]")
+        log.msg("ip: 127.0.0.1")
+        log.msg("udpport: 5005")
 
     def center(self):
         frameGm = self.frameGeometry()
@@ -1227,9 +1212,9 @@ if __name__ == '__main__':
         sys.stdout = WriteStream(queue)
 
         log.startLogging(sys.stdout)
-        log.msg('------------------------------------------------- ' +
+        log.msg('----------------------------------------------- ' +
                 'SATNet - Generic client' +
-                ' -------------------------------------------------')
+                ' -----------------------------------------------')
 
         qapp = QtGui.QApplication(sys.argv)
         app = SATNetGUI(argumentsDict)

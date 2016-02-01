@@ -75,7 +75,7 @@ class ClientProtocol(AMP):
             log.msg('No data')
 
     # To-do. Do we need a return connection?
-    def vNotifyMsg(self, sMessage):
+    def vNotifyMsg(self, sMsg):
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Message ---------")
 

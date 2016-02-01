@@ -82,20 +82,21 @@ class ClientProtocol(AMP):
         if self.CONNECTION_INFO['connection'] == 'serial':
             log.msg("Message received via serial")
             log.msg(sMsg)
-            return {}
+            return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
             log.msg(sMsg)
-            return {}
+            return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             log.msg(sMsg)
-            return {}
+            return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'none':
             log.msg(sMsg)
 
-        return {'bResult': True}
+            log.msg("none")
+            return {'bResult': True}
 
     NotifyMsg.responder(vNotifyMsg)
 

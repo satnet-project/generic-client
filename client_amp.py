@@ -81,6 +81,8 @@ class ClientProtocol(AMP):
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             log.msg("Message received via serial")
+            self.callRemote(SendMsg, sMsg=frameProcessed,
+                            iTimestamp=misc.get_utc_timestamp())
             log.msg(sMsg)
             return {'bResult': True}
 

@@ -83,19 +83,19 @@ class ClientProtocol(AMP):
             log.msg("Message received via serial")
             self.callRemote(SendMsg, sMsg=sMessage,
                             iTimestamp=misc.get_utc_timestamp())
-            log.msg(sMsg)
+            log.msg(sMessage)
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            log.msg(sMsg)
+            log.msg(sMessage)
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
-            log.msg(sMsg)
+            log.msg(sMessage)
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'none':
-            log.msg(sMsg)
+            log.msg(sMessage)
 
             log.msg("none")
             return {'bResult': True}

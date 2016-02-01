@@ -6,7 +6,7 @@ import time
 from errors import WrongFormatNotification
 
 """
-   Copyright 2014, 2015 Xabier Crespo Álvarez
+   Copyright 2014, 2015, 2016 Xabier Crespo Álvarez
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,12 +29,12 @@ __author__ = 'xabicrespog@gmail.com'
 class GroundStationInterface():
     """
     This class contains the interface between the GS and the SATNET protocol.
-    It supports either a UDP or a serial connection. In case the connection to 
+    It supports either a UDP or a serial connection. In case the connection to
     the SATNET server fails, received frames will be stored inside a csv file
     named ESEO-gs-yyy.mm.dd.csv.
 
     :ivar UDPSocket:
-        This object is in charge of sending and receiving frames through an 
+        This object is in charge of sending and receiving frames through an
         UDP connection.
     :type UDPSocket:
         L{Socket}
@@ -45,19 +45,19 @@ class GroundStationInterface():
         L{List}
 
     :ivar CONNECTION_INFO:
-        This variable contains the following data: username, password, slot_id, 
+        This variable contains the following data: username, password, slot_id,
         connection (either 'serial' or 'udp'), serialport, baudrate, ip, port.
     :type CONNECTION_INFO:
         L{Dictionary}
 
     :ivar AMP:
-        Client protocol to which received frames will be sent to be processed. 
+        Client protocol to which received frames will be sent to be processed.
         This object shall contain a method called 'processFrame'
     :type AMP:
         L{ClientProtocol}
 
     :ivar GS:
-        Name of the GS that is receiving the data. It will be used to save the 
+        Name of the GS that is receiving the data. It will be used to save the
         frames received to a local file in case of a connection failure.
     :type AMP:
         L{String}
@@ -79,7 +79,7 @@ class GroundStationInterface():
         if self.AMP is not None:
             if type(result) != str:
                 raise WrongFormatNotification("Bad format frame")
-         
+
             try:
                 # self.AMP._processframe(self, result)
                 self.AMP._processframe(result)
@@ -95,41 +95,39 @@ class GroundStationInterface():
 
     def _updateLocalFile(self, frame):
         filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
-        with open(filename,"a+") as f:
+        with open(filename, "a+") as f:
             f.write(frame + ",\n")
-     
+
         log.msg('---- Message saved to local file ----')
 
     # :ivar AMP:
-    #     Client protocol to which received frames will be sent to be 
+    #     Client protocol to which received frames will be sent to be
     #     processed. This object shall contain a method called 'processFrame'
     # :type AMP:
-    #     L{ClientProtocol}    
+    #     L{ClientProtocol}
     def connectProtocol(self, AMP):
         log.msg('Protocol connected to the GS')
         self.AMP = AMP
 
-    # Removes the reference to the protocol object (self.AMP). It shall 
+    # Removes the reference to the protocol object (self.AMP). It shall
     # be invocked when the connection to the SATNET server is lost.
     def disconnectProtocol(self):
-        log.msg("Protocol disconnected from the GS") 
+        log.msg("Protocol disconnected from the GS")
         self.AMP = None
 
 
 # Class associated to UDP protocol
-class UDPThread(QtCore.QThread):  
-    def __init__(self, parent = None):
+class UDPThread(QtCore.QThread):
+    def __init__(self, parent=None):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
         self.running = True
         self.doWork()
-        # success = self.doWork(self.kissTNC)
-        # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
-      
+
     def doWork(self):
         return True
-  
+
     def cleanUp(self):
         pass
 
@@ -142,8 +140,6 @@ class TCPThread(QtCore.QThread):
 
     def run(self):
         self.doWork()
-        # success = self.doWork(self.kissTNC)
-        # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
 
     def stop(self):
         log.msg('Stopping TCPSocket' +
@@ -173,8 +169,6 @@ class KISSThread(QtCore.QThread):
 
         self.running = True
         self.doWork()
-        # success = self.doWork(self.kissTNC)
-        # self.emit(SIGNAL("readingPort( PyQt_PyObject )"), success )
 
     def doWork(self):
         return True
@@ -198,9 +192,9 @@ class OperativeTCPThread(TCPThread):
 
         from socket import socket, AF_INET, SOCK_STREAM
         try:
-            log.msg("Opening TCP socket" + ".........................." +\
-         '...........................' + '...........................' +\
-          '........................')
+            log.msg("Opening TCP socket" + "...................." +
+                    "..........................................." +
+                    ".........................................")
 
             self.TCPSocket = socket(AF_INET, SOCK_STREAM)
         except Exception as e:
@@ -213,13 +207,13 @@ class OperativeTCPThread(TCPThread):
             log.err('Error starting TCP protocol')
             log.err(e)
 
-        log.msg('Listening on ' + str(self.CONNECTION_INFO['tcpip']) +\
-         " port: " + str(self.CONNECTION_INFO['tcpport']))
+        log.msg('Listening on ' + str(self.CONNECTION_INFO['tcpip']) +
+                " port: " + str(self.CONNECTION_INFO['tcpport']))
         try:
             self.running = True
             self.TCPSocket.listen(1)
             self.doWork(self.TCPSocket)
-            
+
         except Exception as e:
             log.err('Error Listening TCP protocol')
             log.err(e)
@@ -238,21 +232,20 @@ class OperativeTCPThread(TCPThread):
     def catchValue(self, frame, address):
         # self.finished.emit(ResultObj(frame))
 
-        log.msg("----------------------------- " + 
-                "Message from TCP socket" + 
+        log.msg("----------------------------- " +
+                "Message from TCP socket" +
                 " -----------------------------")
-        log.msg("------------------ Received from ip: " + 
-                str(address[0]) + 
-                " port: " + 
-                str(address[1]) +  " ------------------")      
-        self.finished.emit(frame)
- 
- 
-class OperativeUDPThread(UDPThread):
+        log.msg("------------------ Received from ip: " +
+                str(address[0]) +
+                " port: " +
+                str(address[1]) + " ------------------")
+
+
+class OperativeUDPThreadReceive(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, UDPSignal,\
-     CONNECTION_INFO, parent = None):
+    def __init__(self, queue, callback, UDPSignal,
+                 CONNECTION_INFO, parent=None):
         UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
@@ -260,16 +253,16 @@ class OperativeUDPThread(UDPThread):
         self.CONNECTION_INFO = CONNECTION_INFO
 
     def doWork(self):
-        log.msg('Listening on ' + self.CONNECTION_INFO['udpip'] +\
-         " port: " + str(self.CONNECTION_INFO['udpport']))
+        log.msg('Listening on ' + self.CONNECTION_INFO['udpip'] +
+                " port: " + str(self.CONNECTION_INFO['udpport']))
 
         if self.CONNECTION_INFO['udpip'] == 'localhost' or self.CONNECTION_INFO['udpip'] == '127.0.0.1':
             ip = ''
         else:
             ip = str(self.CONNECTION_INFO['udpip'])
 
-        server_address = (str(self.CONNECTION_INFO['udpip']),\
-         int(self.CONNECTION_INFO['udpport']))
+        server_address = (str(self.CONNECTION_INFO['udpip']),
+                          int(self.CONNECTION_INFO['udpport']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
@@ -283,7 +276,7 @@ class OperativeUDPThread(UDPThread):
 
         # self.CONNECTION_INFO = {'ip':'', 'udpport':'57008'}
         server_address = (str(self.CONNECTION_INFO['udpip']),
-                            int(self.CONNECTION_INFO['udpport']))
+                          int(self.CONNECTION_INFO['udpport']))
 
         self.UDPSocket.bind(server_address)
 
@@ -294,29 +287,92 @@ class OperativeUDPThread(UDPThread):
 
     def catchValue(self, frame, address):
         # self.finished.emit(ResultObj(frame))
-        log.msg("----------------------------------------------- "
-                + "Message from UDP socket" + " -----------------------" +
-                "------------------------")
+        log.msg("----------------------------------------------- " +
+                "Message from UDP socket" + " -------------------" +
+                "----------------------------")
         log.msg("--------------------------------" +
                 " Received from ip: " + str(address[0]) +
-                " port: " + str(address[1]) +  " --------------" +
-                "------------------")      
+                " port: " + str(address[1]) + " --------------" +
+                "------------------")
         self.finished.emit(frame)
 
     def stop(self):
-        log.msg('Stopping UDPSocket' +
-                "..................................." +
-                "................................" +
-                "....................................")
+        log.msg('Stopping UDPSocket' + "........." +
+                "..............................................." +
+                "...............................................")
         self.UDPSocket.close()
         self.running = False
+
+
+class OperativeUDPThreadSend(UDPThread):
+    finished = QtCore.pyqtSignal(object)
+
+    def __init__(self, queue, callback, UDPSignal,
+                 CONNECTION_INFO, parent=None):
+        UDPThread.__init__(self, parent)
+        self.queue = queue
+        self.finished.connect(callback)
+        self.UDPSignal = UDPSignal
+        self.CONNECTION_INFO = CONNECTION_INFO
+
+    def doWork(self):
+        log.msg("Writing on " + self.CONNECTION_INFO['udpip'] +
+                " port: " + str(self.CONNECTION_INFO['udpport']))
+
+        if self.CONNECTION_INFO['udpip'] == 'localhost' or self.CONNECTION_INFO['udpip'] == '127.0.0.1':
+            ip = ''
+        else:
+            ip = str(self.CONNECTION_INFO['udpip'])
+
+        server_address = (str(self.CONNECTION_INFO['udpip']),
+                          45874)
+
+        from socket import socket, AF_INET, SOCK_DGRAM
+        try:
+            log.msg("Opening UPD socket" + "....................." +
+                    "............................................" +
+                    ".......................................")
+            self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
+        except Exception as e:
+            log.err('Error opening UPD socket')
+            log.err(e)
+
+        server_address = (str(self.CONNECTION_INFO['udpip']),
+                          45874)
+
+        self.UDPSocket.bind(server_address)
+
+        if self.UDPSignal:
+            while True:
+                self.UDPSocket.sendto('message', server_address)
+                # self.catchValue(frame, address)
+
+    """
+    def catchValue(self, frame, address):
+        # self.finished.emit(ResultObj(frame))
+        log.msg("----------------------------------------------- " +
+                "Message from UDP socket" + " -------------------" +
+                "----------------------------")
+        log.msg("--------------------------------" +
+                " Received from ip: " + str(address[0]) +
+                " port: " + str(address[1]) + " --------------" +
+                "------------------")
+        self.finished.emit(frame)
+
+    def stop(self):
+        log.msg('Stopping UDPSocket' + "........." +
+                "..............................................." +
+                "...............................................")
+        self.UDPSocket.close()
+        self.running = False
+    """
 
 
 class OperativeKISSThread(KISSThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, serialSignal, CONNECTION_INFO,\
-     parent = None):
+    def __init__(self, queue, callback, serialSignal,
+                 CONNECTION_INFO, parent=None):
         KISSThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
@@ -327,15 +383,15 @@ class OperativeKISSThread(KISSThread):
         import kiss
         import kiss.constants
         try:
-            log.msg('Opening serial port' + '.............................' +\
-             '................................................' +\
-              '.............................')
+            log.msg("Opening serial port" + "...................." +
+                    "............................................" +
+                    "..........................................")
 
-            self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],\
-             CONNECTION_INFO['baudrate'])
+            self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],
+                                     CONNECTION_INFO['baudrate'])
             formatter = logging.Formatter('%(name)s - %(message)s')
             self.kissTNC.console_handler.setFormatter(formatter)
-            
+
         except Exception as e:
             log.err('Error opening port')
             log.err(e)
@@ -355,7 +411,7 @@ class OperativeKISSThread(KISSThread):
 
     def catchValue(self, frame):
         # self.finished.emit(ResultObj(frame))
-        log.msg("--------------------------------------- " + 
+        log.msg("--------------------------------------- " +
                 "Message from Serial port" +
                 " -------------------------------------")
         self.finished.emit(frame)

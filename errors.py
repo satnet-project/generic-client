@@ -53,15 +53,16 @@ class RemoteClientNotification(Exception):
     """
     One of the following situations may raise this error:
         1. Remote user not connected yet
-        2. Remote user and invoking user coincide 
+        2. Remote user and invoking user coincide
             (i.e. MCC and GSS are the same)
     """
+
 
 class WrongFormatNotification(Exception):
 
     """
     One of the following situations may raise this error:
         1. Remote user not connected yet
-        2. Remote user and invoking user coincide 
+        2. Remote user and invoking user coincide
             (i.e. MCC and GSS are the same)
     """

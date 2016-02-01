@@ -75,13 +75,13 @@ class ClientProtocol(AMP):
             log.msg('No data')
 
     # To-do. Do we need a return connection?
-    def vNotifyMsg(self, sMsg):
+    def vNotifyMsg(self, sMessage):
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Message ---------")
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             log.msg("Message received via serial")
-            self.callRemote(SendMsg, sMsg=frameProcessed,
+            self.callRemote(SendMsg, sMsg=sMessage,
                             iTimestamp=misc.get_utc_timestamp())
             log.msg(sMsg)
             return {'bResult': True}

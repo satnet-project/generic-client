@@ -79,6 +79,8 @@ class ClientProtocol(AMP):
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Message ---------")
 
+        sMessage = sMsg
+
         if self.CONNECTION_INFO['connection'] == 'serial':
             log.msg("Message received via serial")
             self.callRemote(SendMsg, sMsg=sMessage,

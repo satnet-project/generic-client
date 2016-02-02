@@ -47,7 +47,17 @@ __author__ = 's.gongoragarcia@gmail.com'
     ¿Desde donde se envian los datos?
     ClientProtocl tendría que ser el encargado de llamar a la Functions
     de gs_interface
-"""
+
+    Necesito gestionar una conexion serial, no una AMP así que las llamadas
+    a _manageFrame no me valen. Tengo que sacar la gestion de las
+    conexiones de la interfaz para así poder manejarlas.
+
+    ¿De donde se manejan los callback?
+    El metodo implementado actualmente lo unico que hace es escuchar
+    permanenmente.
+
+    Tengo que enviar una señal desde AMP hasta la el QThread
+    """
 
 
 class ClientProtocol(AMP):
@@ -95,6 +105,13 @@ class ClientProtocol(AMP):
 
             log.msg("antes del test")
             # self.gsi._manageFrame(sMessage)
+
+            import aprs
+            import kiss
+            ki = aprs.APRSKISS(port=self.CONNECTION_INFO['serialport'],
+                               speed=self.CONNECTION_INFO['baudrate'])
+            ki.write(sMessage)
+
             log.msg("despues del test")
 
             return {'bResult': True}
@@ -241,6 +258,11 @@ class Client(object):
                                        CtxFactory())
 
         return gsi, connector
+
+
+class Threads(object):
+    def __init__(self):
+        pass
 
 
 # QDialog, QWidget or QMainWindow, which is better in this situation? TO-DO

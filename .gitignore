@@ -8,3 +8,5 @@ __pycache__/
 .venv_test/
 tests/key/
 sip*
+
+ESEO*

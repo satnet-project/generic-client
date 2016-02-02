@@ -109,6 +109,7 @@ class ClientProtocol(AMP):
             import kiss
             kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],
                                 self.CONNECTION_INFO['baudrate'])
+            kissTNC.start()
             kissTNC.write(sMessage)
 
             log.msg("despues del test")

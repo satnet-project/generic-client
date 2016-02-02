@@ -94,7 +94,7 @@ class ClientProtocol(AMP):
             log.msg(sMessage)
 
             log.msg("antes del test")
-            self.gsi._manageFrame(sMessage)
+            # self.gsi._manageFrame(sMessage)
             log.msg("despues del test")
 
             return {'bResult': True}

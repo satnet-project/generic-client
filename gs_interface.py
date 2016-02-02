@@ -99,12 +99,13 @@ class GroundStationInterface():
             f.write(frame + ",\n")
 
         log.msg('---- Message saved to local file ----')
-
-    # :ivar AMP:
-    #     Client protocol to which received frames will be sent to be
-    #     processed. This object shall contain a method called 'processFrame'
-    # :type AMP:
-    #     L{ClientProtocol}
+    """
+    :ivar AMP:
+        Client protocol to which received frames will be sent to be
+        processed. This object shall contain a method called 'processFrame'
+    :type AMP:
+        L{ClientProtocol}
+    """
     def connectProtocol(self, AMP):
         log.msg('Protocol connected to the GS')
         self.AMP = AMP
@@ -114,6 +115,9 @@ class GroundStationInterface():
     def disconnectProtocol(self):
         log.msg("Protocol disconnected from the GS")
         self.AMP = None
+
+    def test(self):
+        log.msg("esto esto es un test")
 
 
 # Class associated to UDP protocol
@@ -180,8 +184,8 @@ class KISSThread(QtCore.QThread):
 class OperativeTCPThread(TCPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, TCPSignal,
-                 CONNECTION_INFO, parent=None):
+    def __init__(self, queue, callback, TCPSignal, CONNECTION_INFO,
+                 parent=None):
         TCPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
@@ -244,8 +248,8 @@ class OperativeTCPThread(TCPThread):
 class OperativeUDPThreadReceive(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, UDPSignal,
-                 CONNECTION_INFO, parent=None):
+    def __init__(self, queue, callback, UDPSignal, CONNECTION_INFO,
+                 parent=None):
         UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
@@ -256,10 +260,10 @@ class OperativeUDPThreadReceive(UDPThread):
         log.msg('Listening on ' + self.CONNECTION_INFO['udpip'] +
                 " port: " + str(self.CONNECTION_INFO['udpport']))
 
-        if self.CONNECTION_INFO['udpip'] == 'localhost' or self.CONNECTION_INFO['udpip'] == '127.0.0.1':
-            ip = ''
-        else:
-            ip = str(self.CONNECTION_INFO['udpip'])
+        if str(self.CONNECTION_INFO['udpip']) == 'localhost':
+            self.CONNECTION_INFO['udpip'] = ''
+        if str(self.CONNECTION_INFO['udpip']) == '127.0.0.1':
+            self.CONNECTION_INFO['udpip'] = ''
 
         server_address = (str(self.CONNECTION_INFO['udpip']),
                           int(self.CONNECTION_INFO['udpport']))
@@ -273,10 +277,6 @@ class OperativeUDPThreadReceive(UDPThread):
         except Exception as e:
             log.err('Error opening UPD socket')
             log.err(e)
-
-        # self.CONNECTION_INFO = {'ip':'', 'udpport':'57008'}
-        server_address = (str(self.CONNECTION_INFO['udpip']),
-                          int(self.CONNECTION_INFO['udpport']))
 
         self.UDPSocket.bind(server_address)
 
@@ -307,8 +307,8 @@ class OperativeUDPThreadReceive(UDPThread):
 class OperativeUDPThreadSend(UDPThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, UDPSignal,
-                 CONNECTION_INFO, parent=None):
+    def __init__(self, queue, callback, UDPSignal, CONNECTION_INFO,
+                 parent=None):
         UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
@@ -319,10 +319,10 @@ class OperativeUDPThreadSend(UDPThread):
         log.msg("Writing on " + self.CONNECTION_INFO['udpip'] +
                 " port: " + str(self.CONNECTION_INFO['udpport']))
 
-        if self.CONNECTION_INFO['udpip'] == 'localhost' or self.CONNECTION_INFO['udpip'] == '127.0.0.1':
-            ip = ''
-        else:
-            ip = str(self.CONNECTION_INFO['udpip'])
+        if str(self.CONNECTION_INFO['udpip']) == 'localhost':
+            self.CONNECTION_INFO['udpip'] = ''
+        if str(self.CONNECTION_INFO['udpip']) == '127.0.0.1':
+            self.CONNECTION_INFO['udpip'] = ''
 
         server_address = (str(self.CONNECTION_INFO['udpip']),
                           45874)
@@ -371,8 +371,8 @@ class OperativeUDPThreadSend(UDPThread):
 class OperativeKISSThread(KISSThread):
     finished = QtCore.pyqtSignal(object)
 
-    def __init__(self, queue, callback, serialSignal,
-                 CONNECTION_INFO, parent=None):
+    def __init__(self, queue, callback, serialSignal, CONNECTION_INFO,
+                 parent=None):
         KISSThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)

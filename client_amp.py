@@ -41,6 +41,14 @@ from gs_interface import OperativeTCPThread, OperativeKISSThread
 """
 __author__ = 's.gongoragarcia@gmail.com'
 
+"""
+    Notas. El problema viene de que no puedo enviar los datos desde la interfaz
+    principal del programa.
+    ¿Desde donde se envian los datos?
+    ClientProtocl tendría que ser el encargado de llamar a la Functions
+    de gs_interface
+"""
+
 
 class ClientProtocol(AMP):
     """
@@ -83,17 +91,22 @@ class ClientProtocol(AMP):
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             log.msg("Message received via serial")
-            self.callRemote(SendMsg, sMsg=sMessage,
-                            iTimestamp=misc.get_utc_timestamp())
             log.msg(sMessage)
+
+            log.msg("antes del test")
+            self.gsi._manageFrame(sMessage)
+            log.msg("despues del test")
+
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
             log.msg(sMessage)
+
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             log.msg(sMessage)
+
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'none':
@@ -220,8 +233,6 @@ class Client(object):
                                      ClientProtocol)
 
         global connector
-        log.msg(self.CONNECTION_INFO['serverip'])
-        log.msg(self.CONNECTION_INFO['serverport'])
         connector = reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
                                        int(self.CONNECTION_INFO['serverport']),
                                        ClientReconnectFactory(
@@ -1193,7 +1204,7 @@ if __name__ == '__main__':
 
             qapp = QtGui.QApplication(sys.argv)
             app = SATNetGUI(argumentsDict)
-            app.setWindowIcon(QtGui.QIcon('icono.png'))
+            app.setWindowIcon(QtGui.QIcon('icon.png'))
             app.show()
 
             # Create thread that will listen on the other end of the queue, and

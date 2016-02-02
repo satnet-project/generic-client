@@ -159,6 +159,11 @@ class TCPThread(QtCore.QThread):
     def cleanUp(self):
         pass
 
+"""
+    Esta clase se encarga solamente de escuchar.
+    Tengo que, por medio de alguna manera de hacer que escriba.
+"""
+
 
 # Class associated to KISS protocol
 class KISSThread(QtCore.QThread):
@@ -282,6 +287,8 @@ class OperativeUDPThreadReceive(UDPThread):
 
         if self.UDPSignal:
             while True:
+                if data:
+                    self.UDPSocket.sendto('message', server_address)
                 frame, address = self.UDPSocket.recvfrom(4096)
                 self.catchValue(frame, address)
 

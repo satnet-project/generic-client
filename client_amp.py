@@ -106,11 +106,10 @@ class ClientProtocol(AMP):
             log.msg("antes del test")
             # self.gsi._manageFrame(sMessage)
 
-            import aprs
             import kiss
-            ki = aprs.APRSKISS(port=self.CONNECTION_INFO['serialport'],
-                               speed=self.CONNECTION_INFO['baudrate'])
-            ki.write(sMessage)
+            kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],
+                                self.CONNECTION_INFO['baudrate'])
+            kissTNC.write(sMessage)
 
             log.msg("despues del test")
 

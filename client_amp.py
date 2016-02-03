@@ -72,6 +72,9 @@ class ClientProtocol(AMP):
         self.gsi = gsi
         self.udp_queue = Queue()
         self.UDPSignal = True
+        self.initThreads()
+
+    def initThreads(self):
         self.workerUDPThreadSend = OperativeUDPThreadSend(self.CONNECTION_INFO)
 
     def connectionMade(self):

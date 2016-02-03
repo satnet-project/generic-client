@@ -73,6 +73,13 @@ class ClientProtocol(AMP):
         self.udp_queue = Queue()
         self.UDPSignal = True
 
+        self.initThreads()
+
+    def initThreads(self):
+        self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
+                                                          self.sendData,
+                                                          self.UDPSignal,
+                                                          self.CONNECTION_INFO)
 
     def connectionMade(self):
         self.user_login()
@@ -123,16 +130,6 @@ class ClientProtocol(AMP):
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
             log.msg(sMessage)
-
-            CONNECTION_INFO = self.CONNECTION_INFO
-
-            CONNECTION_INFO['udpipsend'] = '172.19.51.125'
-            CONNECTION_INFO['udportsend'] = 57009
-
-            self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
-                                                              self.sendData,
-                                                              self.UDPSignal,
-                                                              CONNECTION_INFO)
             self.workerUDPThreadSend.start()
 
             return {'bResult': True}
@@ -191,6 +188,18 @@ class ClientProtocol(AMP):
 
         return {}
     NotifyEvent.responder(vNotifyEvent)
+
+
+class Threads(object):
+
+    def __init__(self):
+        print "init"
+
+    def initUDPThreadSend(self):
+        self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
+                                                          self.sendData,
+                                                          self.UDPSignal,
+                                                          self.CONNECTION_INFO)
 
 
 class ClientReconnectFactory(ReconnectingClientFactory):

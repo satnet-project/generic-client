@@ -41,26 +41,6 @@ from gs_interface import OperativeTCPThread, OperativeKISSThread
 """
 __author__ = 's.gongoragarcia@gmail.com'
 
-"""
-Notas. El problema viene de que no puedo enviar los datos desde la interfaz
-principal del programa.
-¿Desde donde se envian los datos?
-ClientProtocl tendría que ser el encargado de llamar a la Functions
-de gs_interface
-
-Necesito gestionar una conexion serial, no una AMP así que las llamadas
-a _manageFrame no me valen. Tengo que sacar la gestion de las
-conexiones de la interfaz para así poder manejarlas.
-
-¿De donde se manejan los callback?
-El metodo implementado actualmente lo unico que hace es escuchar
-permanenmente.
-
-Tengo que enviar una señal desde AMP hasta la el QThread OK
-
-¿Puedo crear un QThread fuera del MainThread?
-"""
-
 
 class ClientProtocol(AMP):
     """
@@ -70,8 +50,6 @@ class ClientProtocol(AMP):
     def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
-        self.udp_queue = Queue()
-        self.UDPSignal = True
         self.initThreads()
 
     def initThreads(self):
@@ -108,19 +86,13 @@ class ClientProtocol(AMP):
         sMessage = sMsg
 
         if self.CONNECTION_INFO['connection'] == 'serial':
-            log.msg("Message received via serial")
             log.msg(sMessage)
-
-            log.msg("antes del test")
-            # self.gsi._manageFrame(sMessage)
 
             import kiss
             kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],
                                 self.CONNECTION_INFO['baudrate'])
             kissTNC.start()
             kissTNC.write(sMessage)
-
-            log.msg("despues del test")
 
             return {'bResult': True}
 
@@ -284,11 +256,6 @@ class Client(object):
         return gsi, connector
 
 
-class Threads(object):
-    def __init__(self):
-        pass
-
-
 # QDialog, QWidget or QMainWindow, which is better in this situation? TO-DO
 class SATNetGUI(QtGui.QWidget):
     def __init__(self, argumentsDict, parent=None):
@@ -358,10 +325,6 @@ class SATNetGUI(QtGui.QWidget):
     # Stop UDP thread
     def stopUDPThreadReceive(self):
         self.workerUDPThreadReceive.stop()
-
-    # Stop UDP thread
-    def stopUDPThreadSend(self):
-        self.workerUDPThreadSend.stop()
 
     # Stop TCP thread
     def stopTCPThread(self):
@@ -668,7 +631,6 @@ class SATNetGUI(QtGui.QWidget):
         if self.CONNECTION_INFO['connection'] == 'udp':
             try:
                 self.stopUDPThreadReceive()
-                self.stopUDPThreadSend()
                 log.msg("Stopping UDP connection")
             except Exception as e:
                 log.err(e)

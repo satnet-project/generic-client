@@ -314,7 +314,6 @@ class OperativeUDPThreadSend():
     def __init__(self, CONNECTION_INFO):
         self.CONNECTION_INFO = CONNECTION_INFO
 
-    def doWork(self, message):
         log.msg("Writing on " + self.CONNECTION_INFO['udpipsend'] +
                 " port: " + str(self.CONNECTION_INFO['udpportsend']))
 
@@ -323,8 +322,8 @@ class OperativeUDPThreadSend():
         if str(self.CONNECTION_INFO['udpipsend']) == '127.0.0.1':
             self.CONNECTION_INFO['udpipsend'] = ''
 
-        server_address = (str(self.CONNECTION_INFO['udpipsend']),
-                          int(self.CONNECTION_INFO['udpportsend']))
+        self.server_address = (str(self.CONNECTION_INFO['udpipsend']),
+                               int(self.CONNECTION_INFO['udpportsend']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
@@ -336,7 +335,8 @@ class OperativeUDPThreadSend():
             log.err('Error opening UPD socket')
             log.err(e)
 
-        self.UDPSocket.sendto(message, server_address)
+    def doWork(self, message):
+        self.UDPSocket.sendto(message, self.server_address)
 
 
 class OperativeKISSThread(KISSThread):

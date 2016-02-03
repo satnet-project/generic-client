@@ -262,16 +262,16 @@ class OperativeUDPThreadReceive(UDPThread):
         self.CONNECTION_INFO = CONNECTION_INFO
 
     def doWork(self):
-        log.msg('Listening on ' + self.CONNECTION_INFO['udpip'] +
-                " port: " + str(self.CONNECTION_INFO['udpport']))
+        log.msg('Listening on ' + self.CONNECTION_INFO['udpipreceive'] +
+                " port: " + str(self.CONNECTION_INFO['udpportreceive']))
 
-        if str(self.CONNECTION_INFO['udpip']) == 'localhost':
-            self.CONNECTION_INFO['udpip'] = ''
-        if str(self.CONNECTION_INFO['udpip']) == '127.0.0.1':
-            self.CONNECTION_INFO['udpip'] = ''
+        if str(self.CONNECTION_INFO['udpipreceive']) == 'localhost':
+            self.CONNECTION_INFO['udpipreceive'] = ''
+        if str(self.CONNECTION_INFO['udpipreceive']) == '127.0.0.1':
+            self.CONNECTION_INFO['udpipreceive'] = ''
 
-        server_address = (str(self.CONNECTION_INFO['udpip']),
-                          int(self.CONNECTION_INFO['udpport']))
+        server_address = (str(self.CONNECTION_INFO['udpipreceive']),
+                          int(self.CONNECTION_INFO['udpportreceive']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
@@ -321,15 +321,15 @@ class OperativeUDPThreadSend(UDPThread):
         self.CONNECTION_INFO = CONNECTION_INFO
 
     def doWork(self):
-        log.msg("Writing on " + self.CONNECTION_INFO['udpip'] +
-                " port: " + str(self.CONNECTION_INFO['udpport']))
+        log.msg("Writing on " + self.CONNECTION_INFO['udpipsend'] +
+                " port: " + str(self.CONNECTION_INFO['udpportsend']))
 
-        if str(self.CONNECTION_INFO['udpip']) == 'localhost':
-            self.CONNECTION_INFO['udpip'] = ''
-        if str(self.CONNECTION_INFO['udpip']) == '127.0.0.1':
-            self.CONNECTION_INFO['udpip'] = ''
+        if str(self.CONNECTION_INFO['udpipsend']) == 'localhost':
+            self.CONNECTION_INFO['udpipsend'] = ''
+        if str(self.CONNECTION_INFO['udpipsend']) == '127.0.0.1':
+            self.CONNECTION_INFO['udpipsend'] = ''
 
-        server_address = (str(self.CONNECTION_INFO['udpip']),
+        server_address = (str(self.CONNECTION_INFO['udpipsend']),
                           45874)
 
         from socket import socket, AF_INET, SOCK_DGRAM
@@ -342,7 +342,7 @@ class OperativeUDPThreadSend(UDPThread):
             log.err('Error opening UPD socket')
             log.err(e)
 
-        server_address = (str(self.CONNECTION_INFO['udpip']),
+        server_address = (str(self.CONNECTION_INFO['udpipsend']),
                           45874)
 
         self.UDPSocket.bind(server_address)

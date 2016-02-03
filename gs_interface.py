@@ -345,24 +345,10 @@ class OperativeUDPThreadSend(UDPThread):
         server_address = (str(self.CONNECTION_INFO['udpipsend']),
                           45874)
 
-        self.UDPSocket.bind(server_address)
-
         if self.UDPSignal:
             while True:
                 self.UDPSocket.sendto('message', server_address)
                 # self.catchValue(frame, address)
-
-    """
-    def catchValue(self, frame, address):
-        # self.finished.emit(ResultObj(frame))
-        log.msg("----------------------------------------------- " +
-                "Message from UDP socket" + " -------------------" +
-                "----------------------------")
-        log.msg("--------------------------------" +
-                " Received from ip: " + str(address[0]) +
-                " port: " + str(address[1]) + " --------------" +
-                "------------------")
-        self.finished.emit(frame)
 
     def stop(self):
         log.msg('Stopping UDPSocket' + "........." +
@@ -370,7 +356,6 @@ class OperativeUDPThreadSend(UDPThread):
                 "...............................................")
         self.UDPSocket.close()
         self.running = False
-    """
 
 
 class OperativeKISSThread(KISSThread):

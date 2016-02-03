@@ -309,18 +309,12 @@ class OperativeUDPThreadReceive(UDPThread):
         self.running = False
 
 
-class OperativeUDPThreadSend(UDPThread):
-    finished = QtCore.pyqtSignal(object)
+class OperativeUDPThreadSend():
 
-    def __init__(self, queue, callback, UDPSignal, CONNECTION_INFO,
-                 parent=None):
-        UDPThread.__init__(self, parent)
-        self.queue = queue
-        self.finished.connect(callback)
-        self.UDPSignal = UDPSignal
+    def __init__(self):
         self.CONNECTION_INFO = CONNECTION_INFO
 
-    def doWork(self):
+    def doWork(self, message):
         log.msg("Writing on " + self.CONNECTION_INFO['udpipsend'] +
                 " port: " + str(self.CONNECTION_INFO['udpportsend']))
 
@@ -342,17 +336,7 @@ class OperativeUDPThreadSend(UDPThread):
             log.err('Error opening UPD socket')
             log.err(e)
 
-        if self.UDPSignal:
-            while True:
-                self.UDPSocket.sendto('message', server_address)
-                # self.catchValue(frame, address)
-
-    def stop(self):
-        log.msg('Stopping UDPSocket' + "........." +
-                "..............................................." +
-                "...............................................")
-        self.UDPSocket.close()
-        self.running = False
+        self.UDPSocket.sendto(message, server_address)
 
 
 class OperativeKISSThread(KISSThread):

@@ -311,7 +311,7 @@ class OperativeUDPThreadReceive(UDPThread):
 
 class OperativeUDPThreadSend():
 
-    def __init__(self):
+    def __init__(self, CONNECTION_INFO):
         self.CONNECTION_INFO = CONNECTION_INFO
 
     def doWork(self, message):

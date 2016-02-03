@@ -41,7 +41,7 @@ from gs_interface import OperativeTCPThread, OperativeKISSThread
 """
 __author__ = 's.gongoragarcia@gmail.com'
 
-"""
+    """
     Notas. El problema viene de que no puedo enviar los datos desde la interfaz
     principal del programa.
     ¿Desde donde se envian los datos?
@@ -56,7 +56,9 @@ __author__ = 's.gongoragarcia@gmail.com'
     El metodo implementado actualmente lo unico que hace es escuchar
     permanenmente.
 
-    Tengo que enviar una señal desde AMP hasta la el QThread
+    Tengo que enviar una señal desde AMP hasta la el QThread OK
+
+    ¿Puedo crear un QThread fuera del MainThread?
     """
 
 
@@ -68,6 +70,8 @@ class ClientProtocol(AMP):
     def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
+        # self.udp_queue = Queue()
+
 
     def connectionMade(self):
         self.user_login()
@@ -119,6 +123,12 @@ class ClientProtocol(AMP):
         elif self.CONNECTION_INFO['connection'] == 'udp':
             log.msg(sMessage)
 
+            self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
+                                                              self.sendData,
+                                                              self.UDPSignal,
+                                                              self.CONNECTION_INFO)
+            self.workerUDPThreadSend.start()
+
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
@@ -133,6 +143,9 @@ class ClientProtocol(AMP):
             return {'bResult': True}
 
     NotifyMsg.responder(vNotifyMsg)
+
+    def sendData(self, result):
+        self.gsi._manageFrame(result)
 
     # Method associated to frame processing.
     def _processframe(self, frame):
@@ -292,12 +305,17 @@ class SATNetGUI(QtGui.QWidget):
         self.udp_queue = Queue()
         self.tcp_queue = Queue()
 
+    def testfunc(self, sigstr):
+        print sigstr
+
     # Run threads associated to KISS protocol
     def runKISSThread(self):
         self.workerKISSThread = OperativeKISSThread(self.serial_queue,
                                                     self.sendData,
                                                     self.serialSignal,
                                                     self.CONNECTION_INFO)
+        self.connect(self.workerKISSThread, self.workerKISSThread.signal,
+                     self.testfunc)
         self.workerKISSThread.start()
 
     def runUDPThreadReceive(self):
@@ -1259,7 +1277,7 @@ if __name__ == '__main__':
 
         qapp = QtGui.QApplication(sys.argv)
         app = SATNetGUI(argumentsDict)
-        app.setWindowIcon(QtGui.QIcon('icono.png'))
+        app.setWindowIcon(QtGui.QIcon('icon.png'))
         app.show()
 
         # Create thread that will listen on the other end of the

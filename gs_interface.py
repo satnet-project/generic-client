@@ -385,6 +385,8 @@ class OperativeKISSThread(KISSThread):
         self.finished.connect(callback)
         self.serialSignal = serialSignal
 
+        self.signal = QtCore.SIGNAL('signal')
+
         # Opening port
         import logging
         import kiss
@@ -412,6 +414,7 @@ class OperativeKISSThread(KISSThread):
     def doWork(self):
         if self.serialSignal:
             # Only needs to be initialized one time.
+            self.emit(self.signal, "hi from thread")
             self.kissTNC.read(callback=self.catchValue)
 
             return True

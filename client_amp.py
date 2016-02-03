@@ -126,8 +126,8 @@ class ClientProtocol(AMP):
 
             CONNECTION_INFO = self.CONNECTION_INFO
 
-            CONNECTION_INFO['udpip'] = ''
-            CONNECTION_INFO['udport'] = 57009
+            CONNECTION_INFO['udpipsend'] = '172.19.51.125'
+            CONNECTION_INFO['udportsend'] = 57009
 
             self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
                                                               self.sendData,
@@ -380,8 +380,9 @@ class SATNetGUI(QtGui.QWidget):
              str(self.LabelSerialPort.currentText())
             self.CONNECTION_INFO['baudrate'] = str(self.LabelBaudrate.text())
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.CONNECTION_INFO['udpip'] = self.LabelIP.text()
-            self.CONNECTION_INFO['udpport'] = int(self.LabelIPPort.text())
+            self.CONNECTION_INFO['udpipreceive'] = self.LabelIP.text()
+            self.CONNECTION_INFO['udpportreceive'] = int(
+                self.LabelIPPort.text())
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             self.CONNECTION_INFO['tcpip'] = self.LabelIP.text()
             self.CONNECTION_INFO['tcpport'] = int(self.LabelIPPort.text())
@@ -399,7 +400,7 @@ class SATNetGUI(QtGui.QWidget):
             self.runKISSThread()
         elif self.CONNECTION_INFO['connection'] == 'udp':
             self.runUDPThreadReceive()
-            self.runUDPThreadSend()
+            # self.runUDPThreadSend()
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             self.runTCPThread()
         elif self.CONNECTION_INFO['connection'] == 'none':
@@ -709,9 +710,13 @@ class SATNetGUI(QtGui.QWidget):
                                                         'serialport')
         self.CONNECTION_INFO['baudrate'] = config.get('Serial',
                                                       'baudrate')
-        self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-        self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                         'udpport'))
+        self.CONNECTION_INFO['udpipreceive'] = config.get('udp',
+                                                          'udpipreceive')
+        self.CONNECTION_INFO['udpportreceive'] = int(config.get('udp',
+                                                                'udpportreceive'))
+        self.CONNECTION_INFO['udipsend'] = config.get('udp', 'updipsend')
+        self.CONNECTION_INFO['udportsend'] = config.get('udp', 'udpportsend')
+
         self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
         self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
                                                          'tcpport'))
@@ -745,8 +750,8 @@ class SATNetGUI(QtGui.QWidget):
             self.LabelSerialPort.setCurrentIndex(index)
             self.LabelBaudrate.setText(baudRate)
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.LabelIP.setText(self.CONNECTION_INFO['udpip'])
-            self.LabelIPPort.setText(self.CONNECTION_INFO['ipport'])
+            self.LabelIP.setText(self.CONNECTION_INFO['udpipreceive'])
+            self.LabelIPPort.setText(self.CONNECTION_INFO['ipportreceive'])
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             self.LabelIP.setText(self.CONNECTION_INFO['tcpip'])
             self.LabelIPPort.setText(self.CONNECTION_INFO['ipport'])
@@ -779,9 +784,15 @@ class SATNetGUI(QtGui.QWidget):
                                                             'serialport')
             self.CONNECTION_INFO['baudrate'] = config.get('Serial',
                                                           'baudrate')
-            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                             'udpport'))
+            self.CONNECTION_INFO['udpipreceive'] = config.get('udp', 
+                                                              'udpipreceive')
+            self.CONNECTION_INFO['udpportreceive'] = int(config.get('udp',
+                                                                    'udpportreceive'))
+            self.CONNECTION_INFO['udpipsend'] = config.get('udp',
+                                                           'udpipsend')
+            self.CONNECTION_INFO['udpportsend'] = config.get('udp',
+                                                             'udpportsend')
+
             self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
             self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
                                                              'tcpport'))
@@ -810,9 +821,14 @@ class SATNetGUI(QtGui.QWidget):
                                                             'serialport')
             self.CONNECTION_INFO['baudrate'] = config.get('Serial',
                                                           'baudrate')
-            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                             'udpport'))
+            self.CONNECTION_INFO['udpipreceive'] = config.get('udp', 
+                                                              'udpipreceive')
+            self.CONNECTION_INFO['udpportreceive'] = int(config.get('udp',
+                                                                    'udpportreceive'))
+            self.CONNECTION_INFO['udpipsend'] = config.get('udp',
+                                                           'udpipsend')
+            self.CONNECTION_INFO['udpportsend'] = config.get('udp',
+                                                             'udpportsend')
             self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
             self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
                                                              'tcpport'))
@@ -841,9 +857,14 @@ class SATNetGUI(QtGui.QWidget):
                                                             'serialport')
             self.CONNECTION_INFO['baudrate'] = config.get('Serial',
                                                           'baudrate')
-            self.CONNECTION_INFO['udpip'] = config.get('udp', 'udpip')
-            self.CONNECTION_INFO['udpport'] = int(config.get('udp',
-                                                             'udpport'))
+            self.CONNECTION_INFO['udpipreceive'] = config.get(
+                'udp', 'udpipreceive')
+            self.CONNECTION_INFO['udpportreceive'] = int(
+                config.get('udp', 'udpportreceive'))
+            self.CONNECTION_INFO['udpipsend'] = config.get('udp',
+                                                           'udpipsend')
+            self.CONNECTION_INFO['udpportsend'] = config.get('udp',
+                                                             'udpportsend')
             self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
             self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
                                                              'tcpport'))
@@ -915,7 +936,8 @@ class SATNetGUI(QtGui.QWidget):
             self.layout.addRow(QtGui.QLabel("Baudrate:       "),
                                self.LabelBaudrate)
 
-            index = self.LabelSerialPort.findText(self.CONNECTION_INFO['serialport'])
+            index = self.LabelSerialPort.findText(
+                self.CONNECTION_INFO['serialport'])
             self.LabelSerialPort.setCurrentIndex(index)
             self.LabelBaudrate.setText(self.CONNECTION_INFO['baudrate'])
 
@@ -931,9 +953,9 @@ class SATNetGUI(QtGui.QWidget):
 
             # Gets data from .settings file not from user interface
             # To-do
-            ip = config.get('udp', 'udpip')
+            ip = config.get('udp', 'udpipreceive')
             self.LabelIP.setText(ip)
-            udpport = int(config.get('udp', 'udpport'))
+            udpport = int(config.get('udp', 'udpportreceive'))
             self.LabelIPPort.setText(str(udpport))
 
         elif str(self.LabelConnection.currentText()) == 'tcp':
@@ -1008,7 +1030,8 @@ class SATNetGUI(QtGui.QWidget):
         frameGm = self.frameGeometry()
         screen_pos = QtGui.QApplication.desktop().cursor().pos()
         screen = QtGui.QApplication.desktop().screenNumber(screen_pos)
-        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        centerPoint = QtGui.QApplication.desktop().screenGeometry(
+            screen).center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
@@ -1093,10 +1116,13 @@ class ConfigurationWindow(QtGui.QDialog):
 
         buttonBox = QtGui.QDialogButtonBox()
         buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Save)
+        buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close |
+                                     QtGui.QDialogButtonBox.Save)
 
-        buttonBox.button(QtGui.QDialogButtonBox.Close).clicked.connect(self.closeWindow)
-        buttonBox.button(QtGui.QDialogButtonBox.Save).clicked.connect(self.save)
+        buttonBox.button(QtGui.QDialogButtonBox.Close).clicked.connect(
+            self.closeWindow)
+        buttonBox.button(QtGui.QDialogButtonBox.Save).clicked.connect(
+            self.save)
 
         grid.addWidget(LabelClientname, 0, 0, 1, 1)
         grid.addWidget(self.FieldClientname, 0, 1, 1, 1)
@@ -1210,12 +1236,13 @@ if __name__ == '__main__':
             import getopt
             try:
                 opts, args = getopt.getopt(sys.argv[1:],
-                                           "hfgn:p:t:c:s:b:i:u:",
+                                           "hfgn:p:t:c:s:b:is:us:ir:ur",
                                            ["name=", "password=",
                                             "slot=", "connection=",
                                             "serialport=",
-                                            "baudrate=", "ip=",
-                                            "udpport="]
+                                            "baudrate=", "udpipsend=",
+                                            "udpportsend=", "udpipreceive=",
+                                            "udpportreceive="]
                                            )
             except getopt.GetoptError:
                 print "error"
@@ -1235,10 +1262,14 @@ if __name__ == '__main__':
                         argumentsDict['serialPort'] = arg
                     elif opt == "-b":
                         argumentsDict['baudRate'] = arg
-                    elif opt == "-i":
-                        argumentsDict['UDPIp'] = arg
-                    elif opt == "-u":
-                        argumentsDict['UDPPort'] = arg
+                    elif opt == "-is":
+                        argumentsDict['udpipsend'] = arg
+                    elif opt == "-us":
+                        argumentsDict['udpportsend'] = arg
+                    elif opt == "-ir":
+                        argumentsDict['udpipreceive'] = arg
+                    elif opt == "-ur":
+                        argumentsDict['udpportreceive'] = arg
 
             queue = Queue()
             sys.stdout = WriteStream(queue)

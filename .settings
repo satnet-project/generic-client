@@ -9,8 +9,10 @@ serialport = /dev/ttyUSB0
 baudrate = 500000
 
 [udp]
-udpip = 127.0.0.1
-udpport = 57008
+udpipreceive = 127.0.0.1
+udpportreceive = 57008
+udpipsend = 127.0.0.1
+udpportsend = 57009
 
 [tcp]
 tcpip = 127.0.0.1

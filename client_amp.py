@@ -41,25 +41,25 @@ from gs_interface import OperativeTCPThread, OperativeKISSThread
 """
 __author__ = 's.gongoragarcia@gmail.com'
 
-    """
-    Notas. El problema viene de que no puedo enviar los datos desde la interfaz
-    principal del programa.
-    ¿Desde donde se envian los datos?
-    ClientProtocl tendría que ser el encargado de llamar a la Functions
-    de gs_interface
+"""
+Notas. El problema viene de que no puedo enviar los datos desde la interfaz
+principal del programa.
+¿Desde donde se envian los datos?
+ClientProtocl tendría que ser el encargado de llamar a la Functions
+de gs_interface
 
-    Necesito gestionar una conexion serial, no una AMP así que las llamadas
-    a _manageFrame no me valen. Tengo que sacar la gestion de las
-    conexiones de la interfaz para así poder manejarlas.
+Necesito gestionar una conexion serial, no una AMP así que las llamadas
+a _manageFrame no me valen. Tengo que sacar la gestion de las
+conexiones de la interfaz para así poder manejarlas.
 
-    ¿De donde se manejan los callback?
-    El metodo implementado actualmente lo unico que hace es escuchar
-    permanenmente.
+¿De donde se manejan los callback?
+El metodo implementado actualmente lo unico que hace es escuchar
+permanenmente.
 
-    Tengo que enviar una señal desde AMP hasta la el QThread OK
+Tengo que enviar una señal desde AMP hasta la el QThread OK
 
-    ¿Puedo crear un QThread fuera del MainThread?
-    """
+¿Puedo crear un QThread fuera del MainThread?
+"""
 
 
 class ClientProtocol(AMP):
@@ -70,7 +70,7 @@ class ClientProtocol(AMP):
     def __init__(self, CONNECTION_INFO, gsi):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
-        # self.udp_queue = Queue()
+        self.udp_queue = Queue()
 
 
     def connectionMade(self):
@@ -123,10 +123,15 @@ class ClientProtocol(AMP):
         elif self.CONNECTION_INFO['connection'] == 'udp':
             log.msg(sMessage)
 
+            CONNECTION_INFO = self.CONNECTION_INFO
+
+            CONNECTION_INFO['udpip'] = ''
+            CONNECTION_INFO['udport'] = 57009
+
             self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
                                                               self.sendData,
                                                               self.UDPSignal,
-                                                              self.CONNECTION_INFO)
+                                                              CONNECTION_INFO)
             self.workerUDPThreadSend.start()
 
             return {'bResult': True}

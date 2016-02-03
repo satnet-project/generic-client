@@ -287,8 +287,6 @@ class OperativeUDPThreadReceive(UDPThread):
 
         if self.UDPSignal:
             while True:
-                if data:
-                    self.UDPSocket.sendto('message', server_address)
                 frame, address = self.UDPSocket.recvfrom(4096)
                 self.catchValue(frame, address)
 

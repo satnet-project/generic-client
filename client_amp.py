@@ -71,6 +71,7 @@ class ClientProtocol(AMP):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
         self.udp_queue = Queue()
+        self.UDPSignal = True
 
 
     def connectionMade(self):

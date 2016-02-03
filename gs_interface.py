@@ -330,7 +330,7 @@ class OperativeUDPThreadSend(UDPThread):
             self.CONNECTION_INFO['udpipsend'] = ''
 
         server_address = (str(self.CONNECTION_INFO['udpipsend']),
-                          45874)
+                          int(self.CONNECTION_INFO['udpportsend']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
@@ -341,9 +341,6 @@ class OperativeUDPThreadSend(UDPThread):
         except Exception as e:
             log.err('Error opening UPD socket')
             log.err(e)
-
-        server_address = (str(self.CONNECTION_INFO['udpipsend']),
-                          45874)
 
         if self.UDPSignal:
             while True:

@@ -72,14 +72,7 @@ class ClientProtocol(AMP):
         self.gsi = gsi
         self.udp_queue = Queue()
         self.UDPSignal = True
-
-        self.initThreads()
-
-    def initThreads(self):
-        self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
-                                                          self.sendData,
-                                                          self.UDPSignal,
-                                                          self.CONNECTION_INFO)
+        self.workerUDPThreadSend = OperativeUDPThreadSend(self.CONNECTION_INFO)
 
     def connectionMade(self):
         self.user_login()
@@ -130,7 +123,7 @@ class ClientProtocol(AMP):
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
             log.msg(sMessage)
-            self.workerUDPThreadSend.start()
+            self.workerUDPThreadSend.doWork(sMessage)
 
             return {'bResult': True}
 

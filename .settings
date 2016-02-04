@@ -19,7 +19,7 @@ tcpip = 127.0.0.1
 tcpport = 4321
 
 [server]
-serverip = 172.19.51.137
+serverip = 172.19.51.184
 serverport = 1234
 
 [Connection]

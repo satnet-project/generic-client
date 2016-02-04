@@ -302,7 +302,7 @@ class OperativeUDPThreadReceive(UDPThread):
         self.finished.emit(frame)
 
     def stop(self):
-        log.msg('Stopping UDPSocket' + "........." +
+        log.msg('Stopping UDPSocket' + "..............." +
                 "..............................................." +
                 "...............................................")
         self.UDPSocket.close()
@@ -329,7 +329,7 @@ class OperativeUDPThreadSend():
         try:
             log.msg("Opening UPD socket" + "....................." +
                     "............................................" +
-                    ".......................................")
+                    "..............................")
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
         except Exception as e:
             log.err('Error opening UPD socket')

@@ -3,6 +3,7 @@ import sys
 import os
 import misc
 import warnings
+import ConfigParser
 
 from PyQt4 import QtGui, QtCore
 
@@ -159,7 +160,7 @@ class ClientProtocol(AMP):
         return {}
     NotifyEvent.responder(vNotifyEvent)
 
-
+"""
 class Threads(object):
 
     def __init__(self):
@@ -170,6 +171,7 @@ class Threads(object):
                                                           self.sendData,
                                                           self.UDPSignal,
                                                           self.CONNECTION_INFO)
+"""
 
 
 class ClientReconnectFactory(ReconnectingClientFactory):
@@ -384,7 +386,6 @@ class SATNetGUI(QtGui.QWidget):
         self.AutomaticReconnection.setEnabled(False)
 
     def initUI(self):
-        import ConfigParser
         config = ConfigParser.ConfigParser()
         config.read(".settings")
         parameters = config.get('Connection', 'parameters')
@@ -395,7 +396,7 @@ class SATNetGUI(QtGui.QWidget):
         self.setWindowTitle("SATNet client - %s" % (name))
 
         if parameters == 'yes':
-            self.LoadParameters(0)
+            self.LoadParameters()
         elif parameters == 'no':
             pass
         else:
@@ -607,19 +608,21 @@ class SATNetGUI(QtGui.QWidget):
         except Exception as e:
             log.err(e)
         try:
-            index = self.LabelConnection.findText(self.CONNECTION_INFO['connection'])
+            index = self.LabelConnection.findText(
+                self.CONNECTION_INFO['connection'])
             self.LabelConnection.setCurrentIndex(index)
         except Exception as e:
             log.err(e)
 
         #  To-do. Optimized!
         if self.CONNECTION_INFO['connection'] == 'serial':
-            index = self.LabelSerialPort.findText(serialPort)
+            index = self.LabelSerialPort.findText(
+                self.CONNECTION_INFO['serialport'])
             self.LabelSerialPort.setCurrentIndex(index)
-            self.LabelBaudrate.setText(self.CONNECTION_INFO['baudRate'])
+            self.LabelBaudrate.setText(self.CONNECTION_INFO['baudrate'])
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.LabelIP.setText(self.CONNECTION_INFO['udpip'])
-            self.LabelIPPort.setText(self.CONNECTION_INFO['ipport'])
+            self.LabelIP.setText(self.CONNECTION_INFO['udpipsend'])
+            self.LabelIPPort.setText(self.CONNECTION_INFO['ipportsend'])
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             self.LabelIP.setText(self.CONNECTION_INFO['tcpip'])
             self.LabelIPPort.setText(self.CONNECTION_INFO['ipport'])
@@ -660,39 +663,7 @@ class SATNetGUI(QtGui.QWidget):
         self.ButtonCancel.setEnabled(False)
 
     def UpdateFields(self):
-        import ConfigParser
-        config = ConfigParser.ConfigParser()
-        config.read('.settings')
-
-        self.CONNECTION_INFO['reconnection'] = config.get('Connection',
-                                                          'reconnection')
-        self.CONNECTION_INFO['parameters'] = config.get('Connection',
-                                                        'parameters')
-        self.CONNECTION_INFO['name'] = config.get('Client', 'name')
-        self.CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
-        self.CONNECTION_INFO['username'] = config.get('User', 'username')
-        self.CONNECTION_INFO['password'] = config.get('User', 'password')
-        self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
-        self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
-
-        self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                        'serialport')
-        self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                      'baudrate')
-        self.CONNECTION_INFO['udpipreceive'] = config.get('udp',
-                                                          'udpipreceive')
-        self.CONNECTION_INFO['udpportreceive'] = int(config.get('udp',
-                                                                'udpportreceive'))
-        self.CONNECTION_INFO['udipsend'] = config.get('udp', 'updipsend')
-        self.CONNECTION_INFO['udportsend'] = config.get('udp', 'udpportsend')
-
-        self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-        self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                         'tcpport'))
-        self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                      'serverip')
-        self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                 'serverport'))
+        self.CONNECTION_INFO = misc.get_data_local_file()
 
         #  To-do. Improve try-except with errors catching.
         try:
@@ -708,16 +679,18 @@ class SATNetGUI(QtGui.QWidget):
         except Exception as e:
             log.err(e)
         try:
-            index = self.LabelConnection.findText(self.CONNECTION_INFO['connection'])
+            index = self.LabelConnection.findText(
+                self.CONNECTION_INFO['connection'])
             self.LabelConnection.setCurrentIndex(index)
         except Exception as e:
             log.err(e)
 
         #  To-do. Optimized!
         if self.CONNECTION_INFO['connection'] == 'serial':
-            index = self.LabelSerialPort.findText(serialPort)
+            index = self.LabelSerialPort.findText(
+                self.CONNECTION_INFO['serialport'])
             self.LabelSerialPort.setCurrentIndex(index)
-            self.LabelBaudrate.setText(baudRate)
+            self.LabelBaudrate.setText(self.CONNECTION_INFO['baudRate'])
         elif self.CONNECTION_INFO['connection'] == 'udp':
             self.LabelIP.setText(self.CONNECTION_INFO['udpipreceive'])
             self.LabelIPPort.setText(self.CONNECTION_INFO['ipportreceive'])
@@ -731,118 +704,10 @@ class SATNetGUI(QtGui.QWidget):
             raise Exception
 
     # Load connection parameters from .settings file.
-    def LoadParameters(self, init_flag):
+    def LoadParameters(self):
         self.CONNECTION_INFO = {}
-        if init_flag == 1:
-            import ConfigParser
-            config = ConfigParser.ConfigParser()
-            config.read('.settings')
-
-            self.CONNECTION_INFO['reconnection'] = config.get('Connection',
-                                                              'reconnection')
-            self.CONNECTION_INFO['parameters'] = config.get('Connection',
-                                                            'parameters')
-            self.CONNECTION_INFO['name'] = config.get('Client', 'name')
-            self.CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
-            self.CONNECTION_INFO['username'] = config.get('User', 'username')
-            self.CONNECTION_INFO['password'] = config.get('User', 'password')
-            self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
-            self.CONNECTION_INFO['connection'] = str(self.LabelConnection.currentText())
-
-            self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                            'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                          'baudrate')
-            self.CONNECTION_INFO['udpipreceive'] = config.get('udp', 
-                                                              'udpipreceive')
-            self.CONNECTION_INFO['udpportreceive'] = int(config.get('udp',
-                                                                    'udpportreceive'))
-            self.CONNECTION_INFO['udpipsend'] = config.get('udp',
-                                                           'udpipsend')
-            self.CONNECTION_INFO['udpportsend'] = config.get('udp',
-                                                             'udpportsend')
-
-            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                             'tcpport'))
-            self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                          'serverip')
-            self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                     'serverport'))
-
-        elif init_flag == 0:
-            import ConfigParser
-            config = ConfigParser.ConfigParser()
-            config.read('.settings')
-
-            self.CONNECTION_INFO['reconnection'] = config.get('Connection',
-                                                              'reconnection')
-            self.CONNECTION_INFO['parameters'] = config.get('Connection',
-                                                            'parameters')
-            self.CONNECTION_INFO['name'] = config.get('Client', 'name')
-            self.CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
-            self.CONNECTION_INFO['username'] = config.get('User', 'username')
-            self.CONNECTION_INFO['password'] = config.get('User', 'password')
-            self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
-            self.CONNECTION_INFO['connection'] = config.get('User', 'connection')
-
-            self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                            'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                          'baudrate')
-            self.CONNECTION_INFO['udpipreceive'] = config.get('udp', 
-                                                              'udpipreceive')
-            self.CONNECTION_INFO['udpportreceive'] = int(config.get('udp',
-                                                                    'udpportreceive'))
-            self.CONNECTION_INFO['udpipsend'] = config.get('udp',
-                                                           'udpipsend')
-            self.CONNECTION_INFO['udpportsend'] = config.get('udp',
-                                                             'udpportsend')
-            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                             'tcpport'))
-            self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                          'serverip')
-            self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                     'serverport'))
-        elif init_flag == 2:
-            import ConfigParser
-            config = ConfigParser.ConfigParser()
-            config.read('.settings')
-
-            self.CONNECTION_INFO['reconnection'] = config.get('Connection',
-                                                              'reconnection')
-            self.CONNECTION_INFO['parameters'] = config.get('Connection',
-                                                            'parameters')
-            self.CONNECTION_INFO['name'] = config.get('Client', 'name')
-            self.CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
-            self.CONNECTION_INFO['username'] = config.get('User', 'username')
-            self.CONNECTION_INFO['password'] = config.get('User', 'password')
-            self.CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
-            self.CONNECTION_INFO['connection'] = config.get('User', 
-                                                            'connection')
-
-            self.CONNECTION_INFO['serialport'] = config.get('Serial',
-                                                            'serialport')
-            self.CONNECTION_INFO['baudrate'] = config.get('Serial',
-                                                          'baudrate')
-            self.CONNECTION_INFO['udpipreceive'] = config.get(
-                'udp', 'udpipreceive')
-            self.CONNECTION_INFO['udpportreceive'] = int(
-                config.get('udp', 'udpportreceive'))
-            self.CONNECTION_INFO['udpipsend'] = config.get('udp',
-                                                           'udpipsend')
-            self.CONNECTION_INFO['udpportsend'] = config.get('udp',
-                                                             'udpportsend')
-            self.CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
-            self.CONNECTION_INFO['tcpport'] = int(config.get('tcp',
-                                                             'tcpport'))
-            self.CONNECTION_INFO['serverip'] = config.get('server',
-                                                          'serverip')
-            self.CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                     'serverport'))
-        else:
-            log.msg("Error")
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
 
     @QtCore.pyqtSlot()
     def SetConfiguration(self):
@@ -875,7 +740,6 @@ class SATNetGUI(QtGui.QWidget):
             pass
 
     def CheckConnection(self):
-        import ConfigParser
         config = ConfigParser.ConfigParser()
         config.read(".settings")
 
@@ -884,7 +748,7 @@ class SATNetGUI(QtGui.QWidget):
         password = config.get('User', 'password')
         self.LabelPassword.setText(password)
 
-        self.LoadParameters(1)
+        self.LoadParameters()
 
         self.LabelSlotID.setFixedWidth(190)
         self.LabelConnection.setFixedWidth(190)
@@ -1118,7 +982,6 @@ class ConfigurationWindow(QtGui.QDialog):
         self.close()
 
     def readFields(self):
-        import ConfigParser
         config = ConfigParser.ConfigParser()
         config.read(".settings")
         name = config.get('User', 'username')
@@ -1129,7 +992,6 @@ class ConfigurationWindow(QtGui.QDialog):
         return name, password, server, port
 
     def save(self):
-        import ConfigParser
         config = ConfigParser.SafeConfigParser()
         config.read(".settings")
 

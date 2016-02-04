@@ -1,3 +1,6 @@
+import datetime
+import pytz
+
 """
    Copyright 2013, 2014, 2015 Ricardo Tubio-Pardavila
 
@@ -15,7 +18,6 @@
 """
 __author__ = 'rtubiopa@calpoly.edu'
 
-import datetime, pytz
 
 def get_now_utc(no_microseconds=True):
     """
@@ -109,3 +111,42 @@ def get_utc_timestamp(utc_datetime=None):
         utc_datetime = get_now_utc()
     diff = utc_datetime - TIMESTAMP_0
     return int(diff.total_seconds() * 10**6)
+
+
+def get_data_local_file(settingsFile):
+    """
+    Returns a dictionary which contains the connection's data.
+    """
+
+    CONNECTION_INFO = {}
+
+    import ConfigParser
+    config = ConfigParser.ConfigParser()
+    config.read(settingsFile)
+
+    CONNECTION_INFO['reconnection'] = config.get('Connection',
+                                                 'reconnection')
+    CONNECTION_INFO['parameters'] = config.get('Connection',
+                                               'parameters')
+    CONNECTION_INFO['name'] = config.get('Client', 'name')
+    CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
+    CONNECTION_INFO['username'] = config.get('User', 'username')
+    CONNECTION_INFO['password'] = config.get('User', 'password')
+    CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
+    CONNECTION_INFO['connection'] = config.get('User', 'connection')
+
+    CONNECTION_INFO['serialport'] = config.get('Serial', 'serialport')
+    CONNECTION_INFO['baudrate'] = config.get('Serial', 'baudrate')
+    CONNECTION_INFO['udpipreceive'] = config.get('udp', 'udpipreceive')
+    CONNECTION_INFO['udpportreceive'] = int(config.get('udp',
+                                                       'udpportreceive'))
+    CONNECTION_INFO['udpipsend'] = config.get('udp', 'udpipsend')
+    CONNECTION_INFO['udpportsend'] = config.get('udp', 'udpportsend')
+
+    CONNECTION_INFO['tcpip'] = config.get('tcp', 'tcpip')
+    CONNECTION_INFO['tcpport'] = int(config.get('tcp', 'tcpport'))
+    CONNECTION_INFO['serverip'] = config.get('server', 'serverip')
+    CONNECTION_INFO['serverport'] = int(config.get('server',
+                                                   'serverport'))
+
+    return CONNECTION_INFO

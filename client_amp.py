@@ -53,7 +53,9 @@ class ClientProtocol(AMP):
         self.initThreads()
 
     def initThreads(self):
-        self.workerUDPThreadSend = OperativeUDPThreadSend(self.CONNECTION_INFO)
+        if self.CONNECTION_INFO['connection'] == 'udp':
+            self.workerUDPThreadSend = OperativeUDPThreadSend(
+                self.CONNECTION_INFO)
 
     def connectionMade(self):
         self.user_login()

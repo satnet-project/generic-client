@@ -48,15 +48,18 @@ class ClientProtocol(AMP):
     Client class
     """
 
-    def __init__(self, CONNECTION_INFO, gsi):
+    def __init__(self, CONNECTION_INFO, gsi, threads):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
+        self.threads = threads
         self.initThreads()
 
     def initThreads(self):
         if self.CONNECTION_INFO['connection'] == 'udp':
-            self.workerUDPThreadSend = OperativeUDPThreadSend(
-                self.CONNECTION_INFO)
+            self.threads.runUDPThreadReceive()
+            self.threads.runUDPThreadSend()
+        elif self.CONNECTION_INFO['connection'] == 'serial':
+            self.threads.runKISSThreadReceive()
 
     def connectionMade(self):
         self.user_login()
@@ -64,6 +67,16 @@ class ClientProtocol(AMP):
 
     def connectionLost(self, reason):
         log.msg("Connection lost")
+
+        if self.CONNECTION_INFO['connection'] == 'udp':
+            self.threads.stopUDPThreadReceive()
+        elif self.CONNECTION_INFO['connection'] == 'tcp':
+            pass
+        elif self.CONNECTION_INFO['connection'] == 'serial':
+            self.threads.stopKISSThread()
+        elif self.CONNECTION_INFO['connection'] == 'none':
+            pass
+
         self.gsi.disconnectProtocol()
 
     @inlineCallbacks
@@ -86,22 +99,20 @@ class ClientProtocol(AMP):
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Message ---------")
 
-        sMessage = sMsg
-
         if self.CONNECTION_INFO['connection'] == 'serial':
-            log.msg(sMessage)
+            log.msg(sMsg)
 
             import kiss
             kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],
                                 self.CONNECTION_INFO['baudrate'])
             kissTNC.start()
-            kissTNC.write(sMessage)
+            kissTNC.write(sMsg)
 
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            log.msg(sMessage)
-            self.workerUDPThreadSend.doWork(sMessage)
+            log.msg(sMsg)
+            self.threads.UDPThreadSend(sMsg)
 
             return {'bResult': True}
 
@@ -117,9 +128,6 @@ class ClientProtocol(AMP):
             return {'bResult': True}
 
     NotifyMsg.responder(vNotifyMsg)
-
-    def sendData(self, result):
-        self.gsi._manageFrame(result)
 
     # Method associated to frame processing.
     def _processframe(self, frame):
@@ -160,18 +168,47 @@ class ClientProtocol(AMP):
         return {}
     NotifyEvent.responder(vNotifyEvent)
 
-"""
+
 class Threads(object):
 
-    def __init__(self):
-        print "init"
+    def __init__(self, CONNECTION_INFO, gsi):
+        self.UDPSignal = True
+        self.serialSignal = True
+        self.udp_queue = Queue()
+        self.serial_queue = Queue()
+        self.CONNECTION_INFO = CONNECTION_INFO
+        self.gsi = gsi
 
-    def initUDPThreadSend(self):
-        self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
-                                                          self.sendData,
-                                                          self.UDPSignal,
-                                                          self.CONNECTION_INFO)
-"""
+    def runUDPThreadReceive(self):
+        self.workerUDPThreadReceive = OperativeUDPThreadReceive(self.udp_queue,
+                                                                self.sendData,
+                                                                self.UDPSignal,
+                                                                self.CONNECTION_INFO)
+        log.msg(self.workerUDPThreadReceive)
+        self.workerUDPThreadReceive.start()
+
+    def stopUDPThreadReceive(self):
+        self.workerUDPThreadReceive.stop()
+
+    def runUDPThreadSend(self):
+        self.workerUDPThreadSend = OperativeUDPThreadSend(self.CONNECTION_INFO)
+
+    def UDPThreadSend(self, message):
+        self.workerUDPThreadSend.send(message)
+
+    def runKISSThreadReceive(self):
+        self.workerKISSThread = OperativeKISSThread(self.serial_queue,
+                                                    self.sendData,
+                                                    self.serialSignal,
+                                                    self.CONNECTION_INFO)
+        self.workerKISSThread.start()
+
+    def stopKISSThread(self):
+        self.workerKISSThread.stop()
+
+    def sendData(self, result):
+        log.msg(result)
+        self.gsi._manageFrame(result)
 
 
 class ClientReconnectFactory(ReconnectingClientFactory):
@@ -179,15 +216,16 @@ class ClientReconnectFactory(ReconnectingClientFactory):
     ReconnectingClientFactory inherited object class to handle
     the reconnection process.
     """
-    def __init__(self, CONNECTION_INFO, gsi):
+    def __init__(self, CONNECTION_INFO, gsi, threads):
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
+        self.threads = threads
 
     # Called when a connection has been started
     def startedConnecting(self, connector):
         log.msg("Starting connection............................" +
                 "..............................................." +
-                "..........................................")
+                ".........................................")
 
     # Create an instance of a subclass of Protocol
     def buildProtocol(self, addr):
@@ -195,7 +233,8 @@ class ClientReconnectFactory(ReconnectingClientFactory):
                 "..............................................." +
                 "..........................")
         self.resetDelay()
-        return ClientProtocol(self.CONNECTION_INFO, self.gsi)
+        return ClientProtocol(self.CONNECTION_INFO, self.gsi,
+                              self.threads)
 
     # Called when an established connection is lost
     def clientConnectionLost(self, connector, reason):
@@ -248,13 +287,14 @@ class Client(object):
     def createConnection(self):
         gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
                                      ClientProtocol)
+        threads = Threads(self.CONNECTION_INFO, gsi)
 
         global connector
         connector = reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
                                        int(self.CONNECTION_INFO['serverport']),
                                        ClientReconnectFactory(
                                         self.CONNECTION_INFO,
-                                        gsi),
+                                        gsi, threads),
                                        CtxFactory())
 
         return gsi, connector
@@ -279,40 +319,11 @@ class SATNetGUI(QtGui.QWidget):
         #  Use a dict for passing arg.
         self.setArguments(argumentsDict)
 
-        self.serialSignal = True
         self.UDPSignal = True
         self.TCPSignal = True
 
-        self.serial_queue = Queue()
         self.udp_queue = Queue()
         self.tcp_queue = Queue()
-
-    def testfunc(self, sigstr):
-        print sigstr
-
-    # Run threads associated to KISS protocol
-    def runKISSThread(self):
-        self.workerKISSThread = OperativeKISSThread(self.serial_queue,
-                                                    self.sendData,
-                                                    self.serialSignal,
-                                                    self.CONNECTION_INFO)
-        self.connect(self.workerKISSThread, self.workerKISSThread.signal,
-                     self.testfunc)
-        self.workerKISSThread.start()
-
-    def runUDPThreadReceive(self):
-        self.workerUDPThreadReceive = OperativeUDPThreadReceive(self.udp_queue,
-                                                                self.sendData,
-                                                                self.UDPSignal,
-                                                                self.CONNECTION_INFO)
-        self.workerUDPThreadReceive.start()
-
-    def runUDPThreadSend(self):
-        self.workerUDPThreadSend = OperativeUDPThreadSend(self.udp_queue,
-                                                          self.sendData,
-                                                          self.UDPSignal,
-                                                          self.CONNECTION_INFO)
-        self.workerUDPThreadSend.start()
 
     # Run threads associated to TCP protocol
     def runTCPThread(self):
@@ -321,14 +332,6 @@ class SATNetGUI(QtGui.QWidget):
                                                   self.TCPSignal,
                                                   self.CONNECTION_INFO)
         self.workerTCPThread.start()
-
-    # Stop KISS thread
-    def stopKISSThread(self):
-        self.workerKISSThread.stop()
-
-    # Stop UDP thread
-    def stopUDPThreadReceive(self):
-        self.workerUDPThreadReceive.stop()
 
     # Stop TCP thread
     def stopTCPThread(self):
@@ -368,17 +371,12 @@ class SATNetGUI(QtGui.QWidget):
         self.gsi, self.c = Client(self.CONNECTION_INFO).createConnection()
 
         # Start the selected connection
-        if self.CONNECTION_INFO['connection'] == 'serial':
-            self.runKISSThread()
-        elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.runUDPThreadReceive()
-            # self.runUDPThreadSend()
-        elif self.CONNECTION_INFO['connection'] == 'tcp':
+        if self.CONNECTION_INFO['connection'] == 'tcp':
             self.runTCPThread()
         elif self.CONNECTION_INFO['connection'] == 'none':
             pass
         else:
-            log.err('Error choosing connection type')
+            pass
 
         self.ButtonNew.setEnabled(False)
         self.ButtonCancel.setEnabled(True)
@@ -635,7 +633,8 @@ class SATNetGUI(QtGui.QWidget):
     def CloseConnection(self):
         if self.CONNECTION_INFO['connection'] == 'udp':
             try:
-                self.stopUDPThreadReceive()
+                # Change for signal
+                # self.stopUDPThreadReceive()
                 log.msg("Stopping UDP connection")
             except Exception as e:
                 log.err(e)
@@ -651,7 +650,7 @@ class SATNetGUI(QtGui.QWidget):
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             try:
-                self.stopKISSThread()
+                # self.stopKISSThread()
                 log.msg("Stopping KISS connection")
             except Exception as e:
                 log.err(e)
@@ -741,15 +740,10 @@ class SATNetGUI(QtGui.QWidget):
             pass
 
     def CheckConnection(self):
-        config = ConfigParser.ConfigParser()
-        config.read(".settings")
-
-        username = config.get('User', 'username')
-        self.LabelUsername.setText(username)
-        password = config.get('User', 'password')
-        self.LabelPassword.setText(password)
-
         self.LoadParameters()
+
+        self.LabelUsername.setText(self.CONNECTION_INFO['username'])
+        self.LabelPassword.setText(self.CONNECTION_INFO['password'])
 
         self.LabelSlotID.setFixedWidth(190)
         self.LabelConnection.setFixedWidth(190)
@@ -787,10 +781,9 @@ class SATNetGUI(QtGui.QWidget):
 
             # Gets data from .settings file not from user interface
             # To-do
-            ip = config.get('udp', 'udpipreceive')
-            self.LabelIP.setText(ip)
-            udpport = int(config.get('udp', 'udpportreceive'))
-            self.LabelIPPort.setText(str(udpport))
+            self.LabelIP.setText(self.CONNECTION_INFO['udpipreceive'])
+            self.LabelIPPort.setText(str(
+                self.CONNECTION_INFO['udpportreceive']))
 
         elif str(self.LabelConnection.currentText()) == 'tcp':
             self.deleteMenu()
@@ -804,10 +797,8 @@ class SATNetGUI(QtGui.QWidget):
 
             # Gets data from .settings file not from user interface
             # To-do
-            ip = config.get('tcp', 'tcpip')
-            self.LabelIP.setText(ip)
-            tcpport = int(config.get('tcp', 'tcpport'))
-            self.LabelIPPort.setText(str(tcpport))
+            self.LabelIP.setText(self.CONNECTION_INFO['tcpip'])
+            self.LabelIPPort.setText(str(self.CONNECTION_INFO['tcpport']))
 
         elif str(self.LabelConnection.currentText()) == 'none':
             self.deleteMenu()
@@ -821,10 +812,8 @@ class SATNetGUI(QtGui.QWidget):
             self.layout.addRow(QtGui.QLabel("Port:       "),
                                self.LabelIPPort)
 
-            ip = config.get('server', 'serverip')
-            self.LabelIP.setText(ip)
-            serverport = int(config.get('server', 'serverport'))
-            self.LabelIPPort.setText(str(serverport))
+            self.LabelIP.setText(self.CONNECTION_INFO['serverip'])
+            self.LabelIPPort.setText(str(self.CONNECTION_INFO['serverport']))
 
     def usage(self):
         log.msg("USAGE of client_amp.py")
@@ -1107,9 +1096,9 @@ if __name__ == '__main__':
             sys.stdout = WriteStream(queue)
 
             log.startLogging(sys.stdout)
-            log.msg('------------------------------------------------- ' +
+            log.msg('-------------------------------------------------- ' +
                     'SATNet - Generic client' +
-                    ' -------------------------------------------------')
+                    ' --------------------------------------------------')
 
             qapp = QtGui.QApplication(sys.argv)
             app = SATNetGUI(argumentsDict)
@@ -1140,9 +1129,9 @@ if __name__ == '__main__':
         sys.stdout = WriteStream(queue)
 
         log.startLogging(sys.stdout)
-        log.msg('----------------------------------------------- ' +
+        log.msg('------------------------------------------------ ' +
                 'SATNet - Generic client' +
-                ' -----------------------------------------------')
+                ' ------------------------------------------------')
 
         qapp = QtGui.QApplication(sys.argv)
         app = SATNetGUI(argumentsDict)

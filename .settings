@@ -1,4 +1,4 @@
-
+[User]
 username = test-sc-user
 password = sgongarpass
 slot_id = -1
@@ -11,7 +11,7 @@ baudrate = 500000
 [udp]
 udpipreceive = 127.0.0.1
 udpportreceive = 57008
-udpipsend = 172.19.51.204
+udpipsend = 172.19.51.145
 udpportsend = 57009
 
 [tcp]
@@ -19,7 +19,7 @@ tcpip = 127.0.0.1
 tcpport = 4321
 
 [server]
-serverip = 172.19.51.184
+serverip = 172.19.51.133
 serverport = 1234
 
 [Connection]

@@ -26,7 +26,7 @@ from errors import WrongFormatNotification
 __author__ = 'xabicrespog@gmail.com'
 
 
-class GroundStationInterface():
+class GroundStationInterface(object):
     """
     This class contains the interface between the GS and the SATNET protocol.
     It supports either a UDP or a serial connection. In case the connection to
@@ -115,9 +115,6 @@ class GroundStationInterface():
     def disconnectProtocol(self):
         log.msg("Protocol disconnected from the GS")
         self.AMP = None
-
-    def test(self):
-        log.msg("esto esto es un test")
 
 
 # Class associated to UDP protocol
@@ -286,14 +283,14 @@ class OperativeUDPThreadReceive(UDPThread):
         self.UDPSocket.bind(server_address)
 
         if self.UDPSignal:
+            log.msg("estoy dentro")
             while True:
                 frame, address = self.UDPSocket.recvfrom(4096)
                 self.catchValue(frame, address)
 
     def catchValue(self, frame, address):
-        # self.finished.emit(ResultObj(frame))
-        log.msg("----------------------------------------------- " +
-                "Message from UDP socket" + " -------------------" +
+        log.msg("--------------------------------------------- " +
+                "Message from UDP socket" + " -----------------" +
                 "----------------------------")
         log.msg("--------------------------------" +
                 " Received from ip: " + str(address[0]) +
@@ -335,7 +332,7 @@ class OperativeUDPThreadSend():
             log.err('Error opening UPD socket')
             log.err(e)
 
-    def doWork(self, message):
+    def send(self, message):
         self.UDPSocket.sendto(message, self.server_address)
 
 
@@ -362,8 +359,7 @@ class OperativeKISSThread(KISSThread):
 
             self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],
                                      CONNECTION_INFO['baudrate'])
-            formatter = logging.Formatter('%(name)s - %(message)s')
-            self.kissTNC.console_handler.setFormatter(formatter)
+            self.kissTNC.console_handler.setLevel(logging.ERROR)
 
         except Exception as e:
             log.err('Error opening port')
@@ -385,9 +381,9 @@ class OperativeKISSThread(KISSThread):
 
     def catchValue(self, frame):
         # self.finished.emit(ResultObj(frame))
-        log.msg("--------------------------------------- " +
+        log.msg("----------------------------------------------- " +
                 "Message from Serial port" +
-                " -------------------------------------")
+                " -----------------------------------------------")
         self.finished.emit(frame)
 
     def stop(self):

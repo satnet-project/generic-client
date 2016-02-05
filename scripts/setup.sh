@@ -113,6 +113,11 @@ function install_venv()
 	}
 }
 
+function remove_venv()
+{
+    sudo rm -rf "$venv_dir"
+}
+
 script_path="$( cd "$( dirname "$0" )" && pwd )"
 project_path=$( readlink -e "$script_path/.." )
 
@@ -250,18 +255,27 @@ fi
 
 if [ $1 == '-uninstall' ];
 then
-	echo ">>> Removing program files"
-	sudo rm -r -f ~/.satnet/client/
-
-	echo ">>> Removing executables"
-	rm ~/bin/satnet
-
-	echo ">>> Removing links"
-	rm ~/Desktop/satnet.desktop
-	rm ~/Escritorio/satnet.desktop
-
 	echo ">>> Removing dependencies"
 	[[ $_install_packages == 'true' ]] && uninstall_packages
+
+	echo ">>> Removing old virtualenv"
+	[[ $_install_venv == 'true' ]] && remove_venv
+
+	os=`cat /etc/issue.net`
+
+	if [[ "$os" =~ "Debian" ]]; then
+		echo ">>> Removing program files"
+		sudo rm -r -f ~/.satnet/client/
+
+		echo ">>> Removing executables"
+		rm ~/bin/satnet
+
+		echo ">>> Removing links"
+		rm ~/Desktop/satnet.desktop
+		rm ~/Escritorio/satnet.desktop
+	else
+	    echo "Not using Debian.";
+	fi
 
  	echo ">>> Do you wish to remove all configuration files? (yes/no)"
  	read OPTION

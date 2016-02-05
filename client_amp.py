@@ -174,6 +174,8 @@ class Threads(object):
     def __init__(self, CONNECTION_INFO, gsi):
         self.UDPSignal = True
         self.serialSignal = True
+        self.TCPSignal = True
+        self.tcp_queue = Queue()
         self.udp_queue = Queue()
         self.serial_queue = Queue()
         self.CONNECTION_INFO = CONNECTION_INFO
@@ -205,6 +207,18 @@ class Threads(object):
 
     def stopKISSThread(self):
         self.workerKISSThread.stop()
+
+    # To-do
+    def runTCPThread(self):
+        self.workerTCPThread = OperativeTCPThread(self.tcp_queue,
+                                                  self.sendData,
+                                                  self.TCPSignal,
+                                                  self.CONNECTION_INFO)
+        self.workerTCPThread.start()
+
+    # Stop TCP thread
+    def stopTCPThread(self):
+        self.workerTCPThread.stop()
 
     def sendData(self, result):
         log.msg(result)
@@ -316,30 +330,10 @@ class SATNetGUI(QtGui.QWidget):
         self.initConfiguration()
         self.initConsole()
 
+        log.msg(argumentsDict)
+
         #  Use a dict for passing arg.
         self.setArguments(argumentsDict)
-
-        self.UDPSignal = True
-        self.TCPSignal = True
-
-        self.udp_queue = Queue()
-        self.tcp_queue = Queue()
-
-    # Run threads associated to TCP protocol
-    def runTCPThread(self):
-        self.workerTCPThread = OperativeTCPThread(self.tcp_queue,
-                                                  self.sendData,
-                                                  self.TCPSignal,
-                                                  self.CONNECTION_INFO)
-        self.workerTCPThread.start()
-
-    # Stop TCP thread
-    def stopTCPThread(self):
-        self.workerTCPThread.stop()
-
-    # Gets a string but can't format it! To-do
-    def sendData(self, result):
-        self.gsi._manageFrame(result)
 
     # Create a new connection by loading the connection parameters
     # from the interface window
@@ -384,18 +378,17 @@ class SATNetGUI(QtGui.QWidget):
         self.AutomaticReconnection.setEnabled(False)
 
     def initUI(self):
-        config = ConfigParser.ConfigParser()
-        config.read(".settings")
-        parameters = config.get('Connection', 'parameters')
-        name = config.get('Client', 'name')
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
 
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         self.setFixedSize(1300, 800)
-        self.setWindowTitle("SATNet client - %s" % (name))
+        self.setWindowTitle("SATNet client - %s" %
+                            (self.CONNECTION_INFO['name']))
 
-        if parameters == 'yes':
+        if self.CONNECTION_INFO['parameters'] == 'yes':
             self.LoadParameters()
-        elif parameters == 'no':
+        elif self.CONNECTION_INFO['parameters'] == 'no':
             pass
         else:
             warnings.warn("No parameters configuration found." +
@@ -546,7 +539,6 @@ class SATNetGUI(QtGui.QWidget):
         configuration.move(10, 380)
 
     def initLogo(self):
-        # Logo.
         LabelLogo = QtGui.QLabel(self)
         LabelLogo.move(40, 490)
         pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
@@ -580,31 +572,22 @@ class SATNetGUI(QtGui.QWidget):
         if argumentsDict['connection'] != "":
             index = self.LabelConnection.findText(argumentsDict['connection'])
             self.LabelConnection.setCurrentIndex(index)
-        if argumentsDict['serialPort'] != "":
-            index = self.LabelSerialPort.findText(argumentsDict['serialPort'])
+        if argumentsDict['serialport'] != "":
+            index = self.LabelSerialPort.findText(argumentsDict['serialport'])
             self.LabelSerialPort.setCurrentIndex(index)
-        if argumentsDict['baudRate'] != "":
-            self.LabelBaudrate.setText(argumentsDict['baudRate'])
-        if argumentsDict['UDPIp'] != "":
-            self.LabelIP.setText(argumentsDict['UDPIp'])
-        if argumentsDict['UDPPort'] != "":
-            self.LabelIPPort.setText(argumentsDict['UDPPort'])
+        if argumentsDict['baudrate'] != "":
+            self.LabelBaudrate.setText(argumentsDict['baudrate'])
+        if argumentsDict['udpipsend'] != "":
+            self.LabelIP.setText(argumentsDict['udpipsend'])
+        if argumentsDict['udpportsend'] != "":
+            self.LabelIPPort.setText(argumentsDict['udpportsend'])
 
     # Set parameters from CONNECTION_INFO dict.
     def setParameters(self):
-        #  To-do. Improve try-except with errors catching.
-        try:
-            self.LabelUsername.setText(self.CONNECTION_INFO['username'])
-        except Exception as e:
-            log.err(e)
-        try:
-            self.LabelPassword.setText(self.CONNECTION_INFO['password'])
-        except Exception as e:
-            log.err(e)
-        try:
-            self.LabelSlotID.setText(self.CONNECTION_INFO['slot_id'])
-        except Exception as e:
-            log.err(e)
+        self.LabelUsername.setText(self.CONNECTION_INFO['username'])
+        self.LabelPassword.setText(self.CONNECTION_INFO['password'])
+        self.LabelSlotID.setText(self.CONNECTION_INFO['slot_id'])
+
         try:
             index = self.LabelConnection.findText(
                 self.CONNECTION_INFO['connection'])
@@ -650,6 +633,7 @@ class SATNetGUI(QtGui.QWidget):
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             try:
+                # Change for signal
                 # self.stopKISSThread()
                 log.msg("Stopping KISS connection")
             except Exception as e:
@@ -666,18 +650,9 @@ class SATNetGUI(QtGui.QWidget):
             settingsFile='.settings')
 
         #  To-do. Improve try-except with errors catching.
-        try:
-            self.LabelUsername.setText(self.CONNECTION_INFO['username'])
-        except Exception as e:
-            log.err(e)
-        try:
-            self.LabelPassword.setText(self.CONNECTION_INFO['password'])
-        except Exception as e:
-            log.err(e)
-        try:
-            self.LabelSlotID.setText(self.CONNECTION_INFO['slot_id'])
-        except Exception as e:
-            log.err(e)
+        self.LabelUsername.setText(self.CONNECTION_INFO['username'])
+        self.LabelPassword.setText(self.CONNECTION_INFO['password'])
+        self.LabelSlotID.setText(self.CONNECTION_INFO['slot_id'])
         try:
             index = self.LabelConnection.findText(
                 self.CONNECTION_INFO['connection'])
@@ -882,21 +857,27 @@ class SATNetGUI(QtGui.QWidget):
             try:
                 if self.CONNECTION_INFO['connection'] == 'udp':
                     try:
-                        self.stopUDPThread()
+                        # To-do. Use signal!
+                        # self.stopUDPThread()
+                        pass
                     except Exception as e:
                         log.err(e)
                         log.err("Can't stop UDP thread")
 
                 elif self.CONNECTION_INFO['connection'] == 'tcp':
                     try:
-                        self.stopTCPThread()
+                        # To-do. Use signal!
+                        # self.stopTCPThread()
+                        pass
                     except Exception as e:
                         log.err(e)
                         log.err("Can't stop TCP thread")
 
                 elif self.CONNECTION_INFO['connection'] == 'serial':
                     try:
-                        self.stopKISSThread()
+                        # To-do. Use signal!
+                        # self.stopKISSThread()
+                        pass
                     except Exception as e:
                         log.err(e)
                         log.err("Can't stop KISS thread")
@@ -936,6 +917,18 @@ class ConfigurationWindow(QtGui.QDialog):
         LabelPort = QtGui.QLabel("Server port:           ")
         self.FieldLabelPort = QtGui.QLineEdit()
         self.FieldLabelPort.setFixedWidth(200)
+        LabelUDPIPSend = QtGui.QLabel("UDP client IP:           ")
+        self.FieldLabelUDPIpSend = QtGui.QLineEdit()
+        self.FieldLabelUDPIpSend.setFixedWidth(200)
+        LabelUPDPortSend = QtGui.QLabel("UDP client port:         ")
+        self.FieldLabelUDPPortSend = QtGui.QLineEdit()
+        self.FieldLabelUDPPortSend.setFixedWidth(200)
+        LabelUDPIPReceive = QtGui.QLabel("UDP server IP:            ")
+        self.FieldLabelUDPIPReceive = QtGui.QLineEdit()
+        self.FieldLabelUDPIPReceive.setFixedWidth(200)
+        LabelUDPPortReceive = QtGui.QLabel("UDP server port:          ")
+        self.FieldLabelUDPPortRececeive = QtGui.QLineEdit()
+        self.FieldLabelUDPPortRececeive.setFixedWidth(200)
 
         buttonBox = QtGui.QDialogButtonBox()
         buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -955,55 +948,56 @@ class ConfigurationWindow(QtGui.QDialog):
         grid.addWidget(self.FieldLabelServer, 2, 1, 1, 1)
         grid.addWidget(LabelPort, 3, 0, 1, 1)
         grid.addWidget(self.FieldLabelPort, 3, 1, 1, 1)
-        grid.addWidget(buttonBox, 4, 0, 1, 2)
+        grid.addWidget(LabelUDPIPSend, 4, 0, 1, 1)
+        grid.addWidget(self.FieldLabelUDPIpSend, 4, 1, 1, 1)
+        grid.addWidget(LabelUPDPortSend, 5, 0, 1, 1)
+        grid.addWidget(self.FieldLabelUDPPortSend, 5, 1, 1, 1)
+        grid.addWidget(LabelUDPIPReceive, 6, 0, 1, 1)
+        grid.addWidget(self.FieldLabelUDPIPReceive, 6, 1, 1, 1)
+        grid.addWidget(LabelUDPPortReceive, 7, 0, 1, 1)
+        grid.addWidget(self.FieldLabelUDPPortRececeive, 7, 1, 1, 1)
+        grid.addWidget(buttonBox, 8, 0, 1, 2)
 
-        self.setMinimumSize(405, 260)
+        self.setMinimumSize(410, 335)
         parameters.setTitle("Connection")
         parameters.move(10, 10)
 
         # Read fields
-        name, password, server, port = self.readFields()
-        self.FieldClientname.setText(name)
-        self.FieldLabelPassword.setText(password)
-        self.FieldLabelServer.setText(server)
-        self.FieldLabelPort.setText(port)
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
+        self.FieldClientname.setText(self.CONNECTION_INFO['username'])
+        self.FieldLabelPassword.setText(self.CONNECTION_INFO['password'])
+        self.FieldLabelServer.setText(self.CONNECTION_INFO['serverip'])
+        self.FieldLabelPort.setText(str(self.CONNECTION_INFO['serverport']))
 
     def closeWindow(self):
         self.close()
 
-    def readFields(self):
-        config = ConfigParser.ConfigParser()
-        config.read(".settings")
-        name = config.get('User', 'username')
-        password = config.get('User', 'password')
-        server = config.get('server', 'serverip')
-        port = config.get('server', 'serverport')
-
-        return name, password, server, port
-
     def save(self):
         config = ConfigParser.SafeConfigParser()
         config.read(".settings")
+
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
 
         name = self.FieldClientname.text()
         password = self.FieldLabelPassword.text()
         server = self.FieldLabelServer.text()
         port = self.FieldLabelPort.text()
 
-        nameSet, passwordSet, serverSet, portSet = self.readFields()
-        if nameSet != name:
+        if self.CONNECTION_INFO['username'] != name:
             config.set('User', 'username', str(name))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if passwordSet != password:
+        if self.CONNECTION_INFO['password'] != password:
             config.set('User', 'password', str(password))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if serverSet != server:
+        if self.CONNECTION_INFO['serverip'] != server:
             config.set('server', 'serverip', str(server))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if portSet != port:
+        if self.CONNECTION_INFO['serverport'] != port:
             config.set('server', 'serverport', str(port))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
@@ -1049,6 +1043,11 @@ class ResultObj(QtCore.QObject):
 
 if __name__ == '__main__':
 
+    log.startLogging(sys.stdout)
+    log.msg('------------------------------------------------ ' +
+            'SATNet - Generic client' +
+            ' ------------------------------------------------')
+
     try:
         if sys.argv[1] == "-help":
             import subprocess
@@ -1080,9 +1079,9 @@ if __name__ == '__main__':
                     elif opt == "-c":
                         argumentsDict['connection'] = arg
                     elif opt == "-s":
-                        argumentsDict['serialPort'] = arg
+                        argumentsDict['serialport'] = arg
                     elif opt == "-b":
-                        argumentsDict['baudRate'] = arg
+                        argumentsDict['baudrate'] = arg
                     elif opt == "-is":
                         argumentsDict['udpipsend'] = arg
                     elif opt == "-us":
@@ -1094,11 +1093,6 @@ if __name__ == '__main__':
 
             queue = Queue()
             sys.stdout = WriteStream(queue)
-
-            log.startLogging(sys.stdout)
-            log.msg('-------------------------------------------------- ' +
-                    'SATNet - Generic client' +
-                    ' --------------------------------------------------')
 
             qapp = QtGui.QApplication(sys.argv)
             app = SATNetGUI(argumentsDict)
@@ -1121,17 +1115,13 @@ if __name__ == '__main__':
     except IndexError:
         argumentsDict = {}
         arguments = ['username', 'password', 'slot', 'connection',
-                     'serialPort', 'baudRate', 'UDPIp', 'UDPPort']
+                     'serialport', 'baudrate', 'udpipsend', 'udpportsend',
+                     'udpipreceive', 'udpportreceive']
         for i in range(len(arguments)):
             argumentsDict[arguments[i]] = ""
 
         queue = Queue()
         sys.stdout = WriteStream(queue)
-
-        log.startLogging(sys.stdout)
-        log.msg('------------------------------------------------ ' +
-                'SATNet - Generic client' +
-                ' ------------------------------------------------')
 
         qapp = QtGui.QApplication(sys.argv)
         app = SATNetGUI(argumentsDict)

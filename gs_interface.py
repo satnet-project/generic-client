@@ -66,7 +66,7 @@ class GroundStationInterface(object):
     UDPSocket = None
     TCPSocket = None
     frameBuffer = None
-    CONNECTION_INFO = {}
+    # CONNECTION_INFO = {}
     AMP = None
     GS = None
 
@@ -155,11 +155,6 @@ class TCPThread(QtCore.QThread):
 
     def cleanUp(self):
         pass
-
-"""
-    Esta clase se encarga solamente de escuchar.
-    Tengo que, por medio de alguna manera de hacer que escriba.
-"""
 
 
 # Class associated to KISS protocol
@@ -283,7 +278,6 @@ class OperativeUDPThreadReceive(UDPThread):
         self.UDPSocket.bind(server_address)
 
         if self.UDPSignal:
-            log.msg("estoy dentro")
             while True:
                 frame, address = self.UDPSocket.recvfrom(4096)
                 self.catchValue(frame, address)

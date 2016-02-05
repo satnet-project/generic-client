@@ -663,7 +663,8 @@ class SATNetGUI(QtGui.QWidget):
         self.ButtonCancel.setEnabled(False)
 
     def UpdateFields(self):
-        self.CONNECTION_INFO = misc.get_data_local_file()
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
 
         #  To-do. Improve try-except with errors catching.
         try:

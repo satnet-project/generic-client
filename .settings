@@ -27,6 +27,6 @@ reconnection = no
 parameters = yes
 
 [Client]
-name = UVigo
+name = Universidade de Vigo
 attempts = 10
 

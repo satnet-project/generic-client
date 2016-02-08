@@ -68,6 +68,10 @@ class ClientProtocol(AMP):
     def connectionLost(self, reason):
         log.msg("Connection lost")
 
+        """
+        If the connection with the twisted server is lost disconnects all
+        active GroundStation connections
+        """
         if self.CONNECTION_INFO['connection'] == 'udp':
             self.threads.stopUDPThreadReceive()
         elif self.CONNECTION_INFO['connection'] == 'tcp':
@@ -77,7 +81,13 @@ class ClientProtocol(AMP):
         elif self.CONNECTION_INFO['connection'] == 'none':
             pass
 
-        self.gsi.disconnectProtocol()
+    def connectionFailed(self, reason):
+        log.msg("Connection failed")
+
+    @inlineCallbacks
+    def end_connection(self):
+        res = yield self.callRemote(EndRemote)
+        log.msg(res)
 
     @inlineCallbacks
     def user_login(self):
@@ -123,6 +133,13 @@ class ClientProtocol(AMP):
 
         elif self.CONNECTION_INFO['connection'] == 'none':
             log.msg(sMessage)
+            """
+            Save to local file
+            """
+            filename = ("ESEO-RECEIVEDFRAMES" + self.GS + "-" +
+                        time.strftime("%Y.%m.%d") + ".csv")
+            with open(filename, "a+") as f:
+                f.write(sMsg + ",\n")
 
             log.msg("none")
             return {'bResult': True}
@@ -136,7 +153,7 @@ class ClientProtocol(AMP):
         frameProcessed = ":".join("{:02x}".format(ord(c))
                                   for c in frameProcessed)
 
-        log.msg('Received frame: ', frameProcessed)
+        log.msg("Received frame: ", frameProcessed)
 
         self.processFrame(frameProcessed)
 
@@ -206,6 +223,7 @@ class Threads(object):
         self.workerKISSThread.start()
 
     def stopKISSThread(self):
+        log.msg("stopping")
         self.workerKISSThread.stop()
 
     # To-do
@@ -330,8 +348,6 @@ class SATNetGUI(QtGui.QWidget):
         self.initConfiguration()
         self.initConsole()
 
-        log.msg(argumentsDict)
-
         #  Use a dict for passing arg.
         self.setArguments(argumentsDict)
 
@@ -383,7 +399,7 @@ class SATNetGUI(QtGui.QWidget):
 
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         self.setFixedSize(1300, 800)
-        self.setWindowTitle("SATNet client - %s" %
+        self.setWindowTitle("SatNet client - %s" %
                             (self.CONNECTION_INFO['name']))
 
         if self.CONNECTION_INFO['parameters'] == 'yes':
@@ -614,33 +630,12 @@ class SATNetGUI(QtGui.QWidget):
             raise Exception
 
     def CloseConnection(self):
-        if self.CONNECTION_INFO['connection'] == 'udp':
-            try:
-                # Change for signal
-                # self.stopUDPThreadReceive()
-                log.msg("Stopping UDP connection")
-            except Exception as e:
-                log.err(e)
-                log.err("Can't stop UDP thread")
+        """
+        Must call EndRemote before kill the server
+        """
+        # self.c.disconnect()
 
-        if self.CONNECTION_INFO['connection'] == 'tcp':
-            try:
-                self.stopTCPThread()
-                log.msg("Stopping TCP connection")
-            except Exception as e:
-                log.err(e)
-                log.err("Can't stop TCP thread")
-
-        if self.CONNECTION_INFO['connection'] == 'serial':
-            try:
-                # Change for signal
-                # self.stopKISSThread()
-                log.msg("Stopping KISS connection")
-            except Exception as e:
-                log.err(e)
-                log.err("Can't stop KISS thread")
-
-        self.c.disconnect()
+        self.gsi.clear_slots()
 
         self.ButtonNew.setEnabled(True)
         self.ButtonCancel.setEnabled(False)
@@ -965,10 +960,22 @@ class ConfigurationWindow(QtGui.QDialog):
         # Read fields
         self.CONNECTION_INFO = misc.get_data_local_file(
             settingsFile='.settings')
-        self.FieldClientname.setText(self.CONNECTION_INFO['username'])
-        self.FieldLabelPassword.setText(self.CONNECTION_INFO['password'])
-        self.FieldLabelServer.setText(self.CONNECTION_INFO['serverip'])
-        self.FieldLabelPort.setText(str(self.CONNECTION_INFO['serverport']))
+        self.FieldClientname.setText(
+            self.CONNECTION_INFO['username'])
+        self.FieldLabelPassword.setText(
+            self.CONNECTION_INFO['password'])
+        self.FieldLabelServer.setText(
+            self.CONNECTION_INFO['serverip'])
+        self.FieldLabelPort.setText(str(
+            self.CONNECTION_INFO['serverport']))
+        self.FieldLabelUDPIpSend.setText(
+            self.CONNECTION_INFO['udpipsend'])
+        self.FieldLabelUDPPortSend.setText(
+            self.CONNECTION_INFO['udpportsend'])
+        self.FieldLabelUDPIPReceive.setText(
+            self.CONNECTION_INFO['udpipreceive'])
+        self.FieldLabelUDPPortRececeive.setText(str(
+            self.CONNECTION_INFO['udpportreceive']))
 
     def closeWindow(self):
         self.close()
@@ -984,6 +991,10 @@ class ConfigurationWindow(QtGui.QDialog):
         password = self.FieldLabelPassword.text()
         server = self.FieldLabelServer.text()
         port = self.FieldLabelPort.text()
+        udpipsend = self.FieldLabelUDPIpSend.text()
+        udpportsend = self.FieldLabelUDPPortSend.text()
+        udpipreceive = self.FieldLabelUDPIPReceive.text()
+        udpportreceive = self.FieldLabelUDPPortRececeive.text()
 
         if self.CONNECTION_INFO['username'] != name:
             config.set('User', 'username', str(name))
@@ -999,6 +1010,22 @@ class ConfigurationWindow(QtGui.QDialog):
                 config.write(configfile)
         if self.CONNECTION_INFO['serverport'] != port:
             config.set('server', 'serverport', str(port))
+            with open('.settings', 'wb') as configfile:
+                config.write(configfile)
+        if self.CONNECTION_INFO['udpipsend'] != udpipsend:
+            config.set('udp', 'udpipsend', str(port))
+            with open('.settings', 'wb') as configfile:
+                config.write(configfile)
+        if self.CONNECTION_INFO['udpportsend'] != udpportsend:
+            config.set('udp', 'udpportsend', str(port))
+            with open('.settings', 'wb') as configfile:
+                config.write(configfile)
+        if self.CONNECTION_INFO['udpipreceive'] != udpipreceive:
+            config.set('udp', 'udpipreceive', str(port))
+            with open('.settings', 'wb') as configfile:
+                config.write(configfile)
+        if self.CONNECTION_INFO['udpportreceive'] != udpportreceive:
+            config.set('udp', 'udpportreceive', str(port))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
 
@@ -1042,6 +1069,9 @@ class ResultObj(QtCore.QObject):
 
 
 if __name__ == '__main__':
+
+    queue = Queue()
+    sys.stdout = WriteStream(queue)
 
     log.startLogging(sys.stdout)
     log.msg('------------------------------------------------ ' +
@@ -1091,9 +1121,6 @@ if __name__ == '__main__':
                     elif opt == "-ur":
                         argumentsDict['udpportreceive'] = arg
 
-            queue = Queue()
-            sys.stdout = WriteStream(queue)
-
             qapp = QtGui.QApplication(sys.argv)
             app = SATNetGUI(argumentsDict)
             app.setWindowIcon(QtGui.QIcon('icon.png'))
@@ -1119,9 +1146,6 @@ if __name__ == '__main__':
                      'udpipreceive', 'udpportreceive']
         for i in range(len(arguments)):
             argumentsDict[arguments[i]] = ""
-
-        queue = Queue()
-        sys.stdout = WriteStream(queue)
 
         qapp = QtGui.QApplication(sys.argv)
         app = SATNetGUI(argumentsDict)

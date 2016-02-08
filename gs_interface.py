@@ -4,6 +4,7 @@ from PyQt4 import QtCore
 import time
 
 from errors import WrongFormatNotification
+from ampCommands import EndRemote
 
 """
    Copyright 2014, 2015, 2016 Xabier Crespo Álvarez
@@ -99,6 +100,11 @@ class GroundStationInterface(object):
             f.write(frame + ",\n")
 
         log.msg('---- Message saved to local file ----')
+
+    def clear_slots(self):
+        self.AMP.end_connection()
+        # self.AMP.callRemote(EndRemote)
+
     """
     :ivar AMP:
         Client protocol to which received frames will be sent to be

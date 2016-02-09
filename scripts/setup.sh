@@ -124,6 +124,8 @@ project_path=$( readlink -e "$script_path/.." )
 linux_packages="$script_path/debian.packages"
 venv_dir="$project_path/.venv"
 
+pyserial_module="$venv_dir/lib/python2.7/site-packages/serial/serialposix.py"
+
 key_dir="$project_path/key"
 keys_private="$keys_dir/test.key"
 keys_csr="$keys_dir/test.csr"
@@ -190,7 +192,9 @@ then
 		cp -r -f ../ ~/.satnet/client/ 
 		cd ../
 	else
-	    echo "Not Debian";
+	    # Workaround about pyserial issue with ubuntu kernel version
+	    # https://bugs.launchpad.net/ubuntu/+source/python2.7/+bug/1501240
+	    sed -i '491,495 s/^/#/' $pyserial_module
 	fi
 
 	# Deactivate virtualenv

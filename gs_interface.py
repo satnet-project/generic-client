@@ -103,7 +103,6 @@ class GroundStationInterface(object):
 
     def clear_slots(self):
         self.AMP.end_connection()
-        # self.AMP.callRemote(EndRemote)
 
     """
     :ivar AMP:
@@ -170,9 +169,9 @@ class KISSThread(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
-        log.msg('Listening' + '.............................' +
-                '................................................' +
-                '.............................')
+        log.msg('Listening' + '...................................' +
+                '.................................................' +
+                '................................................')
 
         self.running = True
         self.doWork()
@@ -272,15 +271,17 @@ class OperativeUDPThreadReceive(UDPThread):
                           int(self.CONNECTION_INFO['udpportreceive']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
+        from socket import SOL_SOCKET, SO_REUSEADDR
         try:
             log.msg("Opening UPD socket" + ".........................." +
-                    '..........................................' +
-                    '....................................')
+                    '............................................' +
+                    '............................................')
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
         except Exception as e:
             log.err('Error opening UPD socket')
             log.err(e)
 
+        self.UDPSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.UDPSocket.bind(server_address)
 
         if self.UDPSignal:
@@ -304,6 +305,8 @@ class OperativeUDPThreadReceive(UDPThread):
                 "...............................................")
         self.UDPSocket.close()
         self.running = False
+
+        # send signal for disable disconnected button.
 
 
 class OperativeUDPThreadSend():
@@ -355,7 +358,7 @@ class OperativeKISSThread(KISSThread):
         try:
             log.msg("Opening serial port" + "...................." +
                     "............................................" +
-                    "..........................................")
+                    "..................................")
 
             self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],
                                      CONNECTION_INFO['baudrate'])
@@ -374,7 +377,6 @@ class OperativeKISSThread(KISSThread):
     def doWork(self):
         if self.serialSignal:
             # Only needs to be initialized one time.
-            self.emit(self.signal, "hi from thread")
             self.kissTNC.read(callback=self.catchValue)
 
             return True
@@ -388,4 +390,7 @@ class OperativeKISSThread(KISSThread):
 
     def stop(self):
         log.msg('Stopping serial port')
+        del self.kissTNC
         self.running = False
+
+        # send signal to disable disconnected button

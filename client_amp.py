@@ -75,7 +75,6 @@ class ClientProtocol(AMP):
         """
         if self.CONNECTION_INFO['connection'] == 'udp':
             self.threads.stopUDPThreadReceive()
-            # del self.kissTNC
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             pass
         elif self.CONNECTION_INFO['connection'] == 'serial':
@@ -550,7 +549,7 @@ class SATNetGUI(QtGui.QWidget):
             QtGui.QCheckBox("Reconnect after a failure")
         configurationLayout.addWidget(self.AutomaticReconnection)
 
-        configuration.setTitle("Basic configuration")
+        # configuration.setTitle("Basic configuration")
         configuration.move(10, 380)
 
     def initLogo(self):
@@ -629,7 +628,10 @@ class SATNetGUI(QtGui.QWidget):
             raise Exception
 
     def CloseConnection(self):
-        self.gsi.clear_slots()
+        try:
+            self.gsi.clear_slots()
+        except:
+            pass
 
         self.ButtonNew.setEnabled(True)
         self.ButtonCancel.setEnabled(False)
@@ -743,7 +745,8 @@ class SATNetGUI(QtGui.QWidget):
             self.layout.addRow(QtGui.QLabel("UDP remote:   "), self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
             self.LabelIPPort.setFixedWidth(190)
-            self.layout.addRow(QtGui.QLabel("Port:         "), self.LabelIPPort)
+            self.layout.addRow(QtGui.QLabel("Port:         "),
+                               self.LabelIPPort)
 
             # Gets data from .settings file not from user interface
             # To-do
@@ -759,7 +762,8 @@ class SATNetGUI(QtGui.QWidget):
             self.layout.addRow(QtGui.QLabel("TCP remote:   "), self.LabelIP)
             self.LabelIPPort = QtGui.QLineEdit()
             self.LabelIPPort.setFixedWidth(190)
-            self.layout.addRow(QtGui.QLabel("Port:         "), self.LabelIPPort)
+            self.layout.addRow(QtGui.QLabel("Port:         "),
+                               self.LabelIPPort)
 
             # Gets data from .settings file not from user interface
             # To-do
@@ -920,7 +924,12 @@ class ConfigurationWindow(QtGui.QDialog):
         grid.addWidget(self.FieldLabelUDPPortRececeive, 7, 1, 1, 1)
         grid.addWidget(buttonBox, 8, 0, 1, 2)
 
-        self.setMinimumSize(410, 335)
+        import platform
+        os = platform.linux_distribution()
+        if os[0] == 'debian':
+            self.setMinimumSize(410, 415)
+        else:
+            self.setMinimumSize(410, 335)
         parameters.setTitle("Connection")
         parameters.move(10, 10)
 

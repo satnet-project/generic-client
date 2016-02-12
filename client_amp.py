@@ -130,7 +130,9 @@ class ClientProtocol(AMP):
             frameProcessed = list(sMsg)
             frameProcessed = ":".join("{:02x}".format(ord(c))
                                       for c in frameProcessed)
-            log.msg(frameProcessed)
+
+            sMsg = bytearray(sMsg)
+            del sMsg[:11]
 
             self.threads.UDPThreadSend(sMsg)
 

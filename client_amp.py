@@ -111,7 +111,11 @@ class ClientProtocol(AMP):
                 ") --------- Notify Message ---------")
 
         if self.CONNECTION_INFO['connection'] == 'serial':
-            log.msg(sMsg)
+            frameProcessed = []
+            frameProcessed = list(sMsg)
+            frameProcessed = ":".join("{:02x}".format(ord(c))
+                                      for c in frameProcessed)
+            log.msg(frameProcessed)
 
             import kiss
             self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],
@@ -122,7 +126,12 @@ class ClientProtocol(AMP):
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            log.msg(sMsg)
+            frameProcessed = []
+            frameProcessed = list(sMsg)
+            frameProcessed = ":".join("{:02x}".format(ord(c))
+                                      for c in frameProcessed)
+            log.msg(frameProcessed)
+
             self.threads.UDPThreadSend(sMsg)
 
             return {'bResult': True}
@@ -133,7 +142,11 @@ class ClientProtocol(AMP):
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'none':
-            log.msg(sMsg)
+            frameProcessed = []
+            frameProcessed = list(sMsg)
+            frameProcessed = ":".join("{:02x}".format(ord(c))
+                                      for c in frameProcessed)
+            log.msg(frameProcessed)
             """
             Save to local file
             """
@@ -156,12 +169,15 @@ class ClientProtocol(AMP):
 
         log.msg("Received frame: ", frameProcessed)
 
-        self.processFrame(frameProcessed)
+        # self.processFrame(frameProcessed)
+        self.processFrame(frame)
 
     @inlineCallbacks
-    def processFrame(self, frameProcessed):
+    # def processFrame(self, frameProcessed):
+    def processFrame(self, frame):
         try:
-            yield self.callRemote(SendMsg, sMsg=frameProcessed,
+            # yield self.callRemote(SendMsg, sMsg=frameProcessed,
+            yield self.callRemote(SendMsg, sMsg=frame,
                                   iTimestamp=misc.get_utc_timestamp())
         except Exception as e:
             log.err(e)
@@ -630,8 +646,9 @@ class SATNetGUI(QtGui.QWidget):
     def CloseConnection(self):
         try:
             self.gsi.clear_slots()
-        except:
-            pass
+        except AttributeError as e:
+            log.err(e)
+            log.err("Unable to stop a connection never created")
 
         self.ButtonNew.setEnabled(True)
         self.ButtonCancel.setEnabled(False)
@@ -927,7 +944,7 @@ class ConfigurationWindow(QtGui.QDialog):
         import platform
         os = platform.linux_distribution()
         if os[0] == 'debian':
-            self.setMinimumSize(410, 415)
+            self.setMinimumSize(410, 400)
         else:
             self.setMinimumSize(410, 335)
         parameters.setTitle("Connection")
@@ -989,19 +1006,19 @@ class ConfigurationWindow(QtGui.QDialog):
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
         if self.CONNECTION_INFO['udpipsend'] != udpipsend:
-            config.set('udp', 'udpipsend', str(port))
+            config.set('udp', 'udpipsend', str(udpipsend))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
         if self.CONNECTION_INFO['udpportsend'] != udpportsend:
-            config.set('udp', 'udpportsend', str(port))
+            config.set('udp', 'udpportsend', str(udpportsend))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
         if self.CONNECTION_INFO['udpipreceive'] != udpipreceive:
-            config.set('udp', 'udpipreceive', str(port))
+            config.set('udp', 'udpipreceive', str(udpipreceive))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
         if self.CONNECTION_INFO['udpportreceive'] != udpportreceive:
-            config.set('udp', 'udpportreceive', str(port))
+            config.set('udp', 'udpportreceive', str(udpportreceive))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
 

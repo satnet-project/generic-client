@@ -96,7 +96,7 @@ class GroundStationInterface(object):
     def _updateLocalFile(self, frame):
         filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
         with open(filename, "a+") as f:
-            f.write(str(time.strftime("%Y.%m.%d")) + frame + ",\n")
+            f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S")) + frame + ",\n")
 
         log.msg('---- Message saved to local file ----')
 

@@ -851,6 +851,11 @@ class SATNetGUI(QtGui.QWidget):
         self.console.moveCursor(QtGui.QTextCursor.End)
         self.console.insertPlainText(text)
 
+        filename = ("log-" + self.CONNECTION_INFO['name'] +
+                    "-" + time.strftime("%Y.%m.%d") + ".csv")
+        with open(filename, "a+") as f:
+            f.write(text)
+
     def closeEvent(self, event):
         reply = QtGui.QMessageBox.question(self, 'Exit confirmation',
                                            "Are you sure to quit?",

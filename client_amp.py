@@ -111,11 +111,7 @@ class ClientProtocol(AMP):
                 ") --------- Notify Message ---------")
 
         if self.CONNECTION_INFO['connection'] == 'serial':
-            frameProcessed = []
-            frameProcessed = list(sMsg)
-            frameProcessed = ":".join("{:02x}".format(ord(c))
-                                      for c in frameProcessed)
-            log.msg(frameProcessed)
+            self.saveReceivedFrames(sMsg)
 
             import kiss
             self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],
@@ -126,10 +122,7 @@ class ClientProtocol(AMP):
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            frameProcessed = []
-            frameProcessed = list(sMsg)
-            frameProcessed = ":".join("{:02x}".format(ord(c))
-                                      for c in frameProcessed)
+            self.saveReceivedFrames(sMsg)
 
             sMsg = bytearray(sMsg)
             del sMsg[:11]
@@ -139,24 +132,14 @@ class ClientProtocol(AMP):
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
-            log.msg(sMsg)
+            self.saveReceivedFrames(sMsg)
+
+            # To-do. Implement TCP callback.
 
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'none':
-            frameProcessed = []
-            frameProcessed = list(sMsg)
-            frameProcessed = ":".join("{:02x}".format(ord(c))
-                                      for c in frameProcessed)
-            log.msg(frameProcessed)
-            """
-            Save to local file
-            """
-            log.msg('---- Message saved to local file ----')
-            filename = ("ESEO-RECEIVEDFRAMES-" + self.CONNECTION_INFO['name'] +
-                        "-" + time.strftime("%Y.%m.%d") + ".csv")
-            with open(filename, "a+") as f:
-                f.write(sMsg + ",\n")
+            self.saveReceivedFrames(sMsg)
 
             return {'bResult': True}
 
@@ -171,11 +154,9 @@ class ClientProtocol(AMP):
 
         log.msg("Received frame: ", frameProcessed)
 
-        # self.processFrame(frameProcessed)
         self.processFrame(frame)
 
     @inlineCallbacks
-    # def processFrame(self, frameProcessed):
     def processFrame(self, frame):
         try:
             # yield self.callRemote(SendMsg, sMsg=frameProcessed,
@@ -184,6 +165,23 @@ class ClientProtocol(AMP):
         except Exception as e:
             log.err(e)
             log.err("Error")
+
+    def saveReceivedFrames(self, frame):
+            frameProcessed = []
+            frameProcessed = list(frame)
+            frameProcessed = ":".join("{:02x}".format(ord(c))
+                                      for c in frameProcessed)
+            log.msg(frameProcessed)
+            """
+            Save to local file
+            """
+            log.msg('---- Message saved to local file ----')
+            filename = ("ESEO-RECEIVED-FRAMES-" +
+                        self.CONNECTION_INFO['name'] +
+                        "-" + time.strftime("%Y.%m.%d") + ".csv")
+            with open(filename, "a+") as f:
+                f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S")) +
+                        frame + ",\n")
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] +
@@ -864,10 +862,8 @@ class SATNetGUI(QtGui.QWidget):
         if reply == QtGui.QMessageBox.Yes:
             try:
                 self.gsi.clear_slots()
-            except AttributeError as e:
-                log.err(e)
+            except AttributeError:
                 log.err("Unable to stop a connection never created")
-
             try:
                 reactor.stop()
                 log.msg("Reactor stopped")

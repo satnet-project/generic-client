@@ -67,7 +67,6 @@ class GroundStationInterface(object):
     UDPSocket = None
     TCPSocket = None
     frameBuffer = None
-    # CONNECTION_INFO = {}
     AMP = None
     GS = None
 
@@ -82,8 +81,8 @@ class GroundStationInterface(object):
                 raise WrongFormatNotification("Bad format frame")
 
             try:
-                # self.AMP._processframe(self, result)
                 self.AMP._processframe(result)
+                self._updateLocalFile(result)
             except Exception as e:
                 log.err('Error processing frame')
                 log.err(e)
@@ -97,12 +96,15 @@ class GroundStationInterface(object):
     def _updateLocalFile(self, frame):
         filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
         with open(filename, "a+") as f:
-            f.write(frame + ",\n")
+            f.write(str(time.strftime("%Y.%m.%d")) + frame + ",\n")
 
         log.msg('---- Message saved to local file ----')
 
     def clear_slots(self):
-        self.AMP.end_connection()
+        try:
+            self.AMP.end_connection()
+        except TypeError:
+            log.err("Not yet connected.")
 
     """
     :ivar AMP:
@@ -360,7 +362,7 @@ class OperativeKISSThread(KISSThread):
                     "............................................" +
                     "..................................")
 
-            self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],
+            self.kissTNC = kiss.KISS(CONNECTIsudON_INFO['serialport'],
                                      CONNECTION_INFO['baudrate'])
             self.kissTNC.console_handler.setLevel(logging.ERROR)
 

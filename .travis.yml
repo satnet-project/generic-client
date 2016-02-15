@@ -40,8 +40,7 @@ install:
 script:
   - nosetests --with-coverage --cover-erase
   - cd tests
-  - coverage run test_clientToServer.py
-  - coverage run test_serverToClient.py
+  - trial test_readDataFromFile
 
 after_success:
   - cd ../

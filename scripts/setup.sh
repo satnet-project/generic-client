@@ -95,7 +95,7 @@ function install_pyqt4()
     cp /sbin/ldconfig ../../bin/
     sudo ldconfig
     sudo make install
-    cd ../ && rm -r -f PyQt*
+    cd ../ && rm -rf PyQt*
 }
 
 function install_venv()
@@ -191,7 +191,6 @@ then
 		mv satnet ~/bin/
 		cp -r -f ../ ~/.satnet/client/ 
 		cd ../
-	else
 	    # Workaround about pyserial issue with ubuntu kernel version
 	    # https://bugs.launchpad.net/ubuntu/+source/python2.7/+bug/1501240
 	    sed -i '491,495 s/^/#/' $pyserial_module
@@ -210,12 +209,26 @@ then
 
 fi
 
-if [ $1 == '-circleCI' ];
+if [ $1 == '-travisCI' ];
 then
 	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
-    mv key ../tests
+    cp -r key ../
+	cp -r key ../tests
+    cd ../../
+	
+	echo ">>> [TravisCI] Installing generic client test modules..."
+	pip install -r "$project_path/requirements-tests.txt"
+    pip install coveralls
+    pip install coverage
+    pip install nose
+fi
+
+if [ $1 == '-circleCI' ];
+then
+	# [[ $_generate_keys == 'true' ]] && create_selfsigned_keys
+    # mv key ../tests
     
-    echo '>>> Python modules installation'
+	echo ">>> [CircleCI] Installing generic client test modules..."
 	pip install -r "$project_path/requirements-tests.txt"
 
 	echo '>>> SIP installation'
@@ -226,26 +239,12 @@ then
 
 fi
 
-if [ $1 == '-travisCI' ];
-then
-	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
-    cp -r key ../
-	cp -r key ../tests
-
-    cd ../../
-    echo '>>> Python modules installation'
-    pip install coveralls
-    pip install coverage
-    pip install nose
-	pip install -r "$project_path/requirements-tests.txt"
-fi
-
 if [ $1 == '-local' ];
 then
 	venv_dir="$project_path/.venv_test"
 
-	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
-	mv key ../tests
+	# [[ $_generate_keys == 'true' ]] && create_selfsigned_keys
+	# mv key ../tests
 
 	echo '>>> Installing virtualenv'
 	[[ $_install_venv == 'true' ]] && install_venv

@@ -1075,6 +1075,58 @@ class ResultObj(QtCore.QObject):
         self.val = val
 
 
+def noArguments():
+    argumentsDict = {}
+    arguments = ['username', 'password', 'slot', 'connection',
+                 'serialport', 'baudrate', 'udpipsend', 'udpportsend',
+                 'udpipreceive', 'udpportreceive']
+    for i in range(len(arguments)):
+        argumentsDict[arguments[i]] = ""
+
+    return argumentsDict
+
+
+def readArguments():
+    import getopt
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],
+                                   "hfgn:p:t:c:s:b:is:us:ir:ur",
+                                   ["name=", "password=",
+                                    "slot=", "connection=",
+                                    "serialport=",
+                                    "baudrate=", "udpipsend=",
+                                    "udpportsend=", "udpipreceive=",
+                                    "udpportreceive="]
+                                   )
+    except getopt.GetoptError:
+        print "error"
+
+    argumentsDict = {}
+    if ('-g', '') in opts:
+        for opt, arg in opts:
+            if opt == "-n":
+                argumentsDict['username'] = arg
+            elif opt == "-p":
+                argumentsDict['password'] = arg
+            elif opt == "-t":
+                argumentsDict['slot'] = arg
+            elif opt == "-c":
+                argumentsDict['connection'] = arg
+            elif opt == "-s":
+                argumentsDict['serialport'] = arg
+            elif opt == "-b":
+                argumentsDict['baudrate'] = arg
+            elif opt == "-is":
+                argumentsDict['udpipsend'] = arg
+            elif opt == "-us":
+                argumentsDict['udpportsend'] = arg
+            elif opt == "-ir":
+                argumentsDict['udpipreceive'] = arg
+            elif opt == "-ur":
+                argumentsDict['udpportreceive'] = arg
+    return argumentsDict
+
+
 if __name__ == '__main__':
 
     queue = Queue()
@@ -1090,83 +1142,26 @@ if __name__ == '__main__':
             import subprocess
             subprocess.call(["man", "./satnetclient.1"])
         elif sys.argv[1] == "-g":
-            import getopt
-            try:
-                opts, args = getopt.getopt(sys.argv[1:],
-                                           "hfgn:p:t:c:s:b:is:us:ir:ur",
-                                           ["name=", "password=",
-                                            "slot=", "connection=",
-                                            "serialport=",
-                                            "baudrate=", "udpipsend=",
-                                            "udpportsend=", "udpipreceive=",
-                                            "udpportreceive="]
-                                           )
-            except getopt.GetoptError:
-                print "error"
-
-            argumentsDict = {}
-            if ('-g', '') in opts:
-                for opt, arg in opts:
-                    if opt == "-n":
-                        argumentsDict['username'] = arg
-                    elif opt == "-p":
-                        argumentsDict['password'] = arg
-                    elif opt == "-t":
-                        argumentsDict['slot'] = arg
-                    elif opt == "-c":
-                        argumentsDict['connection'] = arg
-                    elif opt == "-s":
-                        argumentsDict['serialport'] = arg
-                    elif opt == "-b":
-                        argumentsDict['baudrate'] = arg
-                    elif opt == "-is":
-                        argumentsDict['udpipsend'] = arg
-                    elif opt == "-us":
-                        argumentsDict['udpportsend'] = arg
-                    elif opt == "-ir":
-                        argumentsDict['udpipreceive'] = arg
-                    elif opt == "-ur":
-                        argumentsDict['udpportreceive'] = arg
-
-            qapp = QtGui.QApplication(sys.argv)
-            app = SATNetGUI(argumentsDict)
-            app.setWindowIcon(QtGui.QIcon('icon.png'))
-            app.show()
-
-            # Create thread that will listen on the other end of the queue, and
-            # send the text to the textedit in our application
-            my_receiver = MyReceiver(queue)
-            my_receiver.mysignal.connect(app.append_text)
-            my_receiver.start()
-
-            from qtreactor import pyqt4reactor
-            pyqt4reactor.install()
-            from twisted.internet import reactor
-            reactor.run()
+            argumentsDict = readArguments()
         elif sys.argv[1] != "-g" and sys.argv[1] != "-help":
             print "Unknown option: %s" % (sys.argv[1])
             print "Try 'python client_amp.py -help' for more information."
     except IndexError:
-        argumentsDict = {}
-        arguments = ['username', 'password', 'slot', 'connection',
-                     'serialport', 'baudrate', 'udpipsend', 'udpportsend',
-                     'udpipreceive', 'udpportreceive']
-        for i in range(len(arguments)):
-            argumentsDict[arguments[i]] = ""
+        argumentsDict = noArguments()
 
-        qapp = QtGui.QApplication(sys.argv)
-        app = SATNetGUI(argumentsDict)
-        app.setWindowIcon(QtGui.QIcon('icon.png'))
-        app.show()
+    qapp = QtGui.QApplication(sys.argv)
+    app = SATNetGUI(argumentsDict)
+    app.setWindowIcon(QtGui.QIcon('icon.png'))
+    app.show()
 
-        # Create thread that will listen on the other end of the
-        # queue, and send the text to the textedit in our application
-        my_receiver = MyReceiver(queue)
-        my_receiver.mysignal.connect(app.append_text)
-        my_receiver.start()
+    # Create thread that will listen on the other end of the
+    # queue, and send the text to the textedit in our application
+    my_receiver = MyReceiver(queue)
+    my_receiver.mysignal.connect(app.append_text)
+    my_receiver.start()
 
-        from qtreactor import pyqt4reactor
-        pyqt4reactor.install()
-
-        from twisted.internet import reactor
-        reactor.run()
+    from qtreactor import pyqt4reactor
+    pyqt4reactor.install()
+    
+    from twisted.internet import reactor
+    reactor.run()

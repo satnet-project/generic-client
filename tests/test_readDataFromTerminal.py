@@ -6,9 +6,10 @@ from os import path
 from PyQt4 import QtGui
 
 from twisted.python import log
+from mock import patch
 
 sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
-from client_amp import SATNetGUI
+import client_amp
 
 """
    Copyright 2016 Samuel Góngora García
@@ -33,25 +34,38 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 class TestReadDataFromTerminal(unittest.TestCase):
 
-    def test_loadParametersCorrectly(self):
-        log.msg("To implement.")
-        # Set 'argv' arguments
-        # Check return value
+    """
+    No arguments passed at script startup.
+    """
+    def test_noArgumentsGiven(self):
+        argumentsDict = self.mainObject.noArguments()
 
-    def test_loadParametersIncorrectly(self):
-        log.msg("To implement.")
-        # Set 'argv' arguments
-        # Check return error
+        arguments = ['username', 'password', 'slot', 'connection',
+                     'serialport', 'baudrate', 'udpipsend', 'udpportsend',
+                     'udpipreceive', 'udpportreceive']
+        for i in range(len(arguments)):
+            self.assertEquals(argumentsDict[arguments[i]],
+                              '', "argumentsDict values are not null.")
+
+    """
+    Some arguments are initialized at script startup.
+    """
+    def test_ArgumentsGiven(self):
+        testargs = ["client_amp.py", "-g", "-n", "crespo", "-p",
+                    "cre.spo", "-t", "2", "-c", "serial", "-s",
+                    "/dev/ttyS1", "-b", "115200"]
+        with patch.object(sys, 'argv', testargs):
+            argumentsDict = self.mainObject.readArguments()
+
+        descriptors = ['username', 'slot', 'baudrate', 'serialport',
+                       'connection', 'password']
+
+        for i in range(len(descriptors)):
+            self.assertIsInstance(argumentsDict[(descriptors[i])], str,
+                                  "Dict value is not a string object")
 
     def setUp(self):
-        # Must initialize a QWidget object which contains the
-        # load parameters method.
-        argumentsDict = {}
-        arguments = ['username', 'password', 'slot', 'connection',
-                     'serialPort', 'baudRate', 'UDPIp', 'UDPPort']
-        for i in range(len(arguments)):
-            argumentsDict[arguments[i]] = ""
+        self.mainObject = client_amp
 
-
-if __name__ == '__main__':
-    unittest.main()
+    def teardrown(self):
+        pass

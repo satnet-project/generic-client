@@ -38,12 +38,12 @@ install:
   - cd ../ && rm -r -f PyQt-x11-gpl-4.11.4 && cd ../../
 
 script:
-  - nosetests --with-coverage --cover-erase
   - cd tests
   - trial test_readDataFromFile
-
+"""
 after_success:
   - cd ../
   - coverage combine
   - coverage report --omit '/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/*', '/home/travis/protocol/*'
   - coveralls
+"""

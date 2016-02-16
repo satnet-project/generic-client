@@ -111,6 +111,9 @@ class ClientProtocol(AMP):
                 ") --------- Notify Message ---------")
 
         if self.CONNECTION_INFO['connection'] == 'serial':
+            sMsg = bytearray(sMsg)
+            del sMsg[:10]
+
             self.saveReceivedFrames(sMsg)
 
             import kiss
@@ -122,23 +125,27 @@ class ClientProtocol(AMP):
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            self.saveReceivedFrames(sMsg)
-
             sMsg = bytearray(sMsg)
-            del sMsg[:11]
+            del sMsg[:10]
 
+            self.saveReceivedFrames(sMsg)
             self.threads.UDPThreadSend(sMsg)
 
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
-            self.saveReceivedFrames(sMsg)
+            sMsg = bytearray(sMsg)
+            del sMsg[:10]
 
+            self.saveReceivedFrames(sMsg)
             # To-do. Implement TCP callback.
 
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'none':
+            sMsg = bytearray(sMsg)
+            del sMsg[:10]
+
             self.saveReceivedFrames(sMsg)
 
             return {'bResult': True}
@@ -176,6 +183,10 @@ class ClientProtocol(AMP):
             Save to local file
             """
             log.msg('---- Message saved to local file ----')
+
+            frame = bytearray(frame)
+            del sMsg[:10]
+
             filename = ("ESEO-RECEIVED-FRAMES-" +
                         self.CONNECTION_INFO['name'] +
                         "-" + time.strftime("%Y.%m.%d") + ".csv")

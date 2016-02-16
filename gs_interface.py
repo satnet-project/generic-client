@@ -93,10 +93,10 @@ class GroundStationInterface(object):
                 raise WrongFormatNotification("Bad format frame")
 
     def _updateLocalFile(self, frame):
-        filename = "ESEO-" + self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
+        filename = self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
 
         frame = bytearray(frame)
-        del frame[:10]
+        del frame[:1]
         with open(filename, "a+") as f:
             f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S ")) + frame + "\n")
 

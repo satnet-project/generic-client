@@ -1,14 +1,17 @@
 # coding=utf-8
-import unittest
+import os
 import sys
 
-from os import path
-from PyQt4 import QtGui
-
 from twisted.python import log
+from twisted.trial.unittest import TestCase
 
-sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
-from client_amp import SATNetGUI
+from ConfigParser import NoSectionError
+
+from exceptions import KeyError
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                "..")))
+import misc
 
 """
    Copyright 2016 Samuel Góngora García
@@ -31,27 +34,71 @@ from client_amp import SATNetGUI
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-class TestReadDataFromFile(unittest.TestCase):
-
-    def test_loadParametersCorrectly(self):
-        log.msg("To implement.")
-        # Load parameters
-        # Check return value
-
-    def test_loadParametersIncorrectly(self):
-        log.msg("To implement.")
-        # Load parameters
-        # Check return error
+class TestReadDataFromFile(TestCase):
 
     def setUp(self):
-        # Must initialize a QWidget object which contains the
-        # load parameters method.
-        argumentsDict = {}
-        arguments = ['username', 'password', 'slot', 'connection',
-                     'serialPort', 'baudRate', 'UDPIp', 'UDPPort']
-        for i in range(len(arguments)):
-            argumentsDict[arguments[i]] = ""
+        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Running tests")
 
+        testFile = open(".settings", "w")
+        testFile.write("[User]\n"
+                       "username = test-sc-user\n"
+                       "password = sgongarpass\n"
+                       "slot_id = -1\n"
+                       "connection = none\n"
+                       "\n"
+                       "[Serial]\n"
+                       "serialport = /dev/ttyUSB0\n"
+                       "baudrate = 500000\n"
+                       "\n"
+                       "[udp]\n"
+                       "udpipreceive = 127.0.0.1\n"
+                       "udpportreceive = 1234\n"
+                       "udpipsend = 172.19.51.145\n"
+                       "udpportsend = 57009\n"
+                       "\n"
+                       "[tcp]\n"
+                       "tcpip = 127.0.0.1\n"
+                       "tcpport = 4321\n"
+                       "\n"
+                       "[server]\n"
+                       "serverip = 172.19.51.133\n"
+                       "serverport = 25345\n"
+                       "\n"
+                       "[Connection]\n"
+                       "reconnection = no\n"
+                       "parameters = yes\n"
+                       "\n"
+                       "[Client]\n"
+                       "name = Universidade de Vigo\n"
+                       "attempts = 10")
+        testFile.close()
 
-if __name__ == '__main__':
-    unittest.main()
+    def tearDown(self):
+        os.remove(".settings")
+
+    """
+    Proper file.
+    """
+    def test_loadRightFile(self):
+        argumentsDict = misc.get_data_local_file('.settings')
+        return self.assertIsInstance(argumentsDict, dict)
+
+    """
+    Wrong file.
+    """
+    def test_loadWrongFile(self):
+        return self.assertRaises(NoSectionError, misc.get_data_local_file,
+                                 'wrongFile')
+    """
+    Proper key.
+    """
+    def test_loadRightKey(self):
+        argumentsDict = misc.get_data_local_file('.settings')
+        return self.assertIsInstance(argumentsDict['serverip'], str)
+
+    """
+    Wrong key.
+    """
+    def test_loadWrongKey(self):
+        argumentsDict = misc.get_data_local_file('.settings')
+        return self.assertRaises(KeyError, lambda: argumentsDict['wrongKey'])

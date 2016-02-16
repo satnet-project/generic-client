@@ -9,5 +9,4 @@ dependencies:
 
 test:
   override:
-    - cd tests/ && python test_clientToServer.py
-    - cd tests/ && python test_serverToClient.py
+    - cd tests/ && trial test_readDataFromFile

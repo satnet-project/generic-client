@@ -71,7 +71,8 @@ class GroundStationInterface(object):
 
     def __init__(self, CONNECTION_INFO, GS, AMP):
         self.CONNECTION_INFO = CONNECTION_INFO
-        self.AMP = AMP
+        # self.AMP = AMP
+        self.AMP = None
         self.GS = GS
 
     def _manageFrame(self, result):
@@ -100,7 +101,10 @@ class GroundStationInterface(object):
         with open(filename, "a+") as f:
             f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S ")) + frame + "\n")
 
-        log.msg('---- Message saved to local file ----')
+        log.msg("--------------------------------------------- " +
+                "Message saved to local file" +
+                " ---------------------------------------------")
+        log.msg("")
 
     def clear_slots(self):
         try:
@@ -301,6 +305,7 @@ class OperativeUDPThreadReceive(UDPThread):
                 " Received from ip: " + str(address[0]) +
                 " port: " + str(address[1]) + " --------------" +
                 "------------------")
+
         self.finished.emit(frame)
 
     def stop(self):
@@ -331,9 +336,9 @@ class OperativeUDPThreadSend():
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
-            log.msg("Opening UPD socket" + "....................." +
-                    "............................................" +
-                    "..............................")
+            log.msg("Opening UPD socket" + ".........................." +
+                    '............................................' +
+                    '............................................')
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
         except Exception as e:
             log.err('Error opening UPD socket')
@@ -364,7 +369,7 @@ class OperativeKISSThread(KISSThread):
                     "............................................" +
                     "..................................")
 
-            self.kissTNC = kiss.KISS(CONNECTIsudON_INFO['serialport'],
+            self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],
                                      CONNECTION_INFO['baudrate'])
             self.kissTNC.console_handler.setLevel(logging.ERROR)
 

@@ -161,12 +161,6 @@ then
 	echo '>>> PyQt4 installation'
 	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
 
-	# man page creation
-	source "$venv_dir/bin/activate"
-	cd "$project_path/docs"
-	make man
-	cp _build/man/satnetclient.1 ../
-
 	sed -i '491,495 s/^/#/' $pyserial_module
 fi
 
@@ -224,27 +218,4 @@ then
 
 	echo ">>> Removing old virtualenv"
 	[[ $_install_venv == 'true' ]] && remove_venv
-
-	os=`cat /etc/issue.net`
-
-	if [[ "$os" =~ "Debian" ]]; then
-		echo ">>> Removing program files"
-		sudo rm -r -f ~/.satnet/client/
-
-		echo ">>> Removing executables"
-		rm ~/bin/satnet
-
-		echo ">>> Removing links"
-		rm ~/Desktop/satnet.desktop
-		rm ~/Escritorio/satnet.desktop
-	else
-	    echo "Not using Debian.";
-	fi
-
- 	echo ">>> Do you wish to remove all configuration files? (yes/no)"
- 	read OPTION
- 	if [ $OPTION == 'yes' ];
- 	then
- 		rm -r -f ~/.satnet
- 	fi
 fi

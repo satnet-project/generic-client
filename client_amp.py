@@ -89,8 +89,6 @@ class ClientProtocol(AMP):
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Message ---------")
 
-        log.msg(self.CONNECTION_INFO['connection'])
-
         if self.CONNECTION_INFO['connection'] == 'serial':
             sMsg = bytearray(sMsg)
             del sMsg[:1]
@@ -110,10 +108,7 @@ class ClientProtocol(AMP):
             del sMsg[:1]
 
             self.saveReceivedFrames(sMsg)
-
-            log.msg("antes")
             self.threads.UDPThreadSend(sMsg)
-            log.msg("despues")
 
             return {'bResult': True}
 
@@ -158,15 +153,7 @@ class ClientProtocol(AMP):
             log.err("Error")
 
     def saveReceivedFrames(self, frame):
-        # frameProcessed = []
-        # frameProcessed = list(frame)
-        # frameProcessed = ":".join("{:02x}".format(ord(c))
-        #                           for c in frameProcessed)
-        # log.msg(frameProcessed)
-        """
-        Save to local file
-        """
-        log.msg('---- Message saved to local file ----')
+        log.msg('---- Message received saved to local file ----')
 
         frame = bytearray(frame)
         del frame[:1]

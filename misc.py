@@ -1,8 +1,11 @@
+# coding=utf-8
 import datetime
 import pytz
+import sys
+import getopt
 
 """
-   Copyright 2013, 2014, 2015 Ricardo Tubio-Pardavila
+   Copyright 2016 Samuel Góngora García
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +18,11 @@ import pytz
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+   :Author:
+        Samuel Góngora García (s.gongoragarcia@gmail.com)
 """
-__author__ = 'rtubiopa@calpoly.edu'
+__author__ = 's.gongoragarcia@gmail.com'
+
 
 def get_now_utc(no_microseconds=True):
     """
@@ -104,6 +110,46 @@ def noArguments():
     for i in range(len(arguments)):
         argumentsDict[arguments[i]] = ""
 
+    return argumentsDict
+
+
+def readArguments():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],
+                                   "hfgn:p:t:c:s:b:is:us:ir:ur",
+                                   ["name=", "password=",
+                                    "slot=", "connection=",
+                                    "serialport=",
+                                    "baudrate=", "udpipsend=",
+                                    "udpportsend=", "udpipreceive=",
+                                    "udpportreceive="]
+                                   )
+    except getopt.GetoptError:
+        print "error"
+
+    argumentsDict = {}
+    if ('-g', '') in opts:
+        for opt, arg in opts:
+            if opt == "-n":
+                argumentsDict['username'] = arg
+            elif opt == "-p":
+                argumentsDict['password'] = arg
+            elif opt == "-t":
+                argumentsDict['slot'] = arg
+            elif opt == "-c":
+                argumentsDict['connection'] = arg
+            elif opt == "-s":
+                argumentsDict['serialport'] = arg
+            elif opt == "-b":
+                argumentsDict['baudrate'] = arg
+            elif opt == "-is":
+                argumentsDict['udpipsend'] = arg
+            elif opt == "-us":
+                argumentsDict['udpportsend'] = arg
+            elif opt == "-ir":
+                argumentsDict['udpipreceive'] = arg
+            elif opt == "-ur":
+                argumentsDict['udpportreceive'] = arg
     return argumentsDict
 
 TIMESTAMP_0 = localize_date_utc(datetime.datetime(year=1970, month=1, day=1))

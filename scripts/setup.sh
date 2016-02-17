@@ -167,37 +167,7 @@ then
 	make man
 	cp _build/man/satnetclient.1 ../
 
-	os=`cat /etc/issue.net`
-
-	if [[ "$os" =~ "Debian" ]]; then
-		# binary creation
-		cd ../scripts
-		sudo shc -f satnet.sh
-		sudo rm satnet.sh.x.c
-		sudo chmod 777 satnet.sh.x
-		sudo chown $currentUser satnet.sh.x
-		mv satnet.sh.x satnet
-
-		mkdir ~/bin/
-		mkdir ~/.satnet/
-		mkdir ~/.satnet/client/
-
-		sudo mkdir /opt/satnet/
-		sudo cp ../icono.png /opt/satnet/
-		# To-do. Move .desktop file according system language.
-		cp satnet.desktop ~/Escritorio
-		cp satnet.desktop ~/Desktop
-
-		mv satnet ~/bin/
-		cp -r -f ../ ~/.satnet/client/ 
-		cd ../
-	    # Workaround about pyserial issue with ubuntu kernel version
-	    # https://bugs.launchpad.net/ubuntu/+source/python2.7/+bug/1501240
-	    sed -i '491,495 s/^/#/' $pyserial_module
-	fi
-
-	# Deactivate virtualenv
-	deactivate
+	sed -i '491,495 s/^/#/' $pyserial_module
 
 	echo ">>> For apply changes you must reboot your system"
 	echo ">>> Reboot now? (yes/no)"

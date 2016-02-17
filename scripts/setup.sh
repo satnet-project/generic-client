@@ -168,15 +168,6 @@ then
 	cp _build/man/satnetclient.1 ../
 
 	sed -i '491,495 s/^/#/' $pyserial_module
-
-	echo ">>> For apply changes you must reboot your system"
-	echo ">>> Reboot now? (yes/no)"
-	read OPTION
-	if [ $OPTION == 'yes' ];
-	then
-		sudo reboot
-	fi
-
 fi
 
 if [ $1 == '-travisCI' ];

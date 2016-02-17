@@ -7,5 +7,4 @@ libqt4-dev
 libffi-dev
 libssl-dev
 libcanberra-gtk-module
-shc
 unzip

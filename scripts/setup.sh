@@ -58,8 +58,8 @@ function create_selfsigned_keys()
 function install_packages()
 {
 	echo ">>> Installing system packages..."
-	sudo aptitude update && sudo aptitude dist-upgrade -y
-	sudo aptitude install $( cat "$linux_packages" ) -y
+	sudo apt-get update && sudo apt-get dist-upgrade -y
+	sudo apt-get install $( cat "$linux_packages" ) -y
 }
 
 function uninstall_packages()

@@ -15,11 +15,13 @@ udpipsend = 172.19.51.145
 udpportsend = 57009
 
 [tcp]
-tcpip = 127.0.0.1
-tcpport = 4321
+tcpipreceive = 127.0.0.1
+tcpportreceive = 4321
+tcpipsend = 127.0.0.1
+tcpportsend = 1234
 
 [server]
-serverip = 172.19.51.121
+serverip = 127.0.0.1
 serverport = 25345
 
 [Connection]

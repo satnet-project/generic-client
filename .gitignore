@@ -6,10 +6,10 @@ __pycache__/
 .Python
 .venv/
 .venv_test/
+_trial_temp/
 tests/key/
+tests/_trial_temp/
 sip*
 
-docs*
-ESEO*
-
-log-*
+# Log files
+log*

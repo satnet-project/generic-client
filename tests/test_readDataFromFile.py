@@ -5,8 +5,8 @@ import sys
 from twisted.python import log
 from twisted.trial.unittest import TestCase
 
+# Errors
 from ConfigParser import NoSectionError
-
 from exceptions import KeyError
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),

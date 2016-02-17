@@ -1,7 +1,0 @@
-#!/usr/bin/env xdg-open
-[Desktop Entry]
-Encoding=UTF-8
-Name=SATNet Client
-Exec=satnet
-Icon=/opt/satnet/icono.png
-Type=Application

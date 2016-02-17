@@ -41,6 +41,7 @@ script:
   - nosetests --with-coverage --cover-erase
   - cd tests
   - trial test_readDataFromFile
+  - trial test_readDataFromTerminal
 
 after_success:
   - cd ../

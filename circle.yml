@@ -1,3 +1,7 @@
+general:
+  branches:
+    only:
+      - master
 
 dependencies:
   pre:
@@ -10,3 +14,4 @@ dependencies:
 test:
   override:
     - cd tests/ && trial test_readDataFromFile
+    - cd tests/ && trial test_readDataFromTerminal

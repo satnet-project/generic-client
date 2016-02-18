@@ -137,7 +137,10 @@ class UDPThread(QtCore.QThread):
 
     def run(self):
         self.running = True
-        self.doWork()
+        try:
+            self.doWork()
+        except:
+            pass
 
     def doWork(self):
         return True
@@ -244,8 +247,6 @@ class OperativeTCPThread(TCPThread):
                     log.err(e)
 
     def catchValue(self, frame, address):
-        # self.finished.emit(ResultObj(frame))
-
         log.msg("----------------------------- " +
                 "Message from TCP socket" +
                 " -----------------------------")
@@ -279,7 +280,7 @@ class OperativeUDPThreadReceive(UDPThread):
                           int(self.CONNECTION_INFO['udpportreceive']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
-        from socket import SOL_SOCKET, SO_REUSEADDR
+        from socket import SOL_SOCKET, SO_REUSEADDR, SHUT_RD
         try:
             log.msg("Opening UPD socket" + ".........................." +
                     '............................................' +
@@ -309,10 +310,13 @@ class OperativeUDPThreadReceive(UDPThread):
         self.finished.emit(frame)
 
     def stop(self):
-        log.msg('Stopping UDPSocket' + "..............." +
+        log.msg('Stopping UDPSocket' + "...................." +
                 "..............................................." +
                 "...............................................")
+
         self.UDPSocket.close()
+
+        self.UDPSignal = False
         self.running = False
 
         # send signal for disable disconnected button.

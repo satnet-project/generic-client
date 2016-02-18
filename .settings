@@ -21,7 +21,7 @@ tcpipsend = 127.0.0.1
 tcpportsend = 1234
 
 [server]
-serverip = 127.0.0.1
+serverip = satnet.aero.calpoly.edu
 serverport = 25345
 
 [Connection]

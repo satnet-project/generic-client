@@ -597,16 +597,24 @@ class SATNetGUI(QtGui.QWidget):
         if str(self.LabelConnection.currentText()) == 'udp':
             self.threads.runUDPThreadReceive()
             self.threads.runUDPThreadSend()
+            self.connection = 'udp'
+            self.LabelConnection.setEnabled(False)
             self.stopInterfaceButton.setEnabled(True)
         elif str(self.LabelConnection.currentText()) == 'serial':
             self.threads.runKISSThreadReceive()
+            self.Connection = 'serial'
+            self.LabelConnection.setEnabled(False)
             self.stopInterfaceButton.setEnabled(True)
 
     def stopInterface(self):
-        if str(self.LabelConnection.currentText()) == 'udp':
+        if self.connection == 'udp':
             self.threads.stopUDPThreadReceive()
-        elif str(self.LabelConnection.currentText()) == 'serial':
+            self.LabelConnection.setEnabled(True)
+            self.stopInterfaceButton.setEnabled(False)
+        elif self.connection == 'serial':
             self.threads.stopKISSThread()
+            self.LabelConnection.setEnabled(True)
+            self.stopInterfaceButton.setEnabled(False)
 
     def usage(self):
         log.msg("USAGE of client_amp.py")

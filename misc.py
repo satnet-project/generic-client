@@ -104,7 +104,7 @@ def localize_time_utc(non_utc_time):
 
 def noArguments():
     argumentsDict = {}
-    arguments = ['username', 'password', 'slot', 'connection',
+    arguments = ['username', 'slot', 'connection',
                  'serialport', 'baudrate', 'udpipsend', 'udpportsend',
                  'udpipreceive', 'udpportreceive']
     for i in range(len(arguments)):
@@ -116,8 +116,8 @@ def noArguments():
 def readArguments(argumentsDict):
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                                   "hfgn:p:t:c:s:b:is:us:ir:ur",
-                                   ["name=", "password=",
+                                   "hfgn:t:c:s:b:is:us:ir:ur",
+                                   ["name=",
                                     "slot=", "connection=",
                                     "serialport=",
                                     "baudrate=", "udpipsend=",
@@ -132,8 +132,6 @@ def readArguments(argumentsDict):
         for opt, arg in opts:
             if opt == "-n":
                 argumentsDict['username'] = arg
-            elif opt == "-p":
-                argumentsDict['password'] = arg
             elif opt == "-t":
                 argumentsDict['slot'] = arg
             elif opt == "-c":
@@ -185,7 +183,6 @@ def get_data_local_file(settingsFile):
     CONNECTION_INFO['name'] = config.get('Client', 'name')
     CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
     CONNECTION_INFO['username'] = config.get('User', 'username')
-    CONNECTION_INFO['password'] = config.get('User', 'password')
     CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
     CONNECTION_INFO['connection'] = config.get('User', 'connection')
 

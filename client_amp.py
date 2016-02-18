@@ -525,8 +525,6 @@ class SATNetGUI(QtGui.QWidget):
     def setArguments(self, argumentsDict):
         if argumentsDict['username'] != "":
             self.LabelUsername.setText(argumentsDict['username'])
-        if argumentsDict['password'] != "":
-            self.LabelPassword.setText(argumentsDict['password'])
         if argumentsDict['slot'] != "":
             self.LabelSlotID.setText(argumentsDict['slot'])
         if argumentsDict['connection'] != "":
@@ -546,7 +544,6 @@ class SATNetGUI(QtGui.QWidget):
     def setParameters(self):
         self.FieldLabelAttemps.setText(self.CONNECTION_INFO['attempts'])
         self.LabelUsername.setText(self.CONNECTION_INFO['username'])
-        self.LabelPassword.setText(self.CONNECTION_INFO['password'])
         self.LabelSlotID.setText(self.CONNECTION_INFO['slot_id'])
 
         try:
@@ -570,18 +567,20 @@ class SATNetGUI(QtGui.QWidget):
         self.CONNECTION_INFO = misc.get_data_local_file(
             settingsFile='.settings')
 
+        """
         self.FieldLabelAttemps.setText(self.CONNECTION_INFO['attempts'])
         self.LabelUsername.setText(self.CONNECTION_INFO['username'])
         self.LabelPassword.setText(self.CONNECTION_INFO['password'])
         self.LabelSlotID.setText(self.CONNECTION_INFO['slot_id'])
-
+        """
+        """
         try:
             index = self.LabelConnection.findText(
                 self.CONNECTION_INFO['connection'])
             self.LabelConnection.setCurrentIndex(index)
         except Exception as e:
             log.err(e)
-
+        """
         log.msg("Parameters loaded from .setting file.")
 
     # Load connection parameters from .settings file.

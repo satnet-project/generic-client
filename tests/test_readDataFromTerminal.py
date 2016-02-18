@@ -10,6 +10,7 @@ from mock import patch
 
 sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
 import client_amp
+import misc
 
 """
    Copyright 2016 Samuel Góngora García
@@ -38,7 +39,7 @@ class TestReadDataFromTerminal(unittest.TestCase):
     No arguments passed at script startup.
     """
     def test_noArgumentsGiven(self):
-        argumentsDict = self.mainObject.noArguments()
+        argumentsDict = misc.noArguments()
 
         arguments = ['username', 'password', 'slot', 'connection',
                      'serialport', 'baudrate', 'udpipsend', 'udpportsend',
@@ -55,7 +56,7 @@ class TestReadDataFromTerminal(unittest.TestCase):
                     "cre.spo", "-t", "2", "-c", "serial", "-s",
                     "/dev/ttyS1", "-b", "115200"]
         with patch.object(sys, 'argv', testargs):
-            argumentsDict = self.mainObject.readArguments()
+            argumentsDict = misc.readArguments(testargs)
 
         descriptors = ['username', 'slot', 'baudrate', 'serialport',
                        'connection', 'password']

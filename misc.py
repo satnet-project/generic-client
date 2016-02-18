@@ -113,7 +113,7 @@ def noArguments():
     return argumentsDict
 
 
-def readArguments():
+def readArguments(argumentsDict):
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    "hfgn:p:t:c:s:b:is:us:ir:ur",

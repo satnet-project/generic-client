@@ -732,47 +732,6 @@ class ResultObj(QtCore.QObject):
         self.val = val
 
 
-def readArguments():
-    import getopt
-    try:
-        opts, args = getopt.getopt(sys.argv[1:],
-                                   "hfgn:p:t:c:s:b:is:us:ir:ur",
-                                   ["name=", "password=",
-                                    "slot=", "connection=",
-                                    "serialport=",
-                                    "baudrate=", "udpipsend=",
-                                    "udpportsend=", "udpipreceive=",
-                                    "udpportreceive="]
-                                   )
-    except getopt.GetoptError:
-        print "error"
-
-    argumentsDict = {}
-    if ('-g', '') in opts:
-        for opt, arg in opts:
-            if opt == "-n":
-                argumentsDict['username'] = arg
-            elif opt == "-p":
-                argumentsDict['password'] = arg
-            elif opt == "-t":
-                argumentsDict['slot'] = arg
-            elif opt == "-c":
-                argumentsDict['connection'] = arg
-            elif opt == "-s":
-                argumentsDict['serialport'] = arg
-            elif opt == "-b":
-                argumentsDict['baudrate'] = arg
-            elif opt == "-is":
-                argumentsDict['udpipsend'] = arg
-            elif opt == "-us":
-                argumentsDict['udpportsend'] = arg
-            elif opt == "-ir":
-                argumentsDict['udpipreceive'] = arg
-            elif opt == "-ur":
-                argumentsDict['udpportreceive'] = arg
-    return argumentsDict
-
-
 if __name__ == '__main__':
 
     queue = Queue()
@@ -788,7 +747,8 @@ if __name__ == '__main__':
             import subprocess
             subprocess.call(["man", "./satnetclient.1"])
         elif sys.argv[1] == "-g":
-            argumentsDict = readArguments()
+            readData = sys.argv
+            argumentsDict = misc.readArguments(readData)
         elif sys.argv[1] != "-g" and sys.argv[1] != "-help":
             print "Unknown option: %s" % (sys.argv[1])
             print "Try 'python client_amp.py -help' for more information."

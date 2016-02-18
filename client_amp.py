@@ -108,6 +108,7 @@ class ClientProtocol(AMP):
             del sMsg[:1]
 
             self.saveReceivedFrames(sMsg)
+            log.msg("Sending message")
             self.threads.UDPThreadSend(sMsg)
 
             return {'bResult': True}

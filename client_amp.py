@@ -86,8 +86,7 @@ class ClientProtocol(AMP):
 
     # To-do. Do we need a return connection?
     def vNotifyMsg(self, sMsg):
-        log.msg("(" + self.CONNECTION_INFO['username'] +
-                ") --------- Notify Message ---------")
+        log.msg(">>> NOTIFY MESSAGE invoked:")
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             sMsg = bytearray(sMsg)
@@ -108,7 +107,7 @@ class ClientProtocol(AMP):
             del sMsg[:1]
 
             self.saveReceivedFrames(sMsg)
-            log.msg("Sending message")
+            log.msg(">>> Delivering message...")
             self.threads.UDPThreadSend(sMsg)
 
             return {'bResult': True}
@@ -187,6 +186,8 @@ class ClientProtocol(AMP):
 
 class Threads(object):
 
+    workerUDPThreadSend = None
+
     def __init__(self, CONNECTION_INFO, gsi):
         self.UDPSignal = True
         self.serialSignal = True
@@ -198,10 +199,9 @@ class Threads(object):
         self.gsi = gsi
 
     def runUDPThreadReceive(self):
-        self.workerUDPThreadReceive = OperativeUDPThreadReceive(self.udp_queue,
-                                                                self.sendData,
-                                                                self.UDPSignal,
-                                                                self.CONNECTION_INFO)
+        self.workerUDPThreadReceive = OperativeUDPThreadReceive(
+            self.udp_queue, self.sendData, self.UDPSignal, self.CONNECTION_INFO
+        )
         self.workerUDPThreadReceive.start()
 
     def stopUDPThreadReceive(self):
@@ -211,7 +211,14 @@ class Threads(object):
         self.workerUDPThreadSend = OperativeUDPThreadSend(self.CONNECTION_INFO)
 
     def UDPThreadSend(self, message):
-        self.workerUDPThreadSend.send(message)
+        if not self.workerUDPThreadSend:
+            log.msg(
+                '>>> No UDP Thread Send, dropping message, msg = ' + str(
+                    message
+                )
+            )
+        else:
+            self.workerUDPThreadSend.send(message)
 
     def runKISSThreadReceive(self):
         self.workerKISSThread = OperativeKISSThread(self.serial_queue,
@@ -501,7 +508,7 @@ class SATNetGUI(QtGui.QWidget):
     def initLogo(self):
         LabelLogo = QtGui.QLabel(self)
         LabelLogo.move(40, 490)
-        pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
+        pic = QtGui.QPixmap(os.getcwd() + "/logo-300px.png")
         LabelLogo.setPixmap(pic)
         LabelLogo.show()
 

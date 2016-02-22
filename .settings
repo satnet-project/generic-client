@@ -1,5 +1,6 @@
 [User]
-username =
+username = satnet_admin
+password = _36201Satnet
 slot_id = -1
 connection = udp
 
@@ -20,7 +21,7 @@ tcpipsend = 127.0.0.1
 tcpportsend = 1234
 
 [server]
-serverip = satnet.aero.calpoly.edu
+serverip = 127.0.0.1
 serverport = 25345
 
 [Connection]

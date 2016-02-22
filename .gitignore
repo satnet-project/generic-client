@@ -13,3 +13,4 @@ sip*
 
 # Log files
 log*
+*.csv

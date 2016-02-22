@@ -103,6 +103,10 @@ def localize_time_utc(non_utc_time):
 
 
 def noArguments():
+    """
+
+    @rtype: dict
+    """
     argumentsDict = {}
     arguments = ['username', 'slot', 'connection',
                  'serialport', 'baudrate', 'udpipsend', 'udpportsend',
@@ -114,6 +118,10 @@ def noArguments():
 
 
 def readArguments(argumentsDict):
+    """
+
+    @rtype: dict
+    """
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    "hfgn:t:c:s:b:is:us:ir:ur",
@@ -204,3 +212,23 @@ def get_data_local_file(settingsFile):
                                                    'serverport'))
 
     return CONNECTION_INFO
+
+def checkarguments(sysargvdict):
+    """
+
+    @rtype: dict
+    """
+    try:
+        if sysargvdict[1] == "-help":
+            import subprocess
+            subprocess.call(["man", "./satnetclient.1"])
+        elif sysargvdict[1] == "-g":
+            readData = sys.argv
+            argumentsdict = readArguments(readData)
+            return argumentsdict
+        elif sysargvdict[1] != "-g" and sysargvdict[1] != "-help":
+            print "Unknown option: %s" % (sysargvdict[1])
+            print "Try 'python client_amp.py -help' for more information."
+    except IndexError:
+        argumentsdict = noArguments()
+        return  argumentsdict

@@ -24,53 +24,6 @@ import getopt
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-def get_now_utc(no_microseconds=True):
-    """
-    This method returns now's datetime object UTC localized.
-    :param no_microseconds=True: sets whether microseconds should be cleared.
-    :return: the just created datetime object with today's date.
-    """
-    if no_microseconds:
-        return pytz.utc.localize(datetime.datetime.utcnow()).replace(
-            microsecond=0
-        )
-    else:
-        return pytz.utc.localize(datetime.datetime.utcnow())
-
-
-def get_now_hour_utc(no_microseconds=True):
-    """
-    This method returns now's hour in the UTC timezone.
-    :param no_microseconds=True: sets whether microseconds should be cleared.
-    :return: The time object within the UTC timezone.
-    """
-    if no_microseconds:
-        return datetime.time.utcnow().replace(microsecond=0).time()
-    else:
-        return datetime.time.utcnow().time()
-
-
-def get_today_utc():
-    """
-    This method returns today's date localized with the microseconds set to
-    zero.
-    :return: the just created datetime object with today's date.
-    """
-    return pytz.utc.localize(datetime.datetime.utcnow()).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-
-
-def get_next_midnight():
-    """
-    This method returns today's datetime 00am.
-    :return: the just created datetime object with today's datetime 00am.
-    """
-    return pytz.utc.localize(datetime.datetime.today()).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    ) + datetime.timedelta(days=1)
-
-
 def localize_date_utc(date):
     """
     Localizes in the UTC timezone the given date object.
@@ -191,7 +144,6 @@ def get_data_local_file(settingsFile):
     CONNECTION_INFO['name'] = config.get('Client', 'name')
     CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
     CONNECTION_INFO['username'] = config.get('User', 'username')
-    CONNECTION_INFO['slot_id'] = config.get('User', 'slot_id')
     CONNECTION_INFO['connection'] = config.get('User', 'connection')
 
     CONNECTION_INFO['serialport'] = config.get('Serial', 'serialport')

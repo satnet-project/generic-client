@@ -72,9 +72,7 @@ class ClientProtocol(AMP):
                                     sPassword=self.CONNECTION_INFO['password'])
 
         if res['bAuthenticated'] is True:
-            res = yield self.callRemote(StartRemote,
-                                        iSlotId=self.CONNECTION_INFO['slot_id']
-                                        )
+            res = yield self.callRemote(StartRemote)
         elif res['bAuthenticated'] is False:
             log.msg('False')
         else:
@@ -129,12 +127,12 @@ class ClientProtocol(AMP):
 
     # Method associated to frame processing.
     def _processframe(self, frame):
-        frameProcessed = []
-        frameProcessed = list(frame)
-        frameProcessed = ":".join("{:02x}".format(ord(c))
-                                  for c in frameProcessed)
+        frameprocessed = []
+        frameprocessed = list(frame)
+        frameprocessed = ":".join("{:02x}".format(ord(c))
+                                  for c in frameprocessed)
 
-        log.msg("Received frame: ", frameProcessed)
+        log.msg("Received frame: ", frameprocessed)
 
         self.processFrame(frame)
 
@@ -275,9 +273,6 @@ class Client(object):
             pass
 
         return self.gsi
-
-    def closeconnection(self):
-        log.msg("Closed connection")
 
     def destroyconnection(self):
         from twisted.internet import reactor

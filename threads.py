@@ -1,26 +1,6 @@
 # coding=utf-8
-import sys
-import os
-import misc
-import warnings
-import time
-import configurationWindow
-
-from PyQt4 import QtGui, QtCore
-
 from Queue import Queue
-from OpenSSL import SSL
-
 from twisted.python import log
-from twisted.internet import ssl
-
-from twisted.internet.ssl import ClientContextFactory
-from twisted.internet.protocol import ReconnectingClientFactory
-from twisted.protocols.amp import AMP
-from twisted.internet.defer import inlineCallbacks
-
-from ampCommands import Login, StartRemote, NotifyMsg
-from ampCommands import NotifyEvent, SendMsg, EndRemote
 
 from gs_interface import GroundStationInterface, OperativeUDPThreadReceive
 from gs_interface import OperativeUDPThreadSend

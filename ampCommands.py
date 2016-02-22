@@ -27,7 +27,7 @@ __author__ = 'xabicrespog@gmail.com'
 
 
 class StartRemote(amp.Command):
-    arguments = [('iSlotId', amp.Integer())]
+    # arguments = [('iSlotId', amp.Integer())]
     response = [('iResult', amp.Integer())]
     errors = {
         SlotErrorNotification: 'SLOT_ERROR_NOTIFICATION'}

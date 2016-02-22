@@ -1,5 +1,4 @@
 # coding=utf-8
-import sys
 import os
 import misc
 import warnings
@@ -9,15 +8,6 @@ import configurationWindow
 from PyQt4 import QtGui, QtCore
 
 from twisted.python import log
-from twisted.internet import ssl
-
-from twisted.internet.ssl import ClientContextFactory
-from twisted.internet.protocol import ReconnectingClientFactory
-from twisted.protocols.amp import AMP
-from twisted.internet.defer import inlineCallbacks
-
-from ampCommands import Login, StartRemote, NotifyMsg
-from ampCommands import NotifyEvent, SendMsg, EndRemote
 
 from gs_interface import GroundStationInterface
 
@@ -203,12 +193,17 @@ class SATNetGUI(QtGui.QWidget):
 
         gridControl.addWidget(self.stopInterfaceButton, 0, 0, 1, 1)
 
-        interfaceControl.move(155, 400)
+        interfaceControl.move(155, 380)
 
     def initLogo(self):
         LabelLogo = QtGui.QLabel(self)
-        LabelLogo.move(40, 490)
-        pic = QtGui.QPixmap(os.getcwd() + "/logo-300px.png")
+        LabelLogo.move(20, 450)
+
+        pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
+
+        pic = pic.scaledToWidth(300)
+
+        # pic = pic.scaled(400, 400, QtCore.Qt.KeepAspectRatio)
         LabelLogo.setPixmap(pic)
         LabelLogo.show()
 
@@ -232,8 +227,6 @@ class SATNetGUI(QtGui.QWidget):
     def setArguments(self, argumentsDict):
         if argumentsDict['username'] != "":
             self.LabelUsername.setText(argumentsDict['username'])
-        if argumentsDict['slot'] != "":
-            self.LabelSlotID.setText(argumentsDict['slot'])
         if argumentsDict['connection'] != "":
             index = self.LabelConnection.findText(argumentsDict['connection'])
             self.LabelConnection.setCurrentIndex(index)
@@ -260,8 +253,7 @@ class SATNetGUI(QtGui.QWidget):
             log.err(e)
 
     def CloseConnection(self):
-
-        destroyconnection = Client(self.CONNECTION_INFO, self.gsi, self.threads).closeconnection()
+        self.gsi.clear_slots()
 
         self.ButtonNew.setEnabled(True)
         self.ButtonCancel.setEnabled(False)
@@ -328,7 +320,6 @@ class SATNetGUI(QtGui.QWidget):
         log.msg("[User]")
         log.msg("username: test-sc-user")
         log.msg("password: password")
-        # log.msg("slot_id: -1")
         log.msg("connection: udp")
         log.msg("[Serial]")
         log.msg("serialport: /dev/ttyUSB0")
@@ -366,6 +357,7 @@ class SATNetGUI(QtGui.QWidget):
 
         # Non asynchronous way. Need to re implement this. TO-DO
         if reply == QtGui.QMessageBox.Yes:
+            self.gsi.clear_slots()
             Client(self.CONNECTION_INFO, self.gsi, self.threads).destroyconnection()
         elif reply == QtGui.QMessageBox.No:
             event.ignore()

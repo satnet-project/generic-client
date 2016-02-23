@@ -68,9 +68,36 @@ function uninstall_packages()
 	sudo aptitude remove $( cat "$linux_packages" ) -y
 }
 
+function install_sip_without_sudo()
+{
+	cd $venv_dir
+	mkdir build && cd build
+	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz
+	tar -xvf sip-4.17.tar.gz
+	cd sip-4.17
+	python configure.py
+	make
+	make install
+	cd ../ && rm -rf sip-4.17
+}
+
+function install_pyqt4_without_sudo()
+{
+    # PyQt4 installation.
+    wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
+    tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
+    cd PyQt-x11-gpl-4.11.4
+    python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
+    make
+    # Bug. Needed ldconfig, copy it from /usr/sbin
+    cp /sbin/ldconfig ../../bin/
+    ldconfig
+    make install
+    cd ../ && rm -rf PyQt*
+}
+
 function install_sip()
 {
-
 	cd $venv_dir
 	mkdir build && cd build
 	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz	
@@ -84,7 +111,6 @@ function install_sip()
 
 function install_pyqt4()
 {
-
     # PyQt4 installation.
     wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
     tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
@@ -166,16 +192,11 @@ fi
 
 if [ $1 == '-travisCI' ];
 then
-#	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
-#    cp -r key ../
-#	cp -r key ../tests
-#    cd ../../
-
 	echo '>>> SIP installation'
-	[[ $_install_sip == 'true' ]] && install_sip
+	[[ $_install_sip == 'true' ]] && install_sip_without_sudo
 
 	echo '>>> PyQt4 installation'
-	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
+	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4_without_sudo
 
 	echo ">>> [TravisCI] Installing generic client test modules..."
 	pip install -r "$project_path/requirements-tests.txt"
@@ -186,9 +207,6 @@ fi
 
 if [ $1 == '-circleCI' ];
 then
-	# [[ $_generate_keys == 'true' ]] && create_selfsigned_keys
-    # mv key ../tests
-    
 	echo ">>> [CircleCI] Installing generic client test modules..."
 	pip install -r "$project_path/requirements-tests.txt"
 

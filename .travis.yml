@@ -42,6 +42,7 @@ script:
   - cd tests
   - trial test_readDataFromFile
   - trial test_readDataFromTerminal
+  - trial test_notifyMsgUsage
 
 after_success:
   - cd ../

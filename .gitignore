@@ -14,3 +14,6 @@ sip*
 # Log files
 log*
 *.csv
+
+# PyCharm directories
+.idea/

@@ -9,7 +9,6 @@ from twisted.python import log
 from mock import patch
 
 sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
-import client_amp
 import misc
 
 """
@@ -41,9 +40,8 @@ class TestReadDataFromTerminal(unittest.TestCase):
     def test_noArgumentsGiven(self):
         argumentsDict = misc.noArguments()
 
-        arguments = ['username', 'password', 'slot', 'connection',
-                     'serialport', 'baudrate', 'udpipsend', 'udpportsend',
-                     'udpipreceive', 'udpportreceive']
+        arguments = ['username', 'slot', 'connection', 'serialport', 'baudrate',
+                     'udpipsend', 'udpportsend', 'udpipreceive', 'udpportreceive']
         for i in range(len(arguments)):
             self.assertEquals(argumentsDict[arguments[i]],
                               '', "argumentsDict values are not null.")
@@ -52,21 +50,21 @@ class TestReadDataFromTerminal(unittest.TestCase):
     Some arguments are initialized at script startup.
     """
     def test_ArgumentsGiven(self):
-        testargs = ["client_amp.py", "-g", "-n", "crespo", "-p",
-                    "cre.spo", "-t", "2", "-c", "serial", "-s",
-                    "/dev/ttyS1", "-b", "115200"]
+        testargs = ["client_amp.py", "-g", "-n", "crespo", "-t",
+                    "2", "-c", "serial", "-s", "/dev/ttyS1",
+                    "-b", "115200"]
         with patch.object(sys, 'argv', testargs):
             argumentsDict = misc.readArguments(testargs)
 
         descriptors = ['username', 'slot', 'baudrate', 'serialport',
-                       'connection', 'password']
+                       'connection']
 
         for i in range(len(descriptors)):
             self.assertIsInstance(argumentsDict[(descriptors[i])], str,
                                   "Dict value is not a string object")
 
     def setUp(self):
-        self.mainObject = client_amp
+        log.msg('starting tests')
 
     def teardrown(self):
         pass

@@ -45,6 +45,13 @@ class ClientProtocol(AMP):
     """
 
     def __init__(self, CONNECTION_INFO, gsi, threads):
+        """
+
+        @param CONNECTION_INFO:
+        @param gsi:
+        @param threads:
+        """
+        super(ClientProtocol, self).__init__()
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
         self.threads = threads
@@ -66,7 +73,6 @@ class ClientProtocol(AMP):
 
     @inlineCallbacks
     def user_login(self):
-        log.msg("entrando en user_login")
         res = yield self.callRemote(Login,
                                     sUsername=self.CONNECTION_INFO['username'],
                                     sPassword=self.CONNECTION_INFO['password'])
@@ -82,6 +88,9 @@ class ClientProtocol(AMP):
     def vNotifyMsg(self, sMsg):
         log.msg(">>> NOTIFY MESSAGE invoked:")
 
+        # To-do. Check message integrity.
+        # To-do. Check IPs and ports plausibility.
+
         if self.CONNECTION_INFO['connection'] == 'serial':
             sMsg = bytearray(sMsg)
             del sMsg[:1]
@@ -92,6 +101,7 @@ class ClientProtocol(AMP):
             self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],
                                      self.CONNECTION_INFO['baudrate'])
             self.kissTNC.start()
+            log.msg(">>> Delivering message...")
             self.kissTNC.write(sMsg)
 
             return {'bResult': True}

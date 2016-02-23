@@ -24,6 +24,21 @@ import getopt
 __author__ = 's.gongoragarcia@gmail.com'
 
 
+
+def get_now_utc(no_microseconds=True):
+    """
+    This method returns now's datetime object UTC localized.
+    :param no_microseconds: sets whether microseconds should be cleared.
+    :return: the just created datetime object with today's date.
+    """
+    if no_microseconds:
+        return pytz.utc.localize(datetime.datetime.utcnow()).replace(
+            microsecond=0
+        )
+    else:
+        return pytz.utc.localize(datetime.datetime.utcnow())
+
+
 def localize_date_utc(date):
     """
     Localizes in the UTC timezone the given date object.

@@ -37,8 +37,6 @@ __author__ = 's.gongoragarcia@gmail.com'
 class TestReadDataFromFile(TestCase):
 
     def setUp(self):
-        log.msg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Running tests")
-
         testFile = open(".settings", "w")
         testFile.write("[User]\n"
                        "username = test-sc-user\n"

@@ -42,7 +42,8 @@ script:
   - trial --coverage test_manageFrames
 
 after_success:
-  - cd _trial_temp/coverage
+  - cd /home/travis/build/satnet-project/generic-client/tests/_trial_temp/coverage
+  - ls
   - coverage combine
   - coverage report --omit '/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/*'
   - coveralls

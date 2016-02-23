@@ -42,7 +42,7 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
         return Exception
 
     def mock_goodendconnection(self):
-        return True
+        return None
 
     def mock_badendconnection(self):
         return Exception
@@ -68,7 +68,7 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
         self.wrongFrame = 9
 
     def tearDown(self):
-        self.AMP = None
+        pass
 
     @patch.object(GroundStationInterface, '_updateLocalFile')
     def test_groundstationInterfaceConnectedReceiveCorrectFrameBadProcessed(self, _updateLocalFile):
@@ -102,16 +102,22 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
     def test_groundstationInterfaceUpdateLocalFileCorrectFrame(self):
         return self.assertTrue(self.gsi._updateLocalFile(self.correctFrame))
 
-    def _test_groundstationInterfaceCallsEndRemoteRightAnswer(self):
+    def test_groundstationInterfaceCallsEndRemoteRightAnswer(self):
         AMP.end_connection = MagicMock()
         AMP.end_connection.side_effect = self.mock_goodendconnection()
         self.gsi.AMP = AMP
-        # return self.assertIsNone(self.gsi.clear_slots())
-        print self.gsi.clear_slots()
+        return self.assertIsNone(self.gsi.clear_slots())
 
-
-    def _test_groundstationInterfaceCallsEndRemoteWrongAnswer(self):
+    def test_groundstationInterfaceCallsEndRemoteWrongAnswer(self):
         AMP.end_connection = MagicMock()
         AMP.end_connection.side_effect = self.mock_badendconnection()
         self.gsi.AMP = AMP
         return self.assertRaises(ConnectionNotEnded, self.gsi.clear_slots)
+
+    def test_groundstationInterfaceEnableAMP(self):
+        self.gsi.connectProtocol(AMP)
+        return self.assertIsInstance(self.gsi.AMP, object)
+
+    def test_groundstationInterfaceDisabledAMP(self):
+        self.gsi.disconnectProtocol()
+        return self.assertIsNone(self.gsi.AMP)

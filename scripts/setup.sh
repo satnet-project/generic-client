@@ -192,12 +192,6 @@ fi
 
 if [ $1 == '-travisCI' ];
 then
-	echo '>>> SIP installation'
-	[[ $_install_sip == 'true' ]] && install_sip_without_sudo
-
-	echo '>>> PyQt4 installation'
-	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4_without_sudo
-
 	echo ">>> [TravisCI] Installing generic client test modules..."
 	pip install -r "$project_path/requirements-tests.txt"
     pip install coveralls

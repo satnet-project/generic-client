@@ -162,7 +162,7 @@ class ClientProtocol(AMP):
     def saveReceivedFrames(self, frame):
         log.msg('---- Message received saved to local file ----')
 
-        if type(frame) is not str:
+        if type(frame) is not bytearray:
             raise WrongFormatNotification('Frame is %s' %(type(frame)))
 
         frame = bytearray(frame)

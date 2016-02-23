@@ -2,8 +2,9 @@
 from twisted.python import log
 from PyQt4 import QtCore
 import time
+import os
 
-from errors import WrongFormatNotification, FrameNotProcessed
+from errors import WrongFormatNotification, FrameNotProcessed, ConnectionNotEnded
 
 """
    Copyright 2014, 2015, 2016 Xabier Crespo Álvarez
@@ -95,21 +96,26 @@ class GroundStationInterface(object):
     def _updateLocalFile(self, frame):
         filename = self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
 
-        frame = bytearray(frame)
+        # frame = bytearray(frame)
         del frame[:1]
         with open(filename, "a+") as f:
             f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S ")) + frame + "\n")
 
-        log.msg("--------------------------------------------- " +
-                "Message saved to local file" +
-                " ---------------------------------------------")
-        log.msg("")
+        if os.path.exists(filename):
+            log.msg("--------------------------------------------- " +
+                    "Message saved to local file" +
+                    " ---------------------------------------------")
+            log.msg("")
+            return True
+        else:
+            raise IOFileError('Record file not created')
+
 
     def clear_slots(self):
         try:
             self.AMP.end_connection()
-        except TypeError:
-            log.err("Not yet connected.")
+        except:
+            raise ConnectionNotEnded('EndRemote call not completed')
 
     """
     :ivar AMP:

@@ -78,5 +78,12 @@ class FrameNotProcessed(Exception):
 
     """
     One of the following situations may raise this error:
-        1. Some file hasn't been created
+        1. Some error processing the frames
+    """
+
+class ConnectionNotEnded(Exception):
+
+    """
+    One of the following situations may raise this error:
+        1. The connection has a failure and couldn't be ended
     """

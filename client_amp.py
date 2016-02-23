@@ -63,7 +63,6 @@ class ClientProtocol(AMP):
         self.user_login()
         self.gsi.connectProtocol(self)
 
-
     def connectionLost(self, reason):
         log.msg("Connection lost")
 
@@ -177,12 +176,10 @@ class ClientProtocol(AMP):
             f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S")) +
                     frame + "\n")
 
-
         if os.path.exists(filename):
             return True
         else:
             raise IOFileError('Record file not created')
-
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] +

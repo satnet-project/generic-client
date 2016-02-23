@@ -33,13 +33,13 @@ install:
 
 script:
   - cd tests
-  - trial test_readDataFromFile
-  - trial test_readDataFromTerminal
-  - trial test_notifyMsgUsage
-  - trial test_saveReceivedFrames
-  - trial test_connectionDown
-  - trial test_connectionEstablished
-  - trial test_manageFrames
+  - trial --coverage test_readDataFromFile
+  - trial --coverage test_readDataFromTerminal
+  - trial --coverage test_notifyMsgUsage
+  - trial --coverage test_saveReceivedFrames
+  - trial --coverage test_connectionDown
+  - trial --coverage test_connectionEstablished
+  - trial --coverage test_manageFrames
 
 after_success:
   - cd _trial_temp/coverage

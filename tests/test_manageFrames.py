@@ -7,17 +7,13 @@ import pty
 from mock import patch, Mock, MagicMock
 
 from twisted.trial.unittest import TestCase
-from twisted.test.proto_helpers import StringTransport
-from twisted.internet.protocol import Factory
-
 from twisted.protocols.amp import AMP
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
 
-from client_ui import *
 from gs_interface import GroundStationInterface
-from errors import WrongFormatNotification, FrameNotProcessed
+from errors import WrongFormatNotification, FrameNotProcessed, ConnectionNotEnded
 
 
 """
@@ -37,16 +33,18 @@ from errors import WrongFormatNotification, FrameNotProcessed
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-class MockFactory(Factory):
-    pass
-
-
 class TestGroundStationInterfaceFramesManagement(TestCase):
 
-    def mock_processframe(self, frame):
+    def mock_goodprocessframe(self, frame):
         return frame
 
     def mock_badprocessframe(self, frame):
+        return Exception
+
+    def mock_goodendconnection(self):
+        return True
+
+    def mock_badendconnection(self):
         return Exception
 
     def setUp(self):
@@ -70,7 +68,7 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
         self.wrongFrame = 9
 
     def tearDown(self):
-        pass
+        self.AMP = None
 
     @patch.object(GroundStationInterface, '_updateLocalFile')
     def test_groundstationInterfaceConnectedReceiveCorrectFrameBadProcessed(self, _updateLocalFile):
@@ -82,7 +80,7 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
     @patch.object(GroundStationInterface, '_updateLocalFile')
     def test_groundstationInterfaceConnectedReceiveCorrectFrame(self, _updateLocalFile):
         AMP._processframe = MagicMock()
-        AMP._processframe.side_effect = self.mock_processframe(self.correctFrame)
+        AMP._processframe.side_effect = self.mock_goodprocessframe(self.correctFrame)
         self.gsi.AMP = AMP
         self.gsi._manageFrame(self.correctFrame)
         return self.assertTrue(_updateLocalFile.called), self.assertTrue(AMP._processframe.called)
@@ -100,3 +98,20 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
     def test_groundstationInterfaceDisconnectedReceiveBadFrame(self):
         self.gsi.AMP = None
         return self.assertRaises(WrongFormatNotification, self.gsi._manageFrame, self.wrongFrame)
+
+    def test_groundstationInterfaceUpdateLocalFileCorrectFrame(self):
+        return self.assertTrue(self.gsi._updateLocalFile(self.correctFrame))
+
+    def _test_groundstationInterfaceCallsEndRemoteRightAnswer(self):
+        AMP.end_connection = MagicMock()
+        AMP.end_connection.side_effect = self.mock_goodendconnection()
+        self.gsi.AMP = AMP
+        # return self.assertIsNone(self.gsi.clear_slots())
+        print self.gsi.clear_slots()
+
+
+    def _test_groundstationInterfaceCallsEndRemoteWrongAnswer(self):
+        AMP.end_connection = MagicMock()
+        AMP.end_connection.side_effect = self.mock_badendconnection()
+        self.gsi.AMP = AMP
+        return self.assertRaises(ConnectionNotEnded, self.gsi.clear_slots)

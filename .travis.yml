@@ -20,6 +20,7 @@ git:
 #  - cd ../scripts
 
 install:
+  - cd scripts
   - bash ./setup.sh -travisCI
   - cd ../tests
   - mkdir build && cd build

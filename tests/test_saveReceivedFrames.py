@@ -65,6 +65,7 @@ class TestClientProtocolSaveFrame(TestCase):
                              "8d:0b:5c:03:02:28:01:9c:01:ab:02:4c:02:98:01:da:" +
                              "02:40:00:00:00:10:0a:46:58:10:00:c4:9d:cb:a2:21:39")
 
+        self.correctFrame = bytearray(self.correctFrame)
         self.wrongFrame = 9
 
     def tearDown(self):

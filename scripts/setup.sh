@@ -166,11 +166,17 @@ fi
 
 if [ $1 == '-travisCI' ];
 then
-	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
-    cp -r key ../
-	cp -r key ../tests
-    cd ../../
-	
+#	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
+#    cp -r key ../
+#	cp -r key ../tests
+#    cd ../../
+
+	echo '>>> SIP installation'
+	[[ $_install_sip == 'true' ]] && install_sip
+
+	echo '>>> PyQt4 installation'
+	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
+
 	echo ">>> [TravisCI] Installing generic client test modules..."
 	pip install -r "$project_path/requirements-tests.txt"
     pip install coveralls
@@ -197,9 +203,6 @@ fi
 if [ $1 == '-local' ];
 then
 	venv_dir="$project_path/.venv_test"
-
-	# [[ $_generate_keys == 'true' ]] && create_selfsigned_keys
-	# mv key ../tests
 
 	echo '>>> Installing virtualenv'
 	[[ $_install_venv == 'true' ]] && install_venv

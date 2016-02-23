@@ -15,3 +15,5 @@ test:
     - cd tests/ && trial test_readDataFromTerminal
     - cd tests/ && trial test_notifyMsgUsage
     - cd tests/ && trial test_saveReceivedFrames
+    - cd tests/ && trial test_connectionDown
+    - cd tests/ && trial test_connectionEstablished

@@ -63,6 +63,7 @@ class ClientProtocol(AMP):
         self.user_login()
         self.gsi.connectProtocol(self)
 
+
     def connectionLost(self, reason):
         log.msg("Connection lost")
 

@@ -3,6 +3,7 @@ import os
 import sys
 
 # Dependencies for the tests
+from mock import patch
 from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransportWithDisconnection
 from twisted.internet.protocol import Factory
@@ -62,4 +63,10 @@ class TestClientProtocolConnectionMade(TestCase):
 
     def test_clientconnectionEstablished(self):
         self.sp.makeConnection(self.transport)
-        self.assertTrue(self.transport.connected)
+        return self.assertTrue(self.transport.connected)
+
+    @patch.object(ClientProtocol, 'user_login')
+    @patch.object(GroundStationInterface, 'connectProtocol')
+    def test_connectionMethodsCalled(self, user_login, connectProtocol):
+        self.sp.makeConnection(self.transport)
+        return self.assertTrue(connectProtocol.called), self.assertTrue(user_login.called)

@@ -3,6 +3,8 @@ import os
 import sys
 
 # Dependencies for the tests
+from mock import patch
+
 from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransportWithDisconnection
 from twisted.internet.protocol import Factory
@@ -74,3 +76,9 @@ class TestClientProtocolConnectionDown(TestCase):
     def test_clientConnectionFailed(self):
         self.transport.loseConnection()
         self.assertFalse(self.transport.connected)
+
+    @patch.object(ClientProtocol, 'callRemote')
+    def test_clientEndConnection(self, callRemote):
+        self.transport.loseConnection()
+        self.sp.end_connection()
+        return self.assertTrue(callRemote.called)

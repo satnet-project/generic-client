@@ -12,13 +12,6 @@ python:
 git:
   submodules: false
 
-#before_install:
-#  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-#  - git submodule update --init --recursive
-#  - cd protocol
-#  - git checkout jrpc_if
-#  - cd ../scripts
-
 install:
   - cd scripts
   - bash ./setup.sh -travisCI
@@ -40,15 +33,10 @@ install:
 
 script:
   - cd tests
-  - trial test_readDataFromFile
-  - trial test_readDataFromTerminal
-  - trial test_notifyMsgUsage
-  - trial test_saveReceivedFrames
-  - trial test_connectionDown
-  - trial test_connectionEstablished
+  - trial --coverage test_*
 
 after_success:
-  - cd ../
+  - cd _trial_temp/coverage
   - coverage combine
   - coverage report --omit '/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/*', '/home/travis/protocol/*'
   - coveralls

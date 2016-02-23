@@ -73,3 +73,10 @@ class IOFileError(Exception):
     One of the following situations may raise this error:
         1. Some file hasn't been created
     """
+
+class FrameNotProcessed(Exception):
+
+    """
+    One of the following situations may raise this error:
+        1. Some file hasn't been created
+    """

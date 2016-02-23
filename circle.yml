@@ -17,3 +17,4 @@ test:
     - cd tests/ && trial test_saveReceivedFrames
     - cd tests/ && trial test_connectionDown
     - cd tests/ && trial test_connectionEstablished
+    - cd tests/ && trial test_manageFrames

@@ -4,6 +4,8 @@ import sys
 import pty
 
 # Dependencies for the tests
+from mock import patch
+
 from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransport
 from twisted.internet.protocol import Factory
@@ -126,7 +128,8 @@ class TestNotifyMsgSendMessageBack(TestCase):
         return self.assertRaises(SerialException, self.sp.vNotifyMsg, self.correctFrame)
         # To-do. Raises an 0SError when it's running throught TravisCI
 
-    def test_udpConnectionReachable(self):
+    @patch.object(ClientProtocol, 'saveReceivedFrames')
+    def test_udpConnectionReachable(self, saveReceivedFrames):
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
@@ -136,7 +139,8 @@ class TestNotifyMsgSendMessageBack(TestCase):
 
         udpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correctFrame)
 
-        return self.assertTrue(udpconnectionresponse['bResult'])
+        return self.assertTrue(udpconnectionresponse['bResult']), \
+               self.assertTrue(saveReceivedFrames.called)
 
     def _test_udpConnectionUnreachable(self):
         GS = 'VigoTest'
@@ -148,7 +152,8 @@ class TestNotifyMsgSendMessageBack(TestCase):
 
         # To-implemented.
 
-    def test_tcpConnectionReachable(self):
+    @patch.object(ClientProtocol, 'saveReceivedFrames')
+    def test_tcpConnectionReachable(self, saveREceivedFrames):
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
@@ -158,9 +163,11 @@ class TestNotifyMsgSendMessageBack(TestCase):
 
         tcpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correctFrame)
 
-        return self.assertTrue(tcpconnectionresponse['bResult'])
+        return self.assertTrue(tcpconnectionresponse['bResult']), \
+               self.assertTrue(saveREceivedFrames.called)
 
-    def test_noConnectionSelected(self):
+    @patch.object(ClientProtocol, 'saveReceivedFrames')
+    def test_noConnectionSelected(self, saveReceivedFrames):
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
@@ -170,4 +177,5 @@ class TestNotifyMsgSendMessageBack(TestCase):
 
         noneconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correctFrame)
 
-        return self.assertTrue(noneconnectionresponse['bResult'])
+        return self.assertTrue(noneconnectionresponse['bResult']), \
+               self.assertTrue(saveReceivedFrames.called)

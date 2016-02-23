@@ -34,6 +34,12 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 class TestReadDataFromTerminal(unittest.TestCase):
 
+    def setUp(self):
+        pass
+
+    def teardrown(self):
+        pass
+
     """
     No arguments passed at script startup.
     """
@@ -63,8 +69,3 @@ class TestReadDataFromTerminal(unittest.TestCase):
             self.assertIsInstance(argumentsDict[(descriptors[i])], str,
                                   "Dict value is not a string object")
 
-    def setUp(self):
-        log.msg('starting tests')
-
-    def teardrown(self):
-        pass

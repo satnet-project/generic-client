@@ -3,7 +3,7 @@ from twisted.python import log
 from PyQt4 import QtCore
 import time
 
-from errors import WrongFormatNotification
+from errors import WrongFormatNotification, FrameNotProcessed
 
 """
    Copyright 2014, 2015, 2016 Xabier Crespo Álvarez
@@ -71,25 +71,24 @@ class GroundStationInterface(object):
 
     def __init__(self, CONNECTION_INFO, GS, AMP):
         self.CONNECTION_INFO = CONNECTION_INFO
-        # self.AMP = AMP
         self.AMP = None
         self.GS = GS
 
     def _manageFrame(self, result):
         if self.AMP is not None:
-            if type(result) != str:
+            # bytearray or string?
+            if type(result) != bytearray:
                 raise WrongFormatNotification("Bad format frame")
 
             try:
                 self.AMP._processframe(result)
                 self._updateLocalFile(result)
-            except Exception as e:
-                log.err('Error processing frame')
-                log.err(e)
+            except:
+                raise FrameNotProcessed('Error processing Frame')
         else:
-            try:
+            if type(result) is bytearray:
                 self._updateLocalFile(result)
-            except TypeError:
+            else:
                 # To-do Change error description
                 raise WrongFormatNotification("Bad format frame")
 

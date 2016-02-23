@@ -33,10 +33,16 @@ install:
 
 script:
   - cd tests
-  - trial --coverage test_*
+  - trial test_readDataFromFile
+  - trial test_readDataFromTerminal
+  - trial test_notifyMsgUsage
+  - trial test_saveReceivedFrames
+  - trial test_connectionDown
+  - trial test_connectionEstablished
+  - trial test_manageFrames
 
 after_success:
   - cd _trial_temp/coverage
   - coverage combine
-  - coverage report --omit '/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/*', '/home/travis/protocol/*'
+  - coverage report --omit '/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/*'
   - coveralls

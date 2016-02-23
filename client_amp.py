@@ -3,11 +3,14 @@ import sys
 import misc
 import time
 import client_ui
+import os.path
 
 from Queue import Queue
 from OpenSSL import SSL
 
 from PyQt4 import QtGui, QtCore
+
+from errors import WrongFormatNotification, IOFileError
 
 from twisted.python import log
 from twisted.internet import ssl
@@ -159,21 +162,32 @@ class ClientProtocol(AMP):
     def saveReceivedFrames(self, frame):
         log.msg('---- Message received saved to local file ----')
 
+        if type(frame) is not str:
+            raise WrongFormatNotification('Frame is %s' %(type(frame)))
+
         frame = bytearray(frame)
         del frame[:1]
 
         filename = ("RECEIVED-FRAMES-" +
                     self.CONNECTION_INFO['name'] +
                     "-" + time.strftime("%Y.%m.%d") + ".csv")
+
         with open(filename, "a+") as f:
             f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S")) +
                     frame + "\n")
+
+
+        if os.path.exists(filename):
+            return True
+        else:
+            raise IOFileError('Record file not created')
+
 
     def vNotifyEvent(self, iEvent, sDetails):
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
-            log.msg("Disconnection because the slot has ended")
+            log.msg('Disconnection because the slot has ended')
             self.callRemote(EndRemote)
         elif iEvent == NotifyEvent.REMOTE_DISCONNECTED:
             log.msg("Remote client has lost the connection")

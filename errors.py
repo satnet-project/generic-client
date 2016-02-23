@@ -66,3 +66,10 @@ class WrongFormatNotification(Exception):
         2. Remote user and invoking user coincide
             (i.e. MCC and GSS are the same)
     """
+
+class IOFileError(Exception):
+
+    """
+    One of the following situations may raise this error:
+        1. Some file hasn't been created
+    """

@@ -18,3 +18,4 @@ test:
     - cd tests/ && trial test_connectionDown
     - cd tests/ && trial test_connectionEstablished
     - cd tests/ && trial test_manageFrames
+    - cd tests/ && trial test_userInterface

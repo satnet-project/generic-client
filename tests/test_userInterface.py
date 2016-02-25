@@ -15,6 +15,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 from client_ui import SatNetUI
 from client_amp import Client
+from threads import Threads
 import misc
 from gs_interface import GroundStationInterface
 from configurationWindow import ConfigurationWindow
@@ -99,7 +100,7 @@ class TestUserInterfaceOperation(TestCase):
     #@patch.object(Client, 'createconnection', mockcreateconnection)
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'NewConnection')
-    def _test_newConnectionWhenButtonClicked(self, NewConnection, createconnection):
+    def test_newConnectionWhenButtonClicked(self, NewConnection, createconnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         QTest.mouseClick(testUI.ButtonNew, QtCore.Qt.LeftButton)
         return self.assertTrue(NewConnection.called)
@@ -109,21 +110,21 @@ class TestUserInterfaceOperation(TestCase):
     """
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'CloseConnection')
-    def _test_closeConnectionWhenButtonClicked(self, CloseConnection, createconnection):
+    def test_closeConnectionWhenButtonClicked(self, CloseConnection, createconnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         QTest.mouseClick(testUI.ButtonCancel, QtCore.Qt.LeftButton)
         return self.assertFalse(CloseConnection.called)
 
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'UpdateFields')
-    def _test_runKISSThreadCorrectly(self, UpdateFields, createconnection):
+    def test_parametersAreLoadedWhenButtonIsClicked(self, UpdateFields, createconnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         QTest.mouseClick(testUI.ButtonLoad, QtCore.Qt.LeftButton)
         return self.assertTrue(UpdateFields.called)
 
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'SetConfiguration')
-    def _test_configurationOpenedWhenButtonClicked(self, SetConfiguration, createconnection):
+    def test_configurationOpenedWhenButtonClicked(self, SetConfiguration, createconnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         QTest.mouseClick(testUI.ButtonConfiguration, QtCore.Qt.LeftButton)
         return self.assertTrue(SetConfiguration.called)
@@ -132,7 +133,7 @@ class TestUserInterfaceOperation(TestCase):
     @patch.object(SatNetUI, 'initButtons', return_value=True)
     @patch.object(SatNetUI, 'setParameters', return_value=True)
     @patch.object(misc, 'get_data_local_file')
-    def _test_parametersLoadedWhenUpdateFieldsIsCalled(self, get_data_local_file, createconnection, initButtons,
+    def test_parametersLoadedWhenUpdateFieldsIsCalled(self, get_data_local_file, createconnection, initButtons,
                                                       setParameters):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         testUI.UpdateFields()
@@ -142,15 +143,49 @@ class TestUserInterfaceOperation(TestCase):
     @patch.object(SatNetUI, 'initButtons', return_value=True)
     @patch.object(SatNetUI, 'setParameters', return_value=True)
     @patch.object(misc, 'get_data_local_file')
-    def _test_parametersLoadedWhenLoadParametersIsCalled(self, get_data_local_file, createconnection, initButtons,
+    def test_parametersLoadedWhenLoadParametersIsCalled(self, get_data_local_file, createconnection, initButtons,
                                                         setParameters):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         testUI.LoadParameters()
         return self.assertTrue(get_data_local_file.called)
 
     @patch.object(Client, 'createconnection', return_value=True)
+    def _test_serialInterfaceIsOpen(self, createconnection):
+        testUI = SatNetUI(argumentsdict=self.argumentsdict)
+        testUI.LabelConnection = Mock()
+        testUI.LabelConnection.currentText = MagicMock(return_value='serial')
+        testUI.openInterface()
+        print testUI.LabelConnection.currentText()
+
+    @patch.object(Client, 'createconnection', return_value=True)
+    def _test_serialInterfaceIsClose(self):
+        testUI = SatNetUI(argumentsdict=self.argumentsdict)
+
+    @patch.object(Client, 'createconnection', return_value=True)
+    @patch.object(Threads, 'runUDPThreadReceive')
+    @patch.object(Threads, 'runUDPThreadSend')
+    def test_udpInterfaceIsOpen(self, createconnection, runUDPThreadReceive, runUDPThreadSend):
+        testUI = SatNetUI(argumentsdict=self.argumentsdict)
+        testUI.LabelConnection = Mock()
+        testUI.LabelConnection.currentText = MagicMock(return_value='udp')
+        testUI.openInterface()
+        # LabelConnection is a Mock object so its state can be checked
+        return self.assertTrue(runUDPThreadReceive.called), self.assertTrue(runUDPThreadSend.called), \
+               self.assertIs(testUI.connection, 'udp'), self.assertTrue(testUI.stopInterfaceButton.isEnabled())
+
+    @patch.object(Client, 'createconnection', return_value=True)
+    @patch.object(Threads, 'stopUDPThreadReceive')
+    def _test_udpInterfaceIsClose(self, createconnection, stopUDPThreadReceive):
+        testUI = SatNetUI(argumentsdict=self.argumentsdict)
+        testUI.connection = MagicMock(return_value='udp')
+        testUI.stopInterface()
+        # LabelConnection is a Mock object so its state can be checked
+        return self.assertTrue(stopUDPThreadReceive.called), self.assertIs(testUI.connection, 'udp'), \
+               self.assertFalse(testUI.stopInterfaceButton.isEnabled())
+
+    @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(GroundStationInterface, 'clear_slots')
-    def _test_methodsAreCallWhenUserClosesConnection(self, createconnection, clear_slots):
+    def test_methodsAreCallWhenUserClosesConnection(self, createconnection, clear_slots):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         testUI.CloseConnection()
         return self.assertTrue(clear_slots.called), self.assertTrue(testUI.ButtonNew.isEnabled()), \
@@ -170,7 +205,7 @@ class TestUserInterfaceOperation(TestCase):
 
     @patch.object(QtGui.QMessageBox, 'question', return_value=QtGui.QMessageBox.No)
     @patch.object(Client, 'createconnection', return_value=True)
-    def _test_userCancelsWindowClosing(self, question, createconnection):
+    def test_userCancelsWindowClosing(self, question, createconnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         eventmock = Mock
         eventmock.ignore = MagicMock(return_value=True)

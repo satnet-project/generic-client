@@ -339,15 +339,15 @@ class SatNetUI(QtGui.QWidget):
             f.write(text)
 
     def closeEvent(self, event):
-        reply = QtGui.QMessageBox.question(self, 'Exit confirmation',
-                                           "Are you sure to quit?",
-                                           QtGui.QMessageBox.Yes |
-                                           QtGui.QMessageBox.No,
-                                           QtGui.QMessageBox.No)
+        self.reply = QtGui.QMessageBox.question(self, 'Exit confirmation',
+                                                "Are you sure to quit?",
+                                                QtGui.QMessageBox.Yes |
+                                                QtGui.QMessageBox.No,
+                                                QtGui.QMessageBox.No)
 
         # Non asynchronous way. Need to re implement this. TO-DO
-        if reply == QtGui.QMessageBox.Yes:
+        if self.reply == QtGui.QMessageBox.Yes:
             self.gsi.clear_slots()
             Client(self.CONNECTION_INFO, self.gsi, self.threads).destroyconnection()
-        elif reply == QtGui.QMessageBox.No:
+        elif self.reply == QtGui.QMessageBox.No:
             event.ignore()

@@ -344,7 +344,7 @@ class ResultObj(QtCore.QObject):
 if __name__ == '__main__':
 
     textqueue = Queue()
-    sys.stdout = WriteStream(textqueue)
+    # sys.stdout = WriteStream(textqueue)
 
     log.startLogging(sys.stdout)
     log.msg('------------------------------------------------ ' +
@@ -354,7 +354,7 @@ if __name__ == '__main__':
     argumentsdict = misc.checkarguments(sysargvdict=sys.argv)
 
     qapp = QtGui.QApplication(sys.argv)
-    app = client_ui.SATNetGUI(argumentsDict=argumentsdict)
+    app = client_ui.SatNetUI(argumentsdict=argumentsdict)
     app.setWindowIcon(QtGui.QIcon('icon.png'))
     app.show()
 

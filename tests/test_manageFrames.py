@@ -1,7 +1,6 @@
 # coding=utf-8
 import os
 import sys
-import pty
 
 # Dependencies for the tests
 from mock import patch, Mock, MagicMock

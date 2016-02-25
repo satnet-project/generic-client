@@ -68,7 +68,7 @@ function uninstall_packages()
 	sudo aptitude remove $( cat "$linux_packages" ) -y
 }
 
-function install_sip_without_sudo()
+function install_sip_test()
 {
 	cd $venv_dir
 	mkdir build && cd build
@@ -77,22 +77,22 @@ function install_sip_without_sudo()
 	cd sip-4.17
 	python configure.py
 	make
-	make install
+	sudo make install
 	cd ../ && rm -rf sip-4.17
 }
 
-function install_pyqt4_without_sudo()
+function install_pyqt4_test()
 {
     # PyQt4 installation.
     wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
     tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
     cd PyQt-x11-gpl-4.11.4
-    python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
+    python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore -e QtTest
     make
     # Bug. Needed ldconfig, copy it from /usr/sbin
     cp /sbin/ldconfig ../../bin/
-    ldconfig
-    make install
+    sudo ldconfig
+    sudo make install
     cd ../ && rm -rf PyQt*
 }
 
@@ -115,7 +115,7 @@ function install_pyqt4()
     wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
     tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
     cd PyQt-x11-gpl-4.11.4
-    python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore
+    python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore -e QtTest
     make
     # Bug. Needed ldconfig, copy it from /usr/sbin
     cp /sbin/ldconfig ../../bin/
@@ -205,25 +205,11 @@ then
 	pip install -r "$project_path/requirements-tests.txt"
 
 	echo '>>> SIP installation'
-	[[ $_install_sip == 'true' ]] && install_sip
+	[[ $_install_sip == 'true' ]] && install_sip_test
 
 	echo '>>> PyQt4 installation'
-	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
+	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4_test
 
-fi
-
-if [ $1 == '-local' ];
-then
-	venv_dir="$project_path/.venv_test"
-
-	echo '>>> Installing virtualenv'
-	[[ $_install_venv == 'true' ]] && install_venv
-
-	echo '>>> SIP installation'
-	[[ $_install_sip == 'true' ]] && install_sip
-
-	echo '>>> PyQt4 installation'
-	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
 fi
 
 if [ $1 == '-uninstall' ];

@@ -4,7 +4,7 @@ from PyQt4 import QtCore
 import time
 import os
 
-from errors import WrongFormatNotification, FrameNotProcessed, ConnectionNotEnded
+from errors import WrongFormatNotification, FrameNotProcessed, ConnectionNotEnded, IOFileError
 
 """
    Copyright 2014, 2015, 2016 Xabier Crespo Álvarez

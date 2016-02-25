@@ -6,7 +6,6 @@ import time
 import configurationWindow
 
 from PyQt4 import QtGui, QtCore
-
 from twisted.python import log
 
 from gs_interface import GroundStationInterface
@@ -32,8 +31,8 @@ from threads import Threads
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-class SATNetGUI(QtGui.QWidget):
-    def __init__(self, argumentsDict, parent=None):
+class SatNetUI(QtGui.QWidget):
+    def __init__(self, argumentsdict, parent=None):
         QtGui.QWidget.__init__(self, parent)
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 18))
 
@@ -48,7 +47,7 @@ class SATNetGUI(QtGui.QWidget):
         self.initConsole()
 
         #  Use a dict for passing arg.
-        self.setArguments(argumentsDict)
+        self.setArguments(argumentsdict)
 
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
                                           ClientProtocol)
@@ -105,22 +104,22 @@ class SATNetGUI(QtGui.QWidget):
         self.ButtonCancel.setFixedWidth(145)
         self.ButtonCancel.clicked.connect(self.CloseConnection)
         self.ButtonCancel.setEnabled(False)
-        ButtonLoad = QtGui.QPushButton("Load parameters from file")
-        ButtonLoad.setToolTip("Load parameters from <i>.settings</i> file")
-        ButtonLoad.setFixedWidth(296)
-        ButtonLoad.clicked.connect(self.UpdateFields)
-        ButtonConfiguration = QtGui.QPushButton("Configuration")
-        ButtonConfiguration.setToolTip("Open configuration window")
-        ButtonConfiguration.setFixedWidth(145)
-        ButtonConfiguration.clicked.connect(self.SetConfiguration)
+        self.ButtonLoad = QtGui.QPushButton("Load parameters from file")
+        self.ButtonLoad.setToolTip("Load parameters from <i>.settings</i> file")
+        self.ButtonLoad.setFixedWidth(296)
+        self.ButtonLoad.clicked.connect(self.UpdateFields)
+        self.ButtonConfiguration = QtGui.QPushButton("Configuration")
+        self.ButtonConfiguration.setToolTip("Open configuration window")
+        self.ButtonConfiguration.setFixedWidth(145)
+        self.ButtonConfiguration.clicked.connect(self.SetConfiguration)
         ButtonHelp = QtGui.QPushButton("Help")
         ButtonHelp.setToolTip("Click for help")
         ButtonHelp.setFixedWidth(145)
         ButtonHelp.clicked.connect(self.usage)
         grid.addWidget(self.ButtonNew, 0, 0, 1, 1)
         grid.addWidget(self.ButtonCancel, 0, 1, 1, 1)
-        grid.addWidget(ButtonLoad, 1, 0, 1, 2)
-        grid.addWidget(ButtonConfiguration, 2, 0, 1, 1)
+        grid.addWidget(self.ButtonLoad, 1, 0, 1, 2)
+        grid.addWidget(self.ButtonConfiguration, 2, 0, 1, 1)
         grid.addWidget(ButtonHelp, 2, 1, 1, 1)
         buttons.setTitle("Connection")
         buttons.move(10, 10)
@@ -224,21 +223,12 @@ class SATNetGUI(QtGui.QWidget):
         self.console.setFont(QtGui.QFont('SansSerif', 11))
 
     # Set parameters form arguments list.
-    def setArguments(self, argumentsDict):
-        if argumentsDict['username'] != "":
-            self.LabelUsername.setText(argumentsDict['username'])
-        if argumentsDict['connection'] != "":
-            index = self.LabelConnection.findText(argumentsDict['connection'])
+    def setArguments(self, argumentsdict):
+        if argumentsdict['username'] != "":
+            self.LabelUsername.setText(argumentsdict['username'])
+        if argumentsdict['connection'] != "":
+            index = self.LabelConnection.findText(argumentsdict['connection'])
             self.LabelConnection.setCurrentIndex(index)
-        if argumentsDict['serialport'] != "":
-            index = self.LabelSerialPort.findText(argumentsDict['serialport'])
-            self.LabelSerialPort.setCurrentIndex(index)
-        if argumentsDict['baudrate'] != "":
-            self.LabelBaudrate.setText(argumentsDict['baudrate'])
-        if argumentsDict['udpipsend'] != "":
-            self.LabelIP.setText(argumentsDict['udpipsend'])
-        if argumentsDict['udpportsend'] != "":
-            self.LabelIPPort.setText(argumentsDict['udpportsend'])
 
     # Set parameters from CONNECTION_INFO dict.
     def setParameters(self):

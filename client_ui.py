@@ -1,7 +1,6 @@
 # coding=utf-8
 import os
 import misc
-import warnings
 import time
 import configurationWindow
 
@@ -37,6 +36,8 @@ class SatNetUI(QtGui.QWidget):
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 18))
 
         self.enviromentDesktop = os.environ.get('DESKTOP_SESSION')
+
+        self.connection = ''
 
         self.initUI()
         self.initButtons()
@@ -86,8 +87,8 @@ class SatNetUI(QtGui.QWidget):
         elif self.CONNECTION_INFO['parameters'] == 'no':
             pass
         else:
-            warnings.warn("No parameters configuration found." +
-                          " Using default parameter - Yes")
+            log.msg("No parameters configuration found." +
+                    " Using default parameter - Yes")
 
     def initButtons(self):
         buttons = QtGui.QGroupBox(self)
@@ -273,7 +274,7 @@ class SatNetUI(QtGui.QWidget):
             self.stopInterfaceButton.setEnabled(True)
         elif str(self.LabelConnection.currentText()) == 'serial':
             self.threads.runKISSThreadReceive()
-            self.Connection = 'serial'
+            self.connection = 'serial'
             self.LabelConnection.setEnabled(False)
             self.stopInterfaceButton.setEnabled(True)
 

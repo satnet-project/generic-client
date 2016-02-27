@@ -97,7 +97,7 @@ class TestUserInterfaceInterfacesOperation(TestCase):
         os.remove('.settings')
 
     @patch.object(Client, 'createconnection', return_value=True)
-    def _test_serialInterfaceIsOpen(self, createconnection):
+    def test_serialInterfaceIsOpen(self, createconnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         testUI.LabelConnection = Mock()
         testUI.LabelConnection.currentText = MagicMock(return_value='serial')

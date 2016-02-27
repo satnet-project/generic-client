@@ -81,7 +81,6 @@ class TestReadDataFromFile(TestCase):
     """
     def test_loadRightFile(self):
         argumentsDict = misc.get_data_local_file('.settings')
-        print
         return self.assertIsInstance(argumentsDict, dict)
 
     """

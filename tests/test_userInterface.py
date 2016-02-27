@@ -128,7 +128,6 @@ class TestUserInterfaceInterfacesOperation(TestCase):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         testUI.connection = 'udp'
         testUI.stopInterface()
-        # LabelConnection is a Mock object so its state can be checked
         return self.assertTrue(stopUDPThreadReceive.called), self.assertIs(testUI.connection, 'udp'), \
                self.assertFalse(testUI.stopInterfaceButton.isEnabled())
 
@@ -291,8 +290,9 @@ class TestUserInterfaceConnectionsOperation(TestCase):
 
     #@patch.object(Client, 'createconnection', mockcreateconnection)
     @patch.object(Client, 'createconnection', return_value=True)
+    @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(SatNetUI, 'NewConnection')
-    def _test_newConnectionWhenButtonClicked(self, NewConnection, createconnection):
+    def test_newConnectionWhenButtonClicked(self, createconnection, initLogo, NewConnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         QTest.mouseClick(testUI.ButtonNew, QtCore.Qt.LeftButton)
         return self.assertTrue(NewConnection.called)
@@ -363,10 +363,10 @@ class TestUserInterfaceDisconnectionsOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(SatNetUI, 'CloseConnection')
-    def _test_closeConnectionWhenButtonClicked(self, createconnection, initLogo, CloseConnection):
+    def test_closeConnectionWhenButtonClicked(self, createconnection, initLogo, CloseConnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         QTest.mouseClick(testUI.ButtonCancel, QtCore.Qt.LeftButton)
-        return self.assertFalse(CloseConnection.called)
+        return self.assertTrue(CloseConnection.called)
 
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
@@ -377,6 +377,69 @@ class TestUserInterfaceDisconnectionsOperation(TestCase):
         return self.assertTrue(clear_slots.called), self.assertTrue(testUI.ButtonNew.isEnabled()), \
                self.assertFalse(testUI.ButtonCancel.isEnabled())
 
+
+class TestUserInterfaceCloseWindow(TestCase):
+
+    @patch('__main__.ConfigurationWindow')
+    def mockconfigurationwindow(ConfigurationWindow):
+        ConfigurationWindow.return_value = True
+        return ConfigurationWindow
+
+
+    app = QtGui.QApplication(sys.argv)
+
+    def createSettingsFile(self):
+        testFile = open(".settings", "w")
+        testFile.write("[User]\n"
+                       "username = test-sc-user\n"
+                       "password = sgongarpass\n"
+                       "slot_id = -1\n"
+                       "connection = none\n"
+                       "\n"
+                       "[Serial]\n"
+                       "serialport = /dev/ttyUSB0\n"
+                       "baudrate = 500000\n"
+                       "\n"
+                       "[udp]\n"
+                       "udpipreceive = 127.0.0.1\n"
+                       "udpportreceive = 1234\n"
+                       "udpipsend = 172.19.51.145\n"
+                       "udpportsend = 57009\n"
+                       "\n"
+                       "[tcp]\n"
+                       "tcpipreceive = 127.0.0.1\n"
+                       "tcpportreceive = 4321\n"
+                       "tcpipsend = 127.0.0.1\n"
+                       "tcpportsend = 1234\n"
+                       "\n"
+                       "[server]\n"
+                       "serverip = 172.19.51.133\n"
+                       "serverport = 25345\n"
+                       "\n"
+                       "[Connection]\n"
+                       "reconnection = no\n"
+                       "parameters = yes\n"
+                       "\n"
+                       "[Client]\n"
+                       "name = Universidade de Vigo\n"
+                       "attempts = 10")
+        testFile.close()
+
+    def setUp(self):
+        self.argumentsdict = {'username': 'test-sc-user', 'udpipsend': '172.19.51.145', 'baudrate': '500000',
+                         'name': 'Universidade de Vigo', 'parameters': 'yes', 'tcpportsend': '1234',
+                         'tcpipsend': '127.0.0.1', 'udpipreceive': '127.0.0.1', 'attempts': '10',
+                         'serverip': '172.19.51.133', 'serialport': '/dev/ttyUSB0', 'tcpportreceive': 4321,
+                         'connection': 'none', 'udpportreceive': 1234, 'serverport': 25345,
+                         'reconnection': 'no', 'udpportsend': '57009', 'tcpipreceive': '127.0.0.1'}
+        self.createSettingsFile()
+
+    def tearDown(self):
+        os.remove('.settings')
+
+    """
+    This button is disabled at first instance.
+    """
     @patch.object(QtGui.QMessageBox, 'question', return_value=QtGui.QMessageBox.Yes)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(Client, 'createconnection', return_value=True)
@@ -392,8 +455,9 @@ class TestUserInterfaceDisconnectionsOperation(TestCase):
                self.assertIsNot(eventmock.ignore, True)
 
     @patch.object(QtGui.QMessageBox, 'question', return_value=QtGui.QMessageBox.No)
+    @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(Client, 'createconnection', return_value=True)
-    def _test_userCancelsWindowClosing(self, question, createconnection):
+    def test_userCancelsWindowClosing(self, question, initLogo, createconnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         eventmock = Mock
         eventmock.ignore = MagicMock(return_value=True)

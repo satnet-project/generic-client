@@ -8,6 +8,8 @@ from mock import patch, MagicMock, Mock, PropertyMock
 from PyQt4.QtTest import QTest
 from PyQt4 import QtGui, QtCore
 
+from serial import serialutil
+
 from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -16,7 +18,7 @@ from client_ui import SatNetUI
 from client_amp import Client
 from threads import Threads
 import misc
-from gs_interface import GroundStationInterface
+from gs_interface import GroundStationInterface, KISSThread
 from configurationWindow import ConfigurationWindow
 
 
@@ -97,16 +99,23 @@ class TestUserInterfaceInterfacesOperation(TestCase):
         os.remove('.settings')
 
     @patch.object(Client, 'createconnection', return_value=True)
-    def test_serialInterfaceIsOpen(self, createconnection):
+    @patch.object(Threads, 'runKISSThreadReceive', return_value=True)
+    @patch.object(SatNetUI, 'initLogo', return_value=True)
+    def _test_serialInterfaceIsOpenRightPort(self, createconnection, runKISSThreadReceive, initLogo):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         testUI.LabelConnection = Mock()
         testUI.LabelConnection.currentText = MagicMock(return_value='serial')
         testUI.openInterface()
-        print testUI.LabelConnection.currentText()
+        return self.assertTrue(runKISSThreadReceive.called)
 
     @patch.object(Client, 'createconnection', return_value=True)
-    def _test_serialInterfaceIsClose(self):
+    @patch.object(Threads, 'stopKISSThread', return_value=True)
+    @patch.object(SatNetUI, 'initLogo', return_value=True)
+    def test_serialInterfaceIsClose(self, createconnection, stopKISSThread, initLogo):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
+        testUI.connection = 'serial'
+        testUI.stopInterface()
+        return self.assertTrue(stopKISSThread.called)
 
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)

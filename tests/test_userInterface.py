@@ -101,7 +101,7 @@ class TestUserInterfaceInterfacesOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(Threads, 'runKISSThreadReceive', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
-    def _test_serialInterfaceIsOpenRightPort(self, createconnection, runKISSThreadReceive, initLogo):
+    def test_serialInterfaceIsOpenRightPort(self, createconnection, runKISSThreadReceive, initLogo):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         testUI.LabelConnection = Mock()
         testUI.LabelConnection.currentText = MagicMock(return_value='serial')

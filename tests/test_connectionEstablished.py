@@ -14,7 +14,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
 
 import client_amp
-from client_ui import *
+#from client_ui import *
 from gs_interface import GroundStationInterface
 
 """

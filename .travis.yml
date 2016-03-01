@@ -46,6 +46,7 @@ script:
   - trial --coverage test_connectionEstablished
   - trial --coverage test_manageFrames
   - trial --coverage test_userInterface
+  - trial --coverage test_integrationConnection
 
 after_success:
   - cd /home/travis/build/satnet-project/generic-client/tests/_trial_temp/coverage

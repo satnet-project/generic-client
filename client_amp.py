@@ -59,7 +59,14 @@ class ClientProtocol(AMP):
         self.gsi = gsi
         self.threads = threads
 
+        # self.factory.protoInstance = self
+
     def connectionMade(self):
+        """
+        print "connection made"
+        with open("test.txt", "a") as myfile:
+            myfile.write("connectionMade called\n")
+        """
         self.user_login()
         self.gsi.connectProtocol(self)
 
@@ -76,9 +83,13 @@ class ClientProtocol(AMP):
 
     @inlineCallbacks
     def user_login(self):
+        with open("test.txt", "a") as myfile:
+            myfile.write("user__login called\n")
         res = yield self.callRemote(Login,
                                     sUsername=self.CONNECTION_INFO['username'],
                                     sPassword=self.CONNECTION_INFO['password'])
+
+
 
         if res['bAuthenticated'] is True:
             res = yield self.callRemote(StartRemote)
@@ -140,7 +151,7 @@ class ClientProtocol(AMP):
 
     # Method associated to frame processing.
     def _processframe(self, frame):
-        frameprocessed = []
+        # frameprocessed = []
         frameprocessed = list(frame)
         frameprocessed = ":".join("{:02x}".format(ord(c))
                                   for c in frameprocessed)
@@ -222,6 +233,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
                 "..............................................." +
                 ".........................")
         self.resetDelay()
+
         return ClientProtocol(self.CONNECTION_INFO, self.gsi,
                               self.threads)
 
@@ -275,26 +287,28 @@ class Client(object):
         self.gsi = gsi
         self.threads = threads
 
-    def createconnection(self):
-        from qtreactor import pyqt4reactor
-        pyqt4reactor.install()
+    def createconnection(self, test):
+        if test is False:
+            from qtreactor import pyqt4reactor
+            pyqt4reactor.install()
 
-    def setconnection(self):
+    def setconnection(self, test):
         from twisted.internet import reactor
         reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
                            int(self.CONNECTION_INFO['serverport']),
-                           ClientReconnectFactory(
-                            self.CONNECTION_INFO,
-                            self.gsi, self.threads),
-                           CtxFactory())
+                           ClientReconnectFactory(self.CONNECTION_INFO, self.gsi,
+                                                  self.threads), CtxFactory())
 
+        reactor.run(installSignalHandlers=0)
 
-        try:
-            reactor.run(installSignalHandlers=0)
-        except:
-            pass
-
-        return self.gsi
+        """
+        if test is False:
+            try:
+                reactor.run(installSignalHandlers=0)
+            except:
+                pass
+        """
+        return True
 
     def destroyconnection(self):
         from twisted.internet import reactor
@@ -344,7 +358,7 @@ class ResultObj(QtCore.QObject):
 if __name__ == '__main__':
 
     textqueue = Queue()
-    # sys.stdout = WriteStream(textqueue)
+    sys.stdout = WriteStream(textqueue)
 
     log.startLogging(sys.stdout)
     log.msg('------------------------------------------------ ' +

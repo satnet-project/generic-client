@@ -13,7 +13,8 @@ from twisted.protocols.amp import AMP
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
 
-from client_ui import *
+# from client_ui import *
+import client_amp
 from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification
 
@@ -54,7 +55,7 @@ class TestClientProtocolSaveFrame(TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
         threads = object
 
-        self.sp = ClientProtocol(CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(CONNECTION_INFO, gsi, threads)
         self.sp.factory = MockFactory()
         self.transport = StringTransport()
         self.sp.makeConnection(self.transport)

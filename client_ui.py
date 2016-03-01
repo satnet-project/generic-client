@@ -9,8 +9,8 @@ from twisted.python import log
 
 from gs_interface import GroundStationInterface
 
-from client_amp import ClientProtocol, Client
-
+# FIXME import sentence no optimized
+import client_amp
 from threads import Threads
 
 """
@@ -51,16 +51,17 @@ class SatNetUI(QtGui.QWidget):
         self.setArguments(argumentsdict)
 
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
-                                          ClientProtocol)
+                                          client_amp.ClientProtocol)
 
         self.threads = Threads(self.CONNECTION_INFO, self.gsi)
 
         # Initialize the reactor parameters needed for the pyqt enviroment
-        Client(self.CONNECTION_INFO, self.gsi, self.threads).createconnection()
+        client_amp.Client(self.CONNECTION_INFO, self.gsi, self.threads).createconnection(test=False)
+
 
     # Create a new connection by loading the connection parameters
     # from the interface window
-    def NewConnection(self):
+    def NewConnection(self, test=False):
         self.CONNECTION_INFO['username'] = str(self.LabelUsername.text())
         self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
         self.CONNECTION_INFO['connection'] =\
@@ -71,7 +72,8 @@ class SatNetUI(QtGui.QWidget):
         self.LoadDefaultSettings.setEnabled(False)
         self.AutomaticReconnection.setEnabled(False)
 
-        self.gsi = Client(self.CONNECTION_INFO, self.gsi, self.threads).setconnection()
+        return client_amp.Client(self.CONNECTION_INFO, self.gsi,
+                                 self.threads).setconnection(test=False)
 
     def initUI(self):
         self.CONNECTION_INFO = misc.get_data_local_file(
@@ -349,6 +351,6 @@ class SatNetUI(QtGui.QWidget):
         # Non asynchronous way. Need to re implement this. TO-DO
         if self.reply == QtGui.QMessageBox.Yes:
             self.gsi.clear_slots()
-            Client(self.CONNECTION_INFO, self.gsi, self.threads).destroyconnection()
+            client_amp.Client(self.CONNECTION_INFO, self.gsi, self.threads).destroyconnection()
         elif self.reply == QtGui.QMessageBox.No:
             event.ignore()

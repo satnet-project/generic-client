@@ -14,7 +14,7 @@ from twisted.protocols.amp import AMP, BoxDispatcher
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
 
-from client_ui import *
+import client_amp
 from gs_interface import GroundStationInterface
 
 """
@@ -53,7 +53,7 @@ class TestClientProtocolConnectionDown(TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
         threads = object
 
-        self.sp = ClientProtocol(CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(CONNECTION_INFO, gsi, threads)
         self.sp.factory = MockFactory()
         self.transport = StringTransportWithDisconnection()
         self.sp.makeConnection(self.transport)
@@ -77,7 +77,7 @@ class TestClientProtocolConnectionDown(TestCase):
         self.transport.loseConnection()
         self.assertFalse(self.transport.connected)
 
-    @patch.object(ClientProtocol, 'callRemote')
+    @patch.object(client_amp.ClientProtocol, 'callRemote')
     def test_clientEndConnection(self, callRemote):
         self.transport.loseConnection()
         self.sp.end_connection()

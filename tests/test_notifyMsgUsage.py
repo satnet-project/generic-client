@@ -16,7 +16,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
 
 from ampCommands import NotifyMsg
-from client_ui import *
+import client_amp
 from gs_interface import GroundStationInterface
 from threads import Threads
 
@@ -58,7 +58,7 @@ class TestClientProtocolReceiveFrame(TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
         threads = object
 
-        self.sp = ClientProtocol(CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(CONNECTION_INFO, gsi, threads)
         self.sp.factory = MockFactory()
         self.transport = StringTransport()
         self.sp.makeConnection(self.transport)
@@ -103,7 +103,7 @@ class TestNotifyMsgSendMessageBack(TestCase):
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(self.CONNECTION_INFO, gsi, threads)
         self.CONNECTION_INFO['connection'] = 'serial'
 
         # Lastest version of PySerial can't handle pseudo serial ports
@@ -122,19 +122,19 @@ class TestNotifyMsgSendMessageBack(TestCase):
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(self.CONNECTION_INFO, gsi, threads)
         self.CONNECTION_INFO['connection'] = 'serial'
 
         return self.assertRaises(SerialException, self.sp.vNotifyMsg, self.correctFrame)
         # To-do. Raises an 0SError when it's running throught TravisCI
 
-    @patch.object(ClientProtocol, 'saveReceivedFrames')
+    @patch.object(client_amp.ClientProtocol, 'saveReceivedFrames')
     def test_udpConnectionReachable(self, saveReceivedFrames):
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(self.CONNECTION_INFO, gsi, threads)
         self.CONNECTION_INFO['connection'] = 'udp'
 
         udpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correctFrame)
@@ -147,18 +147,18 @@ class TestNotifyMsgSendMessageBack(TestCase):
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(self.CONNECTION_INFO, gsi, threads)
         self.CONNECTION_INFO['connection'] = 'udp'
 
         # To-implemented.
 
-    @patch.object(ClientProtocol, 'saveReceivedFrames')
+    @patch.object(client_amp.ClientProtocol, 'saveReceivedFrames')
     def test_tcpConnectionReachable(self, saveREceivedFrames):
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(self.CONNECTION_INFO, gsi, threads)
         self.CONNECTION_INFO['connection'] = 'tcp'
 
         tcpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correctFrame)
@@ -166,13 +166,13 @@ class TestNotifyMsgSendMessageBack(TestCase):
         return self.assertTrue(tcpconnectionresponse['bResult']), \
                self.assertTrue(saveREceivedFrames.called)
 
-    @patch.object(ClientProtocol, 'saveReceivedFrames')
+    @patch.object(client_amp.ClientProtocol, 'saveReceivedFrames')
     def test_noConnectionSelected(self, saveReceivedFrames):
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(self.CONNECTION_INFO, gsi, threads)
         self.CONNECTION_INFO['connection'] = 'none'
 
         noneconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correctFrame)

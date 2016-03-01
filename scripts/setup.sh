@@ -68,34 +68,6 @@ function uninstall_packages()
 	sudo aptitude remove $( cat "$linux_packages" ) -y
 }
 
-function install_sip_test()
-{
-	cd $venv_dir
-	mkdir build && cd build
-	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz
-	tar -xvf sip-4.17.tar.gz
-	cd sip-4.17
-	python configure.py
-	make
-	sudo make install
-	cd ../ && rm -rf sip-4.17
-}
-
-function install_pyqt4_test()
-{
-    # PyQt4 installation.
-    wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
-    tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
-    cd PyQt-x11-gpl-4.11.4
-    python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore -e QtTest
-    make
-    # Bug. Needed ldconfig, copy it from /usr/sbin
-    cp /sbin/ldconfig ../../bin/
-    sudo ldconfig
-    sudo make install
-    cd ../ && rm -rf PyQt*
-}
-
 function install_sip()
 {
 	cd $venv_dir
@@ -153,6 +125,7 @@ venv_dir="$project_path/.venv"
 pyserial_module="$venv_dir/lib/python2.7/site-packages/serial/serialposix.py"
 
 key_dir="$project_path/key"
+key_dir_test="$project_path/tests/key"
 keys_private="$keys_dir/test.key"
 keys_csr="$keys_dir/test.csr"
 keys_crt="$keys_dir/test.crt"
@@ -197,6 +170,9 @@ then
     pip install coveralls
     pip install coverage
     pip install nose
+
+    echo '>>> Keys installation...'
+    [[ $_generate_keys == 'true' ]] && create_selfsigned_keys
 fi
 
 if [ $1 == '-circleCI' ];
@@ -205,10 +181,13 @@ then
 	pip install -r "$project_path/requirements-tests.txt"
 
 	echo '>>> SIP installation'
-	[[ $_install_sip == 'true' ]] && install_sip_test
+	[[ $_install_sip == 'true' ]] && install_sip
 
 	echo '>>> PyQt4 installation'
-	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4_test
+	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
+
+	echo '>>> Keys installation...'
+	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
 
 fi
 

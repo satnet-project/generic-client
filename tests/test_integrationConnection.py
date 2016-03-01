@@ -3,9 +3,8 @@ import unittest
 import sys
 
 from os import path
-from PyQt4 import QtGui
 
-from mock import Mock, MagicMock
+from mock import Mock, MagicMock, patch
 
 from twisted.python import log
 from twisted.protocols.amp import AMP
@@ -13,7 +12,6 @@ from twisted.protocols.policies import TimeoutMixin
 from twisted.test.proto_helpers import StringTransport
 from twisted.internet import defer, reactor, ssl
 from twisted.internet.protocol import Factory,Protocol, ServerFactory, ClientFactory
-from mock import patch
 from twisted.internet import defer, protocol
 from twisted.trial import unittest
 from twisted.protocols.amp import AMP
@@ -28,7 +26,7 @@ from ampCommands import Login
 
 
 class MockServerFactory(Factory):
-    active_protocols = {}
+    active_protocols = {'xabi':'xabiprotocol'}
     active_connections = {}
 
 class ServerProtocol(AMP):
@@ -39,6 +37,8 @@ class ServerProtocol(AMP):
 
         if sUsername in self.factory.active_protocols:
             log.msg('Client already logged in, renewing...')
+            # What's the point of logging an user already logged?
+            return {'bAuthenticated': False}
         else:
             self.username = sUsername
             self.password = sPassword
@@ -97,4 +97,9 @@ class TestConnectionProcessIntegrated(unittest.TestCase):
     def test_loginRightUsernameRightPasswordRightConnection(self):
         d = self.factory.protoInstance.callRemote(Login, sUsername='sgongar', sPassword='sgongarpass')
         d.addCallback(lambda res : self.assertTrue(res['bAuthenticated']))
+        return d
+
+    def test_loginWrongUsernameRightPasswordRightConnection(self):
+        d = self.factory.protoInstance.callRemote(Login, sUsername='xabi', sPassword='xabipass')
+        d.addCallback(lambda res : self.assertFalse(res['bAuthenticated']))
         return d

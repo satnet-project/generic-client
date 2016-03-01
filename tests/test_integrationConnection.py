@@ -23,6 +23,7 @@ from client_amp import ClientProtocol, Client, ClientReconnectFactory, CtxFactor
 from client_ui import  SatNetUI
 from threads import Threads
 from ampCommands import Login, StartRemote
+from errors import SlotErrorNotification
 
 # from protocol.ampauth.server import CredReceiver
 # from protocol import rpcrequests
@@ -31,6 +32,8 @@ from ampCommands import Login, StartRemote
 class MockServerFactory(Factory):
     active_protocols = {'xabi':'xabiprotocol'}
     active_connections = {}
+
+    print active_protocols
 
 
 class ServerProtocol(AMP):
@@ -48,7 +51,11 @@ class ServerProtocol(AMP):
             self.password = sPassword
             self.factory.active_protocols[sUsername] = None
 
+        # To-do. Mock function call.
         # self.rpc = rpcrequests.SatnetRPC(sUsername, sPassword)
+        self.rpc = Mock
+        self.rpc.testing = MagicMock(return_value=True)
+
         self.factory.active_protocols[sUsername] = self
 
         log.msg('Connection made!, clients = ' + str(
@@ -86,9 +93,9 @@ class ServerProtocol(AMP):
         :param sc_user: Username of the spacecraft user
         """
 
-        print '>>> gs_user = ' + str(gs_user)
-        print '>>> sc_user = ' + str(sc_user)
-        print '>>> self.username = ' + str(self.username)
+        # print '>>> gs_user = ' + str(gs_user)
+        # print '>>> sc_user = ' + str(sc_user)
+        # print '>>> self.username = ' + str(self.username)
 
         if gs_user != self.username and sc_user != self.username:
             err_msg = 'This slot has not been assigned to this user'
@@ -100,6 +107,11 @@ class ServerProtocol(AMP):
         This function implements the checks to be executed after a START REMOTE
         command coming from a user.
         """
+
+        rpcrequests = Mock()
+        rpcrequests.RPC_TEST_USER_GS = 'test-user-gs'
+        rpcrequests.RPC_TEST_USER_SC = 'test-user-sc'
+
         if self.rpc.testing:
             slot = {
                 'id': -1,
@@ -165,9 +177,6 @@ class TestConnectionProcessIntegrated(unittest.TestCase):
         f.onConnectionLost = d
         f.protocol = ServerProtocol
 
-        from os import getcwd
-        print getcwd()
-
         return reactor.listenSSL(1234, f, contextFactory=ssl.DefaultOpenSSLContextFactory('../../key/server.pem',
                                                                                           '../../key/public.pem'))
 
@@ -186,12 +195,20 @@ class TestConnectionProcessIntegrated(unittest.TestCase):
         self.clientConnection.disconnect()
         return defer.gatherResults([d, self.clientDisconnected, self.serverDisconnected])
 
-    def test_loginRightUsernameRightPasswordRightConnection(self):
+    def _test_loginRightUsernameRightPasswordRightConnection(self):
         d = self.factory.protoInstance.callRemote(Login, sUsername='sgongar', sPassword='sgongarpass')
         d.addCallback(lambda res : self.assertTrue(res['bAuthenticated']))
         return d
 
-    def test_loginWrongUsernameRightPasswordRightConnection(self):
+    def _test_loginWrongUsernameRightPasswordRightConnection(self):
         d = self.factory.protoInstance.callRemote(Login, sUsername='xabi', sPassword='xabipass')
         d.addCallback(lambda res : self.assertFalse(res['bAuthenticated']))
         return d
+
+    def test_wrongUsernamestartRemoteFailed(self):
+        d = self.factory.protoInstance.callRemote(Login, sUsername='sgongar', sPassword='sgongarpass')
+        d.addCallback(lambda l : self.factory.protoInstance.callRemote(StartRemote))
+
+        def checkError(result):
+            self.assertEqual(result.message, 'This slot has not been assigned to this user')
+        return self.assertFailure(d, SlotErrorNotification).addCallback(checkError)

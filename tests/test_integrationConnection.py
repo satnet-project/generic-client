@@ -22,12 +22,16 @@ from gs_interface import GroundStationInterface
 from client_amp import ClientProtocol, Client, ClientReconnectFactory, CtxFactory
 from client_ui import  SatNetUI
 from threads import Threads
-from ampCommands import Login
+from ampCommands import Login, StartRemote
+
+# from protocol.ampauth.server import CredReceiver
+# from protocol import rpcrequests
 
 
 class MockServerFactory(Factory):
     active_protocols = {'xabi':'xabiprotocol'}
     active_connections = {}
+
 
 class ServerProtocol(AMP):
     def connectionLost(self, *a):
@@ -55,6 +59,77 @@ class ServerProtocol(AMP):
 
     Login.responder(login)
 
+    def decode_user(self, slot):
+        """Decodes the information of the client
+        :param slot:
+        :return:
+        """
+        if not slot:
+            err_msg = 'No operational slots for the user'
+            log.err(err_msg)
+            raise SlotErrorNotification(err_msg)
+
+        gs_user = slot['gs_username']
+        sc_user = slot['sc_username']
+
+        client_a = sc_user
+        client_b = gs_user
+        if gs_user == self.username:
+            client_a = gs_user
+            client_b = sc_user
+
+        return gs_user, sc_user, client_a, client_b
+
+    def check_slot_ownership(self, gs_user, sc_user):
+        """Checks if this slot has not been assigned to this user
+        :param gs_user: Username of the groundstation user
+        :param sc_user: Username of the spacecraft user
+        """
+
+        print '>>> gs_user = ' + str(gs_user)
+        print '>>> sc_user = ' + str(sc_user)
+        print '>>> self.username = ' + str(self.username)
+
+        if gs_user != self.username and sc_user != self.username:
+            err_msg = 'This slot has not been assigned to this user'
+            log.err(err_msg)
+            raise SlotErrorNotification(err_msg)
+
+    def start_remote_user(self):
+        """Start Remote
+        This function implements the checks to be executed after a START REMOTE
+        command coming from a user.
+        """
+        if self.rpc.testing:
+            slot = {
+                'id': -1,
+                'gs_username': rpcrequests.RPC_TEST_USER_GS,
+                'sc_username': rpcrequests.RPC_TEST_USER_SC,
+                'ending_time': None
+            }
+        else:
+            slot = self.rpc.get_next_slot(self.username)
+
+        gs_user, sc_user, client_a, client_c = self.decode_user(slot)
+        self.check_slot_ownership(gs_user, sc_user)
+
+        return slot, gs_user, sc_user, client_a, client_c
+
+    def iStartRemote(self):
+        """RPC Handler
+        This function processes the remote request through the StartRemote AMP
+        command.
+        FIXME iSlotId is no longer necessary...
+        :param iSlotId:
+        """
+        log.msg('(' + self.username + ') --------- Start Remote ---------')
+        slot, gs_user, sc_user, client_a, client_c = self.start_remote_user()
+        return self.create_connection(
+            slot['ending_time'], slot['id'], client_a, client_c
+        )
+
+    StartRemote.responder(iStartRemote)
+
 
 class ClientProtocol(AMP):
     def connectionMade(self):
@@ -64,8 +139,19 @@ class ClientProtocol(AMP):
     def connectionLost(self, *a):
         self.factory.onConnectionLost.callback(self)
 
+
 class TestConnectionProcessIntegrated(unittest.TestCase):
     def setUp(self):
+        self.CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass', 'udpipsend': '172.19.51.145',
+                                'baudrate': '500000', 'name': 'Universidade de Vigo', 'parameters': 'yes',
+                                'tcpportsend': '1234', 'tcpipsend': '127.0.0.1', 'udpipreceive': '127.0.0.1',
+                                'attempts': '10', 'serverip': '172.19.51.143', 'serialport': '/dev/ttyUSB0',
+                                'tcpportreceive': 4321, 'connection': 'udp', 'udpportreceive': 57008,
+                                'serverport': 25345, 'reconnection': 'no', 'udpportsend': '57009',
+                                'tcpipreceive': '127.0.0.1'}
+        self.gsi = GroundStationInterface(self.CONNECTION_INFO, 'Vigo', AMP)
+        self.threads = Threads(self.CONNECTION_INFO, self.gsi)
+
         self.serverDisconnected = defer.Deferred()
         self.serverPort = self._listenServer(self.serverDisconnected)
         connected = defer.Deferred()
@@ -78,13 +164,19 @@ class TestConnectionProcessIntegrated(unittest.TestCase):
         f = MockServerFactory()
         f.onConnectionLost = d
         f.protocol = ServerProtocol
-        return reactor.listenSSL(1234, f, contextFactory=ssl.DefaultOpenSSLContextFactory('../key/server.pem',
-                                                                                           '../key/public.pem'))
+
+        from os import getcwd
+        print getcwd()
+
+        return reactor.listenSSL(1234, f, contextFactory=ssl.DefaultOpenSSLContextFactory('../../key/server.pem',
+                                                                                          '../../key/public.pem'))
 
     def _connectClient(self, d1, d2):
         from twisted.internet import reactor
+        # self.factory = ClientReconnectFactory(self.CONNECTION_INFO, self.gsi, self.threads)
         self.factory = protocol.ClientFactory()
         self.factory.protocol = ClientProtocol
+        # self.factory.protocol = ClientProtocol(self.CONNECTION_INFO, self.gsi, self.threads)
         self.factory.onConnectionMade = d1
         self.factory.onConnectionLost = d2
         return reactor.connectSSL('127.0.0.1', 1234, self.factory, CtxFactory())

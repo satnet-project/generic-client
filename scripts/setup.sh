@@ -23,9 +23,6 @@ function create_selfsigned_keys()
 {
     [[ -d $keys_dir ]] || {
         echo '>>> Creating keys directory...'
-
-        echo $keys_dir
-
         mkdir -p $keys_dir
     } && {
         echo ">>> $keys_dir exists, skipping..."
@@ -127,8 +124,7 @@ venv_dir="$project_path/.venv"
 
 pyserial_module="$venv_dir/lib/python2.7/site-packages/serial/serialposix.py"
 
-key_dir="$project_path/key"
-key_dir_test="$project_path/tests/key"
+keys_dir="$project_path/key"
 keys_private="$keys_dir/test.key"
 keys_csr="$keys_dir/test.csr"
 keys_crt="$keys_dir/test.crt"

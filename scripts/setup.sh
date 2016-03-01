@@ -23,6 +23,9 @@ function create_selfsigned_keys()
 {
     [[ -d $keys_dir ]] || {
         echo '>>> Creating keys directory...'
+
+        echo $keys_dir
+
         mkdir -p $keys_dir
     } && {
         echo ">>> $keys_dir exists, skipping..."

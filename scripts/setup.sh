@@ -159,6 +159,9 @@ then
 	echo '>>> PyQt4 installation'
 	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
 
+	echo '>>> Keys installation...'
+	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
+
 	sed -i '491,495 s/^/#/' $pyserial_module
 fi
 

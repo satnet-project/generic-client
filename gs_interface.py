@@ -72,12 +72,19 @@ class GroundStationInterface(object):
 
     def __init__(self, CONNECTION_INFO, GS, AMP):
         self.CONNECTION_INFO = CONNECTION_INFO
-        self.AMP = None
+        # self.AMP = None
+        self.AMP = AMP
         self.GS = GS
 
     def _manageFrame(self, result):
         if self.AMP is not None:
             # bytearray or string?
+            if type(result) is str:
+                result = bytearray(result)
+
+            print result
+            print type(result)
+
             if type(result) != bytearray:
                 raise WrongFormatNotification("Bad format frame")
 
@@ -96,7 +103,6 @@ class GroundStationInterface(object):
     def _updateLocalFile(self, frame):
         filename = self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
 
-        # frame = bytearray(frame)
         del frame[:1]
         with open(filename, "a+") as f:
             f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S ")) + frame + "\n")
@@ -105,7 +111,6 @@ class GroundStationInterface(object):
             log.msg("--------------------------------------------- " +
                     "Message saved to local file" +
                     " ---------------------------------------------")
-            log.msg("")
             return True
         else:
             raise IOFileError('Record file not created')
@@ -126,6 +131,7 @@ class GroundStationInterface(object):
     """
     def connectProtocol(self, AMP):
         log.msg('Protocol connected to the GS')
+        log.msg(AMP)
         self.AMP = AMP
 
     # Removes the reference to the protocol object (self.AMP). It shall

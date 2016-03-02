@@ -14,6 +14,7 @@ from errors import WrongFormatNotification, IOFileError
 
 from twisted.python import log
 from twisted.internet import ssl
+from twisted.internet import error
 
 from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.protocol import ReconnectingClientFactory
@@ -62,11 +63,6 @@ class ClientProtocol(AMP):
         # self.factory.protoInstance = self
 
     def connectionMade(self):
-        """
-        print "connection made"
-        with open("test.txt", "a") as myfile:
-            myfile.write("connectionMade called\n")
-        """
         self.user_login()
         self.gsi.connectProtocol(self)
 
@@ -83,8 +79,6 @@ class ClientProtocol(AMP):
 
     @inlineCallbacks
     def user_login(self):
-        with open("test.txt", "a") as myfile:
-            myfile.write("user__login called\n")
         res = yield self.callRemote(Login,
                                     sUsername=self.CONNECTION_INFO['username'],
                                     sPassword=self.CONNECTION_INFO['password'])
@@ -151,12 +145,17 @@ class ClientProtocol(AMP):
 
     # Method associated to frame processing.
     def _processframe(self, frame):
-        # frameprocessed = []
+        log.msg("Dentro de _processframe")
+        frameprocessed = []
         frameprocessed = list(frame)
         frameprocessed = ":".join("{:02x}".format(ord(c))
                                   for c in frameprocessed)
 
         log.msg("Received frame: ", frameprocessed)
+
+        # Convert to base64 string
+        import base64
+        frame = base64.b64encode(frame)
 
         self.processFrame(frame)
 
@@ -299,8 +298,10 @@ class Client(object):
                            ClientReconnectFactory(self.CONNECTION_INFO, self.gsi,
                                                   self.threads), CtxFactory())
 
-        reactor.run(installSignalHandlers=0)
-
+        try:
+            reactor.run(installSignalHandlers=0)
+        except error.ReactorAlreadyRunning:
+            log.msg("Reactor already running")
         """
         if test is False:
             try:

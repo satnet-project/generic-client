@@ -128,7 +128,6 @@ class GroundStationInterface(object):
     """
     def connectProtocol(self, AMP):
         log.msg('Protocol connected to the GS')
-        log.msg(AMP)
         self.AMP = AMP
 
     # Removes the reference to the protocol object (self.AMP). It shall

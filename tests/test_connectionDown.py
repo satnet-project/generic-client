@@ -71,11 +71,11 @@ class TestClientProtocolConnectionDown(TestCase):
 
     def test_clientconnectionLost(self):
         self.transport.loseConnection()
-        self.assertFalse(self.transport.connected)
+        return self.assertFalse(self.transport.connected)
 
     def test_clientConnectionFailed(self):
         self.transport.loseConnection()
-        self.assertFalse(self.transport.connected)
+        return self.assertFalse(self.transport.connected)
 
     @patch.object(client_amp.ClientProtocol, 'callRemote')
     def test_clientEndConnection(self, callRemote):

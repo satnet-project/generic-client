@@ -82,9 +82,6 @@ class GroundStationInterface(object):
             if type(result) is str:
                 result = bytearray(result)
 
-            print result
-            print type(result)
-
             if type(result) != bytearray:
                 raise WrongFormatNotification("Bad format frame")
 

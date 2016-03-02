@@ -145,10 +145,9 @@ class ClientProtocol(AMP):
 
     # Method associated to frame processing.
     def _processframe(self, frame):
-        log.msg("Dentro de _processframe")
         frameprocessed = []
         frameprocessed = list(frame)
-        frameprocessed = ":".join("{:02x}".format(ord(c))
+        frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
 
         log.msg("Received frame: ", frameprocessed)
@@ -183,7 +182,7 @@ class ClientProtocol(AMP):
                     "-" + time.strftime("%Y.%m.%d") + ".csv")
 
         with open(filename, "a+") as f:
-            f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S")) +
+            f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S")) + ' ' +
                     frame + "\n")
 
         if os.path.exists(filename):

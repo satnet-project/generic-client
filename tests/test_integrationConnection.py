@@ -33,8 +33,6 @@ class MockServerFactory(Factory):
     active_protocols = {'xabi':'xabiprotocol'}
     active_connections = {}
 
-    print active_protocols
-
 
 class ServerProtocol(AMP):
     def connectionLost(self, *a):

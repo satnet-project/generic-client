@@ -174,9 +174,6 @@ class ClientProtocol(AMP):
         if type(frame) is not bytearray:
             raise WrongFormatNotification('Frame is %s' %(type(frame)))
 
-        frame = bytearray(frame)
-        del frame[:1]
-
         filename = ("RECEIVED-FRAMES-" +
                     self.CONNECTION_INFO['name'] +
                     "-" + time.strftime("%Y.%m.%d") + ".csv")

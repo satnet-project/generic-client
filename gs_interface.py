@@ -314,6 +314,9 @@ class OperativeUDPThreadReceive(UDPThread):
                 " port: " + str(address[1]) + " --------------" +
                 "------------------")
 
+        log.msg("Primer paso")
+        log.msg(str(type(frame)))
+
         self.finished.emit(frame)
 
     def stop(self):

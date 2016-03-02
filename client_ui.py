@@ -202,7 +202,6 @@ class SatNetUI(QtGui.QWidget):
         LabelLogo.move(20, 450)
 
         pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
-
         pic = pic.scaledToWidth(300)
 
         # pic = pic.scaled(400, 400, QtCore.Qt.KeepAspectRatio)

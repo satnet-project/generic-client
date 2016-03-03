@@ -19,7 +19,7 @@ from twisted.protocols.amp import AMP
 sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
 import misc
 from gs_interface import GroundStationInterface
-from client_amp import ClientProtocol, Client, ClientReconnectFactory, CtxFactory
+from client_amp import Client, ClientReconnectFactory, CtxFactory
 from client_ui import  SatNetUI
 from threads import Threads
 from ampCommands import Login, StartRemote

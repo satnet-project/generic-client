@@ -38,19 +38,17 @@ install:
 
 script:
   - cd tests
-  - trial --coverage test_readDataFromFile
-  - trial --coverage test_readDataFromTerminal
-  - trial --coverage test_notifyMsgUsage
-  - trial --coverage test_saveReceivedFrames
-  - trial --coverage test_connectionDown
-  - trial --coverage test_connectionEstablished
-  - trial --coverage test_manageFrames
-  - trial --coverage test_userInterface
-  - trial --coverage test_integrationConnection
+  - trial test_readDataFromFile
+  - trial test_readDataFromTerminal
+  - trial test_notifyMsgUsage
+  - trial test_saveReceivedFrames
+  - trial test_connectionDown
+  - trial test_connectionEstablished
+  - trial test_manageFrames
+  - trial test_userInterface
+  - trial test_integrationConnection
+  - coverage run test_*.py
 
 after_success:
-  - cd /home/travis/build/satnet-project/generic-client/tests/_trial_temp/coverage
-  - ls
-  - coverage combine
-  - coverage report --omit '/home/travis/virtualenv/python2.7.9/lib/python2.7/site-packages/*'
+  - coverage report --omit '/home/travis/virtualenv/*'
   - coveralls

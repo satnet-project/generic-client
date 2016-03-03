@@ -3,24 +3,15 @@ import os
 import sys
 import ConfigParser
 
-# Dependencies for the tests
-from mock import patch, MagicMock, Mock, PropertyMock
-
+from mock import patch
 from PyQt4.QtTest import QTest
 from PyQt4 import QtGui, QtCore
-
-from serial import serialutil
-
 from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
-from client_ui import SatNetUI
-from client_amp import Client
-from threads import Threads
-import misc
-from gs_interface import GroundStationInterface, KISSThread
 from configurationWindow import ConfigurationWindow
+from errors import SettingsCorrupted
 
 
 """
@@ -43,6 +34,27 @@ __author__ = 's.gongoragarcia@gmail.com'
 class TestUserConfigurationInterfaceOperation(TestCase):
 
     app = QtGui.QApplication(sys.argv)
+
+    def createWrongSettingsFile(self):
+        testFile = open(".settings", "w")
+        testFile.write("[User]\n"
+                       "username = test-sc-user\n"
+                       "password = sgongarpass\n"
+                       "slot_id = -1\n"
+                       "connection = none\n"
+                       "\n"
+                       "[Serial]\n"
+                       "serialport = /dev/ttyUSB0\n"
+                       "baudrate = 500000\n"
+                       "\n"
+                       "[Connection]\n"
+                       "reconnection = no\n"
+                       "parameters = yes\n"
+                       "\n"
+                       "[Client]\n"
+                       "name = Universidade de Vigo\n"
+                       "attempts = 10")
+        testFile.close()
 
     def createSettingsFile(self):
         testFile = open(".settings", "w")
@@ -82,17 +94,29 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         testFile.close()
 
     def setUp(self):
-        self.createSettingsFile()
+        pass
 
     def tearDown(self):
-        os.remove('.settings')
+        pass
+        # os.remove('.settings')
 
 
-    def _test_readConfiguration(self):
+    def test_openWindowWithWrongSettingsFile(self):
         """
-
-        @return: assertIsNone statement
+        Actually the code doesn't raise any error if the the settings file.
+        @return: assertIs statement.
         """
+        self.createWrongSettingsFile()
+        return self.assertRaises(SettingsCorrupted, ConfigurationWindow)
+
+    def test_readConfiguration(self):
+        """
+        Creates a new ConfigurationWindow object which loads the settings from the
+        mocked .settings file already created.
+
+        @return: a few assertEqual methods who checks if the registers saved are right.
+        """
+        self.createSettingsFile()
         testSave = ConfigurationWindow()
 
         self.assertEqual(str(testSave.FieldLabelServer.text()), '172.19.51.133')
@@ -106,7 +130,15 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         self.assertEqual(str(testSave.FieldLabelTCPIPReceive.text()), '127.0.0.1')
         self.assertEqual(str(testSave.FieldLabelTCPPortRececeive.text()), '4321')
 
-    def _test_saveConfigurationWhenButtonClicked(self):
+    def test_saveConfigurationWhenButtonClicked(self):
+        """
+        Sets the content of the text insertion fields and runs the function
+        responsible for storing the fields.
+
+        Checks if the saved records on the file are equal to the records desired.
+        @return: a bunch of assertEqual statements.
+        """
+        self.createSettingsFile()
         testSave = ConfigurationWindow()
         testSave.FieldLabelServer.setText('133.51.19.172')
         testSave.FieldLabelPort.setText('54352')
@@ -146,6 +178,12 @@ class TestUserConfigurationInterfaceOperation(TestCase):
 
     @patch.object(ConfigurationWindow, 'closeWindow')
     def test_buttonsOperationCloseWindow(self, closeWindow):
+        """
+
+        @param closeWindow: method closedWindow patched from ConfigurationWindow class.
+        @return: a assertEqual statement which checks if closeWindow is called.
+        """
+        self.createSettingsFile()
         testOperation = ConfigurationWindow()
         closebutton = testOperation.buttonBox.button(QtGui.QDialogButtonBox.Close)
         QTest.mouseClick(closebutton, QtCore.Qt.LeftButton)
@@ -153,18 +191,25 @@ class TestUserConfigurationInterfaceOperation(TestCase):
 
     @patch.object(ConfigurationWindow, 'save')
     def test_buttonsOperationSaveCall(self, save):
+        """
+
+        @param save: method save patched from ConfigurationWindow class.
+        @return: a assertEqual statement which checks if save is called.
+        """
+        self.createSettingsFile()
         testOperation = ConfigurationWindow()
         savebutton = testOperation.buttonBox.button(QtGui.QDialogButtonBox.Save)
         QTest.mouseClick(savebutton, QtCore.Qt.LeftButton)
         return self.assertEqual(int(save.call_count), 1)
 
     @patch.object(ConfigurationWindow, 'close')
-    def _test_closeFunctionCalledWhenQuitWindow(self, close):
+    def test_closeFunctionCalledWhenQuitWindow(self, close):
         """
 
         @param close: patch method
         @return: assertEqual statement
         """
+        self.createSettingsFile()
         testWindowConfiguration = ConfigurationWindow()
         testWindowConfiguration.closeWindow()
         return self.assertEqual(int(close.call_count), 1)

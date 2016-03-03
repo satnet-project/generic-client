@@ -3,6 +3,7 @@ import misc
 import ConfigParser
 
 from PyQt4 import QtGui, QtCore
+from errors import SettingsCorrupted
 
 """
    Copyright 2015, 2016 Samuel Góngora García
@@ -41,38 +42,31 @@ class ConfigurationWindow(QtGui.QDialog):
             self.setMinimumSize(800, 300)
 
         # Read fields
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
+        try:
+            self.CONNECTION_INFO = misc.get_data_local_file(settingsFile='.settings')
+        except:
+            raise SettingsCorrupted('Some fields are lost or corrupted')
 
-        self.FieldLabelServer.setText(
-            self.CONNECTION_INFO['serverip'])
-        self.FieldLabelPort.setText(str(
-            self.CONNECTION_INFO['serverport']))
-        self.FieldLabelUDPIpSend.setText(
-            self.CONNECTION_INFO['udpipsend'])
-        self.FieldLabelUDPPortSend.setText(
-            self.CONNECTION_INFO['udpportsend'])
-        self.FieldLabelUDPIPReceive.setText(
-            self.CONNECTION_INFO['udpipreceive'])
-        self.FieldLabelUDPPortRececeive.setText(str(
-            self.CONNECTION_INFO['udpportreceive']))
-        self.FieldLabelTCPIPSend.setText(
-            self.CONNECTION_INFO['tcpipsend'])
-        self.FieldLabelTCPPortSend.setText(
-            self.CONNECTION_INFO['tcpportsend'])
-        self.FieldLabelTCPIPReceive.setText(
-            self.CONNECTION_INFO['tcpipreceive'])
-        self.FieldLabelTCPPortRececeive.setText(str(
-            self.CONNECTION_INFO['tcpportreceive']))
-        self.FieldLabelSerialPort.setText(
-            self.CONNECTION_INFO['serialport'])
-        self.FieldLabelSerialBaudRate.setText(
-            self.CONNECTION_INFO['baudrate'])
+        self.setfields()
 
         self.FieldLabelTCPIPSend.setEnabled(False)
         self.FieldLabelTCPPortSend.setEnabled(False)
         self.FieldLabelTCPIPReceive.setEnabled(False)
         self.FieldLabelTCPPortRececeive.setEnabled(False)
+
+    def setfields(self):
+        self.FieldLabelServer.setText(self.CONNECTION_INFO['serverip'])
+        self.FieldLabelPort.setText(str(self.CONNECTION_INFO['serverport']))
+        self.FieldLabelUDPIpSend.setText(self.CONNECTION_INFO['udpipsend'])
+        self.FieldLabelUDPPortSend.setText(self.CONNECTION_INFO['udpportsend'])
+        self.FieldLabelUDPIPReceive.setText(self.CONNECTION_INFO['udpipreceive'])
+        self.FieldLabelUDPPortRececeive.setText(str(self.CONNECTION_INFO['udpportreceive']))
+        self.FieldLabelTCPIPSend.setText(self.CONNECTION_INFO['tcpipsend'])
+        self.FieldLabelTCPPortSend.setText(self.CONNECTION_INFO['tcpportsend'])
+        self.FieldLabelTCPIPReceive.setText(self.CONNECTION_INFO['tcpipreceive'])
+        self.FieldLabelTCPPortRececeive.setText(str(self.CONNECTION_INFO['tcpportreceive']))
+        self.FieldLabelSerialPort.setText(self.CONNECTION_INFO['serialport'])
+        self.FieldLabelSerialBaudRate.setText(self.CONNECTION_INFO['baudrate'])
 
     def serverInterface(self):
         """

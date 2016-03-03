@@ -51,6 +51,5 @@ script:
 
 after_success:
   - coverage combine
-  - pwd
   - coverage report --omit '/home/travis/virtualenv/*'
-  - coveralls
+  - coveralls --rcfile='/home/travis/build/satnet-project/generic-client/.coveragerc'

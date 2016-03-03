@@ -50,5 +50,6 @@ script:
   - coverage run test_*.py
 
 after_success:
+  - coverage combine
   - coverage report --omit '/home/travis/virtualenv/*'
   - coveralls

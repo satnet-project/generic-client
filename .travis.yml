@@ -51,5 +51,6 @@ script:
 
 after_success:
   - coverage combine
+  - pwd
   - coverage report --omit '/home/travis/virtualenv/*'
   - coveralls

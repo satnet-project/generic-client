@@ -68,9 +68,11 @@ class ClientProtocol(AMP):
 
     def connectionLost(self, reason):
         log.msg("Connection lost")
+        log.msg(reason)
 
     def connectionFailed(self, reason):
         log.msg("Connection failed")
+        log.msg(reason)
 
     @inlineCallbacks
     def end_connection(self):
@@ -188,6 +190,7 @@ class ClientProtocol(AMP):
             raise IOFileError('Record file not created')
 
     def vNotifyEvent(self, iEvent, sDetails):
+        sDetails = None
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:

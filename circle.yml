@@ -20,3 +20,4 @@ test:
     - cd tests/ && trial test_manageFrames
     - cd tests/ && trial test_userInterface
     - cd tests/ && trial test_integrationConnection
+    - cd tests/ && trial test_configurationWindowOperation

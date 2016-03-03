@@ -56,7 +56,7 @@ class ConfigurationWindow(QtGui.QDialog):
             self.CONNECTION_INFO['udpipreceive'])
         self.FieldLabelUDPPortRececeive.setText(str(
             self.CONNECTION_INFO['udpportreceive']))
-        self.FieldLabelTCPIpSend.setText(
+        self.FieldLabelTCPIPSend.setText(
             self.CONNECTION_INFO['tcpipsend'])
         self.FieldLabelTCPPortSend.setText(
             self.CONNECTION_INFO['tcpportsend'])
@@ -69,7 +69,7 @@ class ConfigurationWindow(QtGui.QDialog):
         self.FieldLabelSerialBaudRate.setText(
             self.CONNECTION_INFO['baudrate'])
 
-        self.FieldLabelTCPIpSend.setEnabled(False)
+        self.FieldLabelTCPIPSend.setEnabled(False)
         self.FieldLabelTCPPortSend.setEnabled(False)
         self.FieldLabelTCPIPReceive.setEnabled(False)
         self.FieldLabelTCPPortRececeive.setEnabled(False)
@@ -171,8 +171,8 @@ class ConfigurationWindow(QtGui.QDialog):
 
         LabelTCPIPSend = QtGui.QLabel("TCP remote IP:")
         LabelTCPIPSend.setFixedWidth(150)
-        self.FieldLabelTCPIpSend = QtGui.QLineEdit()
-        self.FieldLabelTCPIpSend.setFixedWidth(200)
+        self.FieldLabelTCPIPSend = QtGui.QLineEdit()
+        self.FieldLabelTCPIPSend.setFixedWidth(200)
         LabelTCPPortSend = QtGui.QLabel("TCP remote port:")
         LabelTCPPortSend.setFixedWidth(150)
         self.FieldLabelTCPPortSend = QtGui.QLineEdit()
@@ -187,7 +187,7 @@ class ConfigurationWindow(QtGui.QDialog):
         self.FieldLabelTCPPortRececeive.setFixedWidth(200)
 
         tcpGrid.addWidget(LabelTCPIPSend, 0, 0, 1, 1)
-        tcpGrid.addWidget(self.FieldLabelTCPIpSend, 0, 1, 1, 1)
+        tcpGrid.addWidget(self.FieldLabelTCPIPSend, 0, 1, 1, 1)
         tcpGrid.addWidget(LabelTCPPortSend, 1, 0, 1, 1)
         tcpGrid.addWidget(self.FieldLabelTCPPortSend, 1, 1, 1, 1)
         tcpGrid.addWidget(LabelTCPIPReceive, 2, 0, 1, 1)
@@ -206,17 +206,17 @@ class ConfigurationWindow(QtGui.QDialog):
         controlGrid = QtGui.QGridLayout(controlParameters)
         controlParameters.setLayout(controlGrid)
 
-        buttonBox = QtGui.QDialogButtonBox()
-        buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close |
+        self.buttonBox = QtGui.QDialogButtonBox()
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close |
                                      QtGui.QDialogButtonBox.Save)
 
-        buttonBox.button(QtGui.QDialogButtonBox.Close).clicked.connect(
+        self.buttonBox.button(QtGui.QDialogButtonBox.Close).clicked.connect(
             self.closeWindow)
-        buttonBox.button(QtGui.QDialogButtonBox.Save).clicked.connect(
+        self.buttonBox.button(QtGui.QDialogButtonBox.Save).clicked.connect(
             self.save)
 
-        controlGrid.addWidget(buttonBox, 0, 0, 1, 2)
+        controlGrid.addWidget(self.buttonBox, 0, 0, 1, 2)
 
         controlParameters.move(590, 240)
 
@@ -236,7 +236,7 @@ class ConfigurationWindow(QtGui.QDialog):
         udpportsend = self.FieldLabelUDPPortSend.text()
         udpipreceive = self.FieldLabelUDPIPReceive.text()
         udpportreceive = self.FieldLabelUDPPortRececeive.text()
-        tcpipsend = self.FieldLabelTCPIpSend.text()
+        tcpipsend = self.FieldLabelTCPIPSend.text()
         tcpportsend = self.FieldLabelTCPPortSend.text()
         tcpipreceive = self.FieldLabelTCPIPReceive.text()
         tcpportreceive = self.FieldLabelTCPPortRececeive.text()

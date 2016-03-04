@@ -212,7 +212,14 @@ class ConfigurationWindow(QtGui.QDialog):
 
         controlGrid.addWidget(self.buttonBox, 0, 0, 1, 2)
 
-        controlParameters.move(590, 240)
+        import platform
+        os = platform.linux_distribution()
+        if os[0] == 'debian':
+            controlParameters.move(590, 300)
+        else:
+            controlParameters.move(590, 240)
+
+
 
     def closeWindow(self):
         self.close()

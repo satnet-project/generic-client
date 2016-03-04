@@ -17,3 +17,6 @@ log*
 
 # PyCharm directories
 .idea/
+
+# Post-installation folders
+key/*

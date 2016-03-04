@@ -141,6 +141,8 @@ class SatNetUI(QtGui.QWidget):
         self.FieldLabelAttemps.setFixedWidth(145)
         gridConnection.addRow(LabelAttemps, self.FieldLabelAttemps)
 
+        self.FieldLabelAttemps.setDisabled(True)
+
         connectionParameters.setTitle("Connection parameters")
         connectionParameters.move(10, 140)
         # Configuration group.

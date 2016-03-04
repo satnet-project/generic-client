@@ -37,7 +37,7 @@ class ConfigurationWindow(QtGui.QDialog):
         import platform
         os = platform.linux_distribution()
         if os[0] == 'debian':
-            self.setMinimumSize(800, 400)
+            self.setMinimumSize(800, 330)
         else:
             self.setMinimumSize(800, 300)
 
@@ -215,7 +215,7 @@ class ConfigurationWindow(QtGui.QDialog):
         import platform
         os = platform.linux_distribution()
         if os[0] == 'debian':
-            controlParameters.move(590, 300)
+            controlParameters.move(590, 265)
         else:
             controlParameters.move(590, 240)
 

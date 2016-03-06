@@ -220,18 +220,23 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         self.maxRetries = int(self.CONNECTION_INFO['attempts'])
         self.gsi = gsi
         self.threads = threads
+        import platform
+        os = platform.linux_distribution()
+        if os[0] == 'debian':
+            self.ossystem = 'debian'
+        else:
+            self.ossystem = 'ubuntu'
 
     # Called when a connection has been started
-    """
     def startedConnecting(self, connector):
-        log.msg("Starting connection............................" +
-                "..............................................." +
-                ".........................................")
-    """
-    def startedConnecting(self, connector):
-        log.msg("Starting connection............................" +
-                "..............................................." +
-                "...........................")
+        if self.ossystem  == 'debian':
+            log.msg("Starting connection............................" +
+                    "..............................................." +
+                    ".........................................")
+        elif self.ossystem == 'ubuntu':
+            log.msg("Starting connection............................" +
+                    "..............................................." +
+                    "...........................")
 
     # Create an instance of a subclass of Protocol
     def buildProtocol(self, addr):

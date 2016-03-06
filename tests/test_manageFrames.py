@@ -111,7 +111,7 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
         AMP.end_connection = MagicMock()
         AMP.end_connection.side_effect = self.mock_badendconnection()
         self.gsi.AMP = AMP
-        return self.assertRaises(ConnectionNotEnded, self.gsi.clear_slots)
+        return self.assertIsNone(self.gsi.clear_slots())
 
     def test_groundstationInterfaceEnableAMP(self):
         self.gsi.connectProtocol(AMP)

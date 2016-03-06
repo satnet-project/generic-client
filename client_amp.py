@@ -216,14 +216,22 @@ class ClientReconnectFactory(ReconnectingClientFactory):
     """
     def __init__(self, CONNECTION_INFO, gsi, threads):
         self.CONNECTION_INFO = CONNECTION_INFO
+
+        self.maxRetries = int(self.CONNECTION_INFO['attempts'])
         self.gsi = gsi
         self.threads = threads
 
     # Called when a connection has been started
+    """
     def startedConnecting(self, connector):
         log.msg("Starting connection............................" +
                 "..............................................." +
                 ".........................................")
+    """
+    def startedConnecting(self, connector):
+        log.msg("Starting connection............................" +
+                "..............................................." +
+                "...........................")
 
     # Create an instance of a subclass of Protocol
     def buildProtocol(self, addr):

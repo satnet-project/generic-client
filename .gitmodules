@@ -1,4 +1,0 @@
-[submodule "protocol"]
-	path = protocol
-	url = git@github.com:satnet-project/protocol.git
-	branch = jrpc_if

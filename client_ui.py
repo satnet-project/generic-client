@@ -66,11 +66,11 @@ class SatNetUI(QtGui.QWidget):
         self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
         self.CONNECTION_INFO['connection'] =\
             str(self.LabelConnection.currentText())
+        if self.AutomaticReconnection.isChecked():
+            self.CONNECTION_INFO['reconnection'] = 'yes'
 
         self.ButtonNew.setEnabled(False)
         self.ButtonCancel.setEnabled(True)
-        self.LoadDefaultSettings.setEnabled(False)
-        self.AutomaticReconnection.setEnabled(False)
 
         return client_amp.Client(self.CONNECTION_INFO, self.gsi,
                                  self.threads).setconnection(test=False)
@@ -140,8 +140,6 @@ class SatNetUI(QtGui.QWidget):
         self.FieldLabelAttemps = QtGui.QLineEdit()
         self.FieldLabelAttemps.setFixedWidth(145)
         gridConnection.addRow(LabelAttemps, self.FieldLabelAttemps)
-
-        self.FieldLabelAttemps.setDisabled(True)
 
         connectionParameters.setTitle("Connection parameters")
         connectionParameters.move(10, 140)

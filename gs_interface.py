@@ -117,7 +117,9 @@ class GroundStationInterface(object):
         try:
             self.AMP.end_connection()
         except:
-            raise ConnectionNotEnded('EndRemote call not completed')
+            pass
+            # FIX-ME Only must raises an error if the connection was unestablished.
+            # raise ConnectionNotEnded('EndRemote call not completed')
 
     """
     :ivar AMP:

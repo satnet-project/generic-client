@@ -1,2 +1,3 @@
 [report]
+include = /home/travis/build/satnet-project/generic-client/*
 omit = /home/travis/virtualenv/*

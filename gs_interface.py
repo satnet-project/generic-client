@@ -3,6 +3,7 @@ from twisted.python import log
 from PyQt4 import QtCore
 import time
 import os
+from types import NoneType
 
 from errors import WrongFormatNotification, FrameNotProcessed, ConnectionNotEnded, IOFileError
 
@@ -114,10 +115,13 @@ class GroundStationInterface(object):
 
 
     def clear_slots(self):
+        if type(self.AMP.transport) == NoneType:
+            log.msg('hello')
         try:
             self.AMP.end_connection()
         except:
-            pass
+            log.msg("Conexion no establecida")
+            log.msg('el transporte esta', str(type(self.AMP)))
             # FIX-ME Only must raises an error if the connection was unestablished.
             # raise ConnectionNotEnded('EndRemote call not completed')
 

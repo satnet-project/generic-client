@@ -63,24 +63,49 @@ class ClientProtocol(AMP):
         # self.factory.protoInstance = self
 
     def connectionMade(self):
+        """ Connection made method.
+        @return:
+        """
         self.user_login()
         self.gsi.connectProtocol(self)
 
+        log.msg("Connection sucessful")
+
     def connectionLost(self, reason):
+        """ Connection lost method.
+        Override method.
+
+        @param reason:
+        @return:
+        """
         log.msg("Connection lost")
         log.msg(reason)
 
     def connectionFailed(self, reason):
+        """ Connection failed method.
+        Override method.
+
+        @param reason:
+        @return:
+        """
         log.msg("Connection failed")
         log.msg(reason)
 
     @inlineCallbacks
     def end_connection(self):
+        """
+
+        @return:
+        """
         res = yield self.callRemote(EndRemote)
         log.msg(res)
 
     @inlineCallbacks
     def user_login(self):
+        """
+
+        @return:
+        """
         res = yield self.callRemote(Login,
                                     sUsername=self.CONNECTION_INFO['username'],
                                     sPassword=self.CONNECTION_INFO['password'])
@@ -145,8 +170,12 @@ class ClientProtocol(AMP):
 
     NotifyMsg.responder(vNotifyMsg)
 
-    # Method associated to frame processing.
     def _processframe(self, frame):
+        """ Process frame method.
+
+        @param frame: A frame coded in a byte array way.
+        @return:
+        """
         frameprocessed = []
         frameprocessed = list(frame)
         frameprocessed = ":".join("{:02x}".format(c)
@@ -162,6 +191,11 @@ class ClientProtocol(AMP):
 
     @inlineCallbacks
     def processFrame(self, frame):
+        """
+
+        @param frame: A frame coded in base64.
+        @return:
+        """
         try:
             # yield self.callRemote(SendMsg, sMsg=frameProcessed,
             yield self.callRemote(SendMsg, sMsg=frame,
@@ -171,6 +205,11 @@ class ClientProtocol(AMP):
             log.err("Error")
 
     def saveReceivedFrames(self, frame):
+        """ Save received frames method.
+
+        @param frame: A frame coded in a byte array way
+        @return:
+        """
         log.msg('---- Message received saved to local file ----')
 
         if type(frame) is not bytearray:
@@ -190,6 +229,12 @@ class ClientProtocol(AMP):
             raise IOFileError('Record file not created')
 
     def vNotifyEvent(self, iEvent, sDetails):
+        """
+
+        @param iEvent:
+        @param sDetails:
+        @return:
+        """
         sDetails = None
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Event ---------")
@@ -227,13 +272,15 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         else:
             self.ossystem = 'ubuntu'
 
+        log.msg(self.CONNECTION_INFO['reconnection'])
+
     # Called when a connection has been started
     def startedConnecting(self, connector):
-        if self.ossystem  == 'debian':
+        if self.ossystem  == 'ubuntu':
             log.msg("Starting connection............................" +
                     "..............................................." +
                     ".........................................")
-        elif self.ossystem == 'ubuntu':
+        elif self.ossystem == 'debian':
             log.msg("Starting connection............................" +
                     "..............................................." +
                     "...........................")
@@ -328,43 +375,76 @@ class Client(object):
         reactor.stop()
         log.msg("Reactor destroyed")
 
-# Objects designed for output the information
+
 class WriteStream(object):
+    """
+
+    """
     def __init__(self, queue):
+        """
+
+        @param queue:
+        @return:
+        """
         self.queue = queue
 
     def write(self, text):
+        """
+
+        @param text:
+        @return:
+        """
         self.queue.put(text)
 
     def flush(self):
-        pass
+        """
 
-#  A QObject (to be run in a QThread) which sits waiting
-#  for data to come  through a Queue.Queue().
-#  It blocks until data is available, and one it has got something from
-#  the queue, it sends it to the "MainThread" by emitting a Qt Signal
+        @return:
+        """
+        pass
 
 
 class MyReceiver(QtCore.QThread):
+    """
+    A QObject (to be run in a QThread) which sits waiting for data to come
+    through a Queue.Queue().
+    It blocks until data is available, and one it has got something from the
+    queue, it sends it to the "MainThread" by emitting a Qt Signal
+    """
     mysignal = QtCore.pyqtSignal(str)
 
     def __init__(self, queue, *args, **kwargs):
         """
 
-        @rtype: pyqtSlot
+        @param queue:
+        @param args:
+        @param kwargs:
+        @return:
         """
         QtCore.QThread.__init__(self, *args, **kwargs)
         self.queue = queue
 
     @QtCore.pyqtSlot()
     def run(self):
+        """
+
+        @return:
+        """
         while True:
             text = self.queue.get()
             self.mysignal.emit(text)
 
 
 class ResultObj(QtCore.QObject):
+    """
+
+    """
     def __init__(self, val):
+        """
+
+        @param val:
+        @return:
+        """
         self.val = val
 
 

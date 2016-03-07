@@ -98,7 +98,7 @@ function install_pyqt4()
 
 function install_venv()
 {
-	[[ -d $venv_dir ]] || {
+	[[ -e "$venv_dir/bin/activate" ]] || {
 
     	echo ">>> Creating virtual environment..."
     	virtualenv --python=python2.7 $venv_dir

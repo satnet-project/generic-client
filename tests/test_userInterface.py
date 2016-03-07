@@ -286,12 +286,19 @@ class TestUserInterfaceConnectionsOperation(TestCase):
         testFile.close()
 
     def setUp(self):
-        self.argumentsdict = {'username': 'test-sc-user', 'udpipsend': '172.19.51.145', 'baudrate': '500000',
-                         'name': 'Universidade de Vigo', 'parameters': 'yes', 'tcpportsend': '1234',
-                         'tcpipsend': '127.0.0.1', 'udpipreceive': '127.0.0.1', 'attempts': '10',
-                         'serverip': '172.19.51.133', 'serialport': '/dev/ttyUSB0', 'tcpportreceive': 4321,
-                         'connection': 'none', 'udpportreceive': 1234, 'serverport': 25345,
-                         'reconnection': 'no', 'udpportsend': '57009', 'tcpipreceive': '127.0.0.1'}
+        self.argumentsdict = {'username': 'test-sc-user',
+                              'udpipsend': '172.19.51.145',
+                              'baudrate': '500000',
+                              'name': 'Universidade de Vigo',
+                              'parameters': 'yes', 'tcpportsend': '1234',
+                              'tcpipsend': '127.0.0.1',
+                              'udpipreceive': '127.0.0.1', 'attempts': '10',
+                              'serverip': '172.19.51.133',
+                              'serialport': '/dev/ttyUSB0',
+                              'tcpportreceive': 4321, 'connection': 'none',
+                              'udpportreceive': 1234, 'serverport': 25345,
+                              'reconnection': 'no', 'udpportsend': '57009',
+                              'tcpipreceive': '127.0.0.1'}
         self.createSettingsFile()
 
     def tearDown(self):
@@ -301,11 +308,35 @@ class TestUserInterfaceConnectionsOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(SatNetUI, 'NewConnection')
-    def test_newConnectionWhenButtonClicked(self, createconnection, initLogo, NewConnection):
+    def test_newConnectionWhenButtonClicked(self, createconnection,
+                                             initLogo, NewConnection):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         QTest.mouseClick(testUI.ButtonNew, QtCore.Qt.LeftButton)
         return self.assertTrue(NewConnection.called)
 
+    @patch.object(SatNetUI, 'initLogo', return_value=True)
+    @patch.object(Client, 'createconnection', return_value=True)
+    @patch.object(Client, 'setconnection')
+    def test_loadReconnectionParametersOkNewConnection(self, initLogo,
+                                                       createconnection,
+                                                       setconnection):
+        testUI = SatNetUI(argumentsdict=self.argumentsdict)
+        testUI.AutomaticReconnection.setChecked(True)
+        testUI.NewConnection(test=True)
+        return self.assertTrue(testUI.AutomaticReconnection.isChecked()), \
+               self.assertEquals(testUI.CONNECTION_INFO['reconnection'], 'yes')
+
+    @patch.object(SatNetUI, 'initLogo', return_value=True)
+    @patch.object(Client, 'createconnection', return_value=True)
+    @patch.object(Client, 'setconnection')
+    def test_loadReconnectionParametersNotNewConnection(self, initLogo,
+                                                        createconnection,
+                                                        setconnection):
+        testUI = SatNetUI(argumentsdict=self.argumentsdict)
+        testUI.AutomaticReconnection.setChecked(False)
+        testUI.NewConnection(test=True)
+        return self.assertFalse(testUI.AutomaticReconnection.isChecked()), \
+               self.assertEquals(testUI.CONNECTION_INFO['reconnection'], 'no')
 
 class TestUserInterfaceDisconnectionsOperation(TestCase):
 

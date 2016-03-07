@@ -66,11 +66,11 @@ class SatNetUI(QtGui.QWidget):
         self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
         self.CONNECTION_INFO['connection'] =\
             str(self.LabelConnection.currentText())
+
         if self.AutomaticReconnection.isChecked():
             self.CONNECTION_INFO['reconnection'] = 'yes'
-
-        self.ButtonNew.setEnabled(False)
-        self.ButtonCancel.setEnabled(True)
+        else:
+            self.CONNECTION_INFO['reconnection'] = 'no'
 
         return client_amp.Client(self.CONNECTION_INFO, self.gsi,
                                  self.threads).setconnection(test=False)
@@ -334,6 +334,18 @@ class SatNetUI(QtGui.QWidget):
     def append_text(self, text):
         self.console.moveCursor(QtGui.QTextCursor.End)
         self.console.insertPlainText(text)
+
+        if "Connection lost" in str(text):
+            self.ButtonNew.setEnabled(True)
+            self.ButtonCancel.setEnabled(False)
+
+        if "Connection failed" in str(text):
+            self.ButtonNew.setEnabled(True)
+            self.ButtonCancel.setEnabled(False)
+
+        if "Connection sucessful" in str(text):
+            self.ButtonNew.setEnabled(False)
+            self.ButtonCancel.setEnabled(True)
 
         filename = ("log-" + self.CONNECTION_INFO['name'] +
                     "-" + time.strftime("%Y.%m.%d") + ".csv")

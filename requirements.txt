@@ -1,4 +1,4 @@
-argparse==1.4.0
+argparse==1.2.1
 aprs==4.0.0
 cryptography==1.2.3
 kiss==3.1.1

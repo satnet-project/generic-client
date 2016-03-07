@@ -33,18 +33,26 @@ from gs_interface import GroundStationInterface
 __author__ = 's.gongoragarcia@gmail.com'
 
 
+# TODO Complete description
 class MockFactory(Factory):
+    """
+
+    """
     pass
 
 
 class TestClientProtocolConnectionMade(TestCase):
     def setUp(self):
-        CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass', 'udpipsend': '172.19.51.145',
-                           'baudrate': '500000', 'name': 'Universidade de Vigo', 'parameters': 'yes',
-                           'tcpportsend': '1234', 'tcpipsend': '127.0.0.1', 'udpipreceive': '127.0.0.1',
-                           'attempts': '10', 'serverip': '172.19.51.143', 'serialport': '/dev/ttyUSB0',
-                           'tcpportreceive': 4321, 'connection': 'udp', 'udpportreceive': 57008,
-                           'serverport': 25345, 'reconnection': 'no', 'udpportsend': '57009',
+        CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass',
+                           'udpipsend': '172.19.51.145','baudrate': '500000',
+                           'name': 'Universidade de Vigo', 'parameters': 'yes',
+                           'tcpportsend': '1234', 'tcpipsend': '127.0.0.1',
+                           'udpipreceive': '127.0.0.1', 'attempts': '10',
+                           'serverip': '172.19.51.143',
+                           'serialport': '/dev/ttyUSB0','tcpportreceive': 4321,
+                           'connection': 'udp', 'udpportreceive': 57008,
+                           'serverport': 25345, 'reconnection': 'no',
+                           'udpportsend': '57009',
                            'tcpipreceive': '127.0.0.1'}
 
         GS = 'VigoTest'
@@ -61,19 +69,38 @@ class TestClientProtocolConnectionMade(TestCase):
     def tearDown(self):
         pass
 
+    # TODO Complete description
     def test_clientconnectionEstablished(self):
+        """
+
+        @return:
+        """
         self.sp.makeConnection(self.transport)
         return self.assertTrue(self.transport.connected)
 
+    # TODO Complete description
     @patch.object(client_amp.ClientProtocol, 'connectionMade')
     def test_connectionMadeAtClientProtocolSideCalled(self, connnectionMade):
+        """
+
+        @param connnectionMade:
+        @return:
+        """
         self.sp.makeConnection(self.transport)
         return self.assertTrue(self.sp.connectionMade.called)
 
+    # TODO Complete description
     @patch.object(client_amp.ClientProtocol, 'user_login')
     @patch.object(GroundStationInterface, 'connectProtocol')
     def test_connectionMethodsCalled(self, user_login, connectProtocol):
+        """
+
+        @param user_login:
+        @param connectProtocol:
+        @return:
+        """
         self.sp.makeConnection(self.transport)
-        return self.assertTrue(connectProtocol.called), self.assertTrue(user_login.called)
+        return self.assertTrue(connectProtocol.called),\
+               self.assertTrue(user_login.called)
 
 

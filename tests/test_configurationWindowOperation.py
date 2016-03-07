@@ -35,7 +35,12 @@ class TestUserConfigurationInterfaceOperation(TestCase):
 
     app = QtGui.QApplication(sys.argv)
 
+    # TODO Complete description
     def createWrongSettingsFile(self):
+        """
+
+        @return:
+        """
         testFile = open(".settings", "w")
         testFile.write("[User]\n"
                        "username = test-sc-user\n"
@@ -56,7 +61,12 @@ class TestUserConfigurationInterfaceOperation(TestCase):
                        "attempts = 10")
         testFile.close()
 
+    # TODO Complete description
     def createSettingsFile(self):
+        """
+
+        @return:
+        """
         testFile = open(".settings", "w")
         testFile.write("[User]\n"
                        "username = test-sc-user\n"
@@ -119,16 +129,26 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         self.createSettingsFile()
         testSave = ConfigurationWindow()
 
-        self.assertEqual(str(testSave.FieldLabelServer.text()), '172.19.51.133')
-        self.assertEqual(str(testSave.FieldLabelPort.text()), '25345')
-        self.assertEqual(str(testSave.FieldLabelUDPIpSend.text()), '172.19.51.145')
-        self.assertEqual(str(testSave.FieldLabelUDPPortSend.text()), '57009')
-        self.assertEqual(str(testSave.FieldLabelUDPIPReceive.text()), '127.0.0.1')
-        self.assertEqual(str(testSave.FieldLabelUDPPortRececeive.text()), '1234')
-        self.assertEqual(str(testSave.FieldLabelTCPIPSend.text()), '127.0.0.1')
-        self.assertEqual(str(testSave.FieldLabelTCPPortSend.text()), '1234')
-        self.assertEqual(str(testSave.FieldLabelTCPIPReceive.text()), '127.0.0.1')
-        self.assertEqual(str(testSave.FieldLabelTCPPortRececeive.text()), '4321')
+        self.assertEqual(str(testSave.FieldLabelServer.text()),
+                         '172.19.51.133')
+        self.assertEqual(str(testSave.FieldLabelPort.text()),
+                         '25345')
+        self.assertEqual(str(testSave.FieldLabelUDPIpSend.text()),
+                         '172.19.51.145')
+        self.assertEqual(str(testSave.FieldLabelUDPPortSend.text()),
+                         '57009')
+        self.assertEqual(str(testSave.FieldLabelUDPIPReceive.text()),
+                         '127.0.0.1')
+        self.assertEqual(str(testSave.FieldLabelUDPPortRececeive.text()),
+                         '1234')
+        self.assertEqual(str(testSave.FieldLabelTCPIPSend.text()),
+                         '127.0.0.1')
+        self.assertEqual(str(testSave.FieldLabelTCPPortSend.text()),
+                         '1234')
+        self.assertEqual(str(testSave.FieldLabelTCPIPReceive.text()),
+                         '127.0.0.1')
+        self.assertEqual(str(testSave.FieldLabelTCPPortRececeive.text()),
+                         '4321')
 
     def test_saveConfigurationWhenButtonClicked(self):
         """
@@ -176,6 +196,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         self.assertEqual('1.0.0.127', str(FieldLabelTCPIPReceive))
         self.assertEqual('1234', str(FieldLabelTCPPortReceive))
 
+    # TODO Complete description
     @patch.object(ConfigurationWindow, 'closeWindow')
     def test_buttonsOperationCloseWindow(self, closeWindow):
         """
@@ -189,6 +210,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         QTest.mouseClick(closebutton, QtCore.Qt.LeftButton)
         return self.assertEqual(int(closeWindow.call_count), 1)
 
+    # TODO Complete description
     @patch.object(ConfigurationWindow, 'save')
     def test_buttonsOperationSaveCall(self, save):
         """
@@ -202,6 +224,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         QTest.mouseClick(savebutton, QtCore.Qt.LeftButton)
         return self.assertEqual(int(save.call_count), 1)
 
+    # TODO Complete description
     @patch.object(ConfigurationWindow, 'close')
     def test_closeFunctionCalledWhenQuitWindow(self, close):
         """

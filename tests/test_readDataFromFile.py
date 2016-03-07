@@ -2,7 +2,6 @@
 import os
 import sys
 
-from twisted.python import log
 from twisted.trial.unittest import TestCase
 
 # Errors
@@ -76,29 +75,38 @@ class TestReadDataFromFile(TestCase):
     def tearDown(self):
         os.remove(".settings")
 
-    """
-    Proper file.
-    """
+    # TODO Complete description
     def test_loadRightFile(self):
+        """
+
+        @return:
+        """
         argumentsDict = misc.get_data_local_file('.settings')
         return self.assertIsInstance(argumentsDict, dict)
 
-    """
-    Wrong file.
-    """
+    # TODO Complete description
     def test_loadWrongFile(self):
+        """
+
+        @return:
+        """
         return self.assertRaises(NoSectionError, misc.get_data_local_file,
                                  'wrongFile')
-    """
-    Proper key.
-    """
+
+    # TODO Complete description
     def test_loadRightKey(self):
+        """
+
+        @return:
+        """
         argumentsDict = misc.get_data_local_file('.settings')
         return self.assertIsInstance(argumentsDict['serverip'], str)
 
-    """
-    Wrong key.
-    """
+    # TODO Complete description
     def test_loadWrongKey(self):
+        """
+
+        @return:
+        """
         argumentsDict = misc.get_data_local_file('.settings')
         return self.assertRaises(KeyError, lambda: argumentsDict['wrongKey'])

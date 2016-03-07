@@ -34,26 +34,51 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 class TestGroundStationInterfaceFramesManagement(TestCase):
 
+    # TODO Complete description
     def mock_goodprocessframe(self, frame):
+        """
+
+        @param frame:
+        @return:
+        """
         return frame
 
+    # TODO Complete description
     def mock_badprocessframe(self, frame):
+        """
+
+        @param frame:
+        @return:
+        """
         return Exception
 
+    # TODO Complete description
     def mock_goodendconnection(self):
+        """
+
+        @return:
+        """
         return None
 
+    # TODO Complete description
     def mock_badendconnection(self):
+        """
+
+        @return:
+        """
         return Exception
 
     def setUp(self):
-        CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass', 'udpipsend': '172.19.51.145',
-                           'baudrate': '500000', 'name': 'Universidade de Vigo', 'parameters': 'yes',
-                           'tcpportsend': '1234', 'tcpipsend': '127.0.0.1', 'udpipreceive': '127.0.0.1',
-                           'attempts': '10', 'serverip': '172.19.51.143', 'serialport': '/dev/ttyUSB0',
-                           'tcpportreceive': 4321, 'connection': 'udp', 'udpportreceive': 57008,
-                           'serverport': 25345, 'reconnection': 'no', 'udpportsend': '57009',
-                           'tcpipreceive': '127.0.0.1'}
+        CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass',
+                           'udpipsend': '172.19.51.145', 'baudrate': '500000',
+                           'name': 'Universidade de Vigo', 'parameters': 'yes',
+                           'tcpportsend': '1234', 'tcpipsend': '127.0.0.1',
+                           'udpipreceive': '127.0.0.1', 'attempts': '10',
+                           'serverip': '172.19.51.143',
+                           'serialport': '/dev/ttyUSB0','tcpportreceive': 4321,
+                           'connection': 'udp', 'udpportreceive': 57008,
+                           'serverport': 25345, 'reconnection': 'no',
+                           'udpportsend': '57009', 'tcpipreceive': '127.0.0.1'}
 
         GS = 'VigoTest'
 
@@ -69,54 +94,114 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
     def tearDown(self):
         pass
 
+    # TODO Complete description
     @patch.object(GroundStationInterface, '_updateLocalFile')
-    def test_groundstationInterfaceConnectedReceiveCorrectFrameBadProcessed(self, _updateLocalFile):
+    def test_groundstationInterfaceConnectedReceiveCorrectFrameBadProcessed(self,
+                                                                            _updateLocalFile):
+        """
+
+        @param _updateLocalFile:
+        @return:
+        """
         AMP._processframe = MagicMock()
         AMP._processframe.side_effect = self.mock_badprocessframe(self.correctFrame)
         self.gsi.AMP = AMP
-        return self.assertRaises(FrameNotProcessed, self.gsi._manageFrame, self.correctFrame)
+        return self.assertRaises(FrameNotProcessed,
+                                 self.gsi._manageFrame, self.correctFrame)
 
+    # TODO Complete description
     @patch.object(GroundStationInterface, '_updateLocalFile')
-    def test_groundstationInterfaceConnectedReceiveCorrectFrame(self, _updateLocalFile):
+    def test_groundstationInterfaceConnectedReceiveCorrectFrame(self,
+                                                                _updateLocalFile):
+        """
+
+        @param _updateLocalFile:
+        @return:
+        """
         AMP._processframe = MagicMock()
         AMP._processframe.side_effect = self.mock_goodprocessframe(self.correctFrame)
         self.gsi.AMP = AMP
         self.gsi._manageFrame(self.correctFrame)
-        return self.assertTrue(_updateLocalFile.called), self.assertTrue(AMP._processframe.called)
+        return self.assertTrue(_updateLocalFile.called),\
+               self.assertTrue(AMP._processframe.called)
 
+    # TODO Complete description
     @patch.object(GroundStationInterface, '_updateLocalFile')
-    def test_groundstationInterfaceDisconnectedReceiveCorrectFrame(self, _updateLocalFile):
+    def test_groundstationInterfaceDisconnectedReceiveCorrectFrame(self,
+                                                                   _updateLocalFile):
+        """
+
+        @param _updateLocalFile:
+        @return:
+        """
         self.gsi.AMP = None
         self.gsi._manageFrame(self.correctFrame)
         return self.assertTrue(_updateLocalFile.called)
 
+    # TODO Complete description
     def test_groundstationInterfaceConnectedReceiveBadFrame(self):
+        """
+
+        @return:
+        """
         self.gsi.AMP = AMP
-        return self.assertRaises(WrongFormatNotification, self.gsi._manageFrame, self.wrongFrame)
+        return self.assertRaises(WrongFormatNotification,
+                                 self.gsi._manageFrame, self.wrongFrame)
 
+    # TODO Complete description
     def test_groundstationInterfaceDisconnectedReceiveBadFrame(self):
-        self.gsi.AMP = None
-        return self.assertRaises(WrongFormatNotification, self.gsi._manageFrame, self.wrongFrame)
+        """
 
+        @return:
+        """
+        self.gsi.AMP = None
+        return self.assertRaises(WrongFormatNotification,
+                                 self.gsi._manageFrame, self.wrongFrame)
+
+    # TODO Complete description
     def test_groundstationInterfaceUpdateLocalFileCorrectFrame(self):
+        """
+
+        @return:
+        """
         return self.assertTrue(self.gsi._updateLocalFile(self.correctFrame))
 
+    # TODO Complete description
     def test_groundstationInterfaceCallsEndRemoteRightAnswer(self):
+        """
+
+        @return:
+        """
         AMP.end_connection = MagicMock()
         AMP.end_connection.side_effect = self.mock_goodendconnection()
         self.gsi.AMP = AMP
         return self.assertIsNone(self.gsi.clear_slots())
 
+    # TODO Complete description
     def test_groundstationInterfaceCallsEndRemoteWrongAnswer(self):
+        """
+
+        @return:
+        """
         AMP.end_connection = MagicMock()
         AMP.end_connection.side_effect = self.mock_badendconnection()
         self.gsi.AMP = AMP
         return self.assertIsNone(self.gsi.clear_slots())
 
+    # TODO Complete description
     def test_groundstationInterfaceEnableAMP(self):
+        """
+
+        @return:
+        """
         self.gsi.connectProtocol(AMP)
         return self.assertIsInstance(self.gsi.AMP, object)
 
+    # TODO Complete description
     def test_groundstationInterfaceDisabledAMP(self):
+        """
+
+        @return:
+        """
         self.gsi.disconnectProtocol()
         return self.assertIsNone(self.gsi.AMP)

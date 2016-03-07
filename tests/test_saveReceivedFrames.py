@@ -1,7 +1,6 @@
 # coding=utf-8
 import os
 import sys
-import pty
 
 # Dependencies for the tests
 from twisted.trial.unittest import TestCase
@@ -13,7 +12,6 @@ from twisted.protocols.amp import AMP
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
 
-# from client_ui import *
 import client_amp
 from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification
@@ -37,18 +35,26 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 
 class MockFactory(Factory):
+    """
+
+    """
     pass
 
 
 class TestClientProtocolSaveFrame(TestCase):
+
     def setUp(self):
-        CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass', 'udpipsend': '172.19.51.145',
-                           'baudrate': '500000', 'name': 'Universidade de Vigo', 'parameters': 'yes',
-                           'tcpportsend': '1234', 'tcpipsend': '127.0.0.1', 'udpipreceive': '127.0.0.1',
-                           'attempts': '10', 'serverip': '172.19.51.143', 'serialport': '/dev/ttyUSB0',
-                           'tcpportreceive': 4321, 'connection': 'udp', 'udpportreceive': 57008,
-                           'serverport': 25345, 'reconnection': 'no', 'udpportsend': '57009',
-                           'tcpipreceive': '127.0.0.1'}
+        CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass',
+                           'udpipsend': '172.19.51.145',
+                           'baudrate': '500000',
+                           'name': 'Universidade de Vigo', 'parameters': 'yes',
+                           'tcpportsend': '1234', 'tcpipsend': '127.0.0.1',
+                           'udpipreceive': '127.0.0.1', 'attempts': '10',
+                           'serverip': '172.19.51.143',
+                           'serialport': '/dev/ttyUSB0','tcpportreceive': 4321,
+                           'connection': 'udp', 'udpportreceive': 57008,
+                           'serverport': 25345, 'reconnection': 'no',
+                           'udpportsend': '57009', 'tcpipreceive': '127.0.0.1'}
 
         GS = 'VigoTest'
 
@@ -72,9 +78,19 @@ class TestClientProtocolSaveFrame(TestCase):
     def tearDown(self):
         pass
 
+    # TODO Complete description
     def test_clientSaveCorrectFrame(self):
+        """
+
+        @return:
+        """
         return self.assertTrue(self.sp.saveReceivedFrames(self.correctFrame))
 
+    # TODO Complete description
     def test_clientSaveWrongFrame(self):
-        return self.assertRaises(WrongFormatNotification, self.sp.saveReceivedFrames,
-                                 self.wrongFrame)
+        """
+
+        @return:
+        """
+        return self.assertRaises(WrongFormatNotification,
+                                 self.sp.saveReceivedFrames, self.wrongFrame)

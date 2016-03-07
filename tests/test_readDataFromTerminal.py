@@ -3,9 +3,7 @@ import unittest
 import sys
 
 from os import path
-from PyQt4 import QtGui
 
-from twisted.python import log
 from mock import patch
 
 sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
@@ -40,10 +38,12 @@ class TestReadDataFromTerminal(unittest.TestCase):
     def teardrown(self):
         pass
 
-    """
-    No arguments passed at script startup.
-    """
+    # TODO Complete description
     def test_noArgumentsGiven(self):
+        """
+
+        @return:
+        """
         argumentsDict = misc.noArguments()
 
         arguments = ['username', 'slot', 'connection', 'serialport', 'baudrate',
@@ -51,11 +51,14 @@ class TestReadDataFromTerminal(unittest.TestCase):
         for i in range(len(arguments)):
             self.assertEquals(argumentsDict[arguments[i]],
                               '', "argumentsDict values are not null.")
+        return True
 
-    """
-    Some arguments are initialized at script startup.
-    """
-    def test_ArgumentsGiven(self):
+    # TODO Complete description
+    def test_argumentsGiven(self):
+        """
+
+        @return:
+        """
         testargs = ["client_amp.py", "-g", "-n", "crespo", "-t",
                     "2", "-c", "serial", "-s", "/dev/ttyS1",
                     "-b", "115200"]
@@ -69,3 +72,4 @@ class TestReadDataFromTerminal(unittest.TestCase):
             self.assertIsInstance(argumentsDict[(descriptors[i])], str,
                                   "Dict value is not a string object")
 
+        return True

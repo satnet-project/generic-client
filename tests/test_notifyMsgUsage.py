@@ -44,6 +44,7 @@ class MockFactory(Factory):
 
 
 class TestClientProtocolReceiveFrame(TestCase):
+
     def setUp(self):
         CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass', 'udpipsend': '172.19.51.145',
                            'baudrate': '500000', 'name': 'Universidade de Vigo', 'parameters': 'yes',
@@ -74,22 +75,39 @@ class TestClientProtocolReceiveFrame(TestCase):
     def tearDown(self):
         pass
 
+    # FIXME Not return statement
     def test_clientReceiveRightString(self):
+        """
+
+        @return:
+        """
         self.sp.callRemote(NotifyMsg, sMsg=self.correctFrame)
 
+    # TODO Complete description
     def test_clientReceiveWrongString(self):
+        """
+
+        @return:
+        """
         return self.assertRaises(TypeError, self.sp.callRemote,
                                  NotifyMsg, sMsg=self.wrongFrame)
 
 
 class TestNotifyMsgSendMessageBack(TestCase):
+
     def setUp(self):
-        self.CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass', 'udpipsend': '172.19.51.145',
-                                'baudrate': '500000', 'name': 'Universidade de Vigo', 'parameters': 'yes',
-                                'tcpportsend': '1234', 'tcpipsend': '127.0.0.1', 'udpipreceive': '127.0.0.1',
-                                'attempts': '10', 'serverip': '172.19.51.143', 'serialport': 'self.s_name',
-                                'tcpportreceive': 4321, 'connection': 'udp', 'udpportreceive': 57008,
-                                'serverport': 25345, 'reconnection': 'no', 'udpportsend': '57009',
+        self.CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass',
+                                'udpipsend': '172.19.51.145',
+                                'baudrate': '500000',
+                                'name': 'Universidade de Vigo',
+                                'parameters': 'yes', 'tcpportsend': '1234',
+                                'tcpipsend': '127.0.0.1',
+                                'udpipreceive': '127.0.0.1','attempts': '10',
+                                'serverip': '172.19.51.143',
+                                'serialport': 'self.s_name',
+                                'tcpportreceive': 4321, 'connection': 'udp',
+                                'udpportreceive': 57008, 'serverport': 25345,
+                                'reconnection': 'no', 'udpportsend': '57009',
                                 'tcpipreceive': '127.0.0.1'}
 
         self.correctFrame = ("00:82:a0:00:00:53:45:52:50:2d:42:30:91:1d:1b:03:" +
@@ -98,7 +116,12 @@ class TestNotifyMsgSendMessageBack(TestCase):
 
         self.correctFrame = bytearray(self.correctFrame)
 
+    # FIXME Fix test and complete description
     def _test_serialConnectionSelectedWithPortAvailable(self):
+        """
+
+        @return:
+        """
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
@@ -117,7 +140,12 @@ class TestNotifyMsgSendMessageBack(TestCase):
 
         return self.assertTrue(serialconnectionresponse['bResult'])
 
+    # FIXME Fix test and complete description
     def _test_serialConnectionSelectedWithoutPortAvailable(self):
+        """
+
+        @return:
+        """
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
@@ -125,11 +153,18 @@ class TestNotifyMsgSendMessageBack(TestCase):
         self.sp = client_amp.ClientProtocol(self.CONNECTION_INFO, gsi, threads)
         self.CONNECTION_INFO['connection'] = 'serial'
 
-        return self.assertRaises(SerialException, self.sp.vNotifyMsg, self.correctFrame)
-        # To-do. Raises an 0SError when it's running throught TravisCI
+        return self.assertRaises(SerialException, self.sp.vNotifyMsg,
+                                 self.correctFrame)
+        # Raises an 0SError when it's running throught TravisCI
 
+    # TODO Complete description
     @patch.object(client_amp.ClientProtocol, 'saveReceivedFrames')
     def test_udpConnectionReachable(self, saveReceivedFrames):
+        """
+
+        @param saveReceivedFrames:
+        @return:
+        """
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
@@ -142,7 +177,12 @@ class TestNotifyMsgSendMessageBack(TestCase):
         return self.assertTrue(udpconnectionresponse['bResult']), \
                self.assertTrue(saveReceivedFrames.called)
 
+    # FIXME Fix test and complete description
     def _test_udpConnectionUnreachable(self):
+        """
+
+        @return:
+        """
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
@@ -150,10 +190,14 @@ class TestNotifyMsgSendMessageBack(TestCase):
         self.sp = client_amp.ClientProtocol(self.CONNECTION_INFO, gsi, threads)
         self.CONNECTION_INFO['connection'] = 'udp'
 
-        # To-implemented.
-
+    # TODO Complete description
     @patch.object(client_amp.ClientProtocol, 'saveReceivedFrames')
     def test_tcpConnectionReachable(self, saveREceivedFrames):
+        """
+
+        @param saveREceivedFrames:
+        @return:
+        """
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 
@@ -166,8 +210,14 @@ class TestNotifyMsgSendMessageBack(TestCase):
         return self.assertTrue(tcpconnectionresponse['bResult']), \
                self.assertTrue(saveREceivedFrames.called)
 
+    # TODO Complete description
     @patch.object(client_amp.ClientProtocol, 'saveReceivedFrames')
     def test_noConnectionSelected(self, saveReceivedFrames):
+        """
+
+        @param saveReceivedFrames:
+        @return:
+        """
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
 

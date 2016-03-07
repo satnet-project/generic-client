@@ -24,8 +24,6 @@ from twisted.internet.defer import inlineCallbacks
 from ampCommands import Login, StartRemote, NotifyMsg
 from ampCommands import NotifyEvent, SendMsg, EndRemote
 
-
-
 """
    Copyright 2015, 2016 Samuel Góngora García
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -108,7 +106,8 @@ class ClientProtocol(AMP):
         """
         res = yield self.callRemote(Login,
                                     sUsername=self.CONNECTION_INFO['username'],
-                                    sPassword=self.CONNECTION_INFO['password'])
+                                    sPassword=self.CONNECTION_INFO['password']
+                                    )
 
 
 
@@ -354,8 +353,10 @@ class Client(object):
         from twisted.internet import reactor
         reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
                            int(self.CONNECTION_INFO['serverport']),
-                           ClientReconnectFactory(self.CONNECTION_INFO, self.gsi,
-                                                  self.threads), CtxFactory())
+                           ClientReconnectFactory(self.CONNECTION_INFO,
+                                                  self.gsi,self.threads),
+                           CtxFactory()
+                           )
 
         try:
             reactor.run(installSignalHandlers=0)

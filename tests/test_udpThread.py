@@ -2,9 +2,6 @@
 import os
 import sys
 
-# Dependencies for the tests
-from mock import patch, Mock, MagicMock
-
 from twisted.trial.unittest import TestCase
 from twisted.protocols.amp import AMP
 
@@ -12,7 +9,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
 
 from gs_interface import GroundStationInterface
-from errors import WrongFormatNotification, FrameNotProcessed, ConnectionNotEnded
 from threads import Threads
 
 
@@ -36,12 +32,21 @@ __author__ = 's.gongoragarcia@gmail.com'
 class TestUDPTheadsManagement(TestCase):
 
     def setUp(self):
-        self.CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass', 'udpipsend': '172.19.51.145',
-                                'baudrate': '500000', 'name': 'Universidade de Vigo', 'parameters': 'yes',
-                                'tcpportsend': '1234', 'tcpipsend': '127.0.0.1', 'udpipreceive': '127.0.0.1',
-                                'attempts': '10', 'serverip': '172.19.51.143', 'serialport': '/dev/ttyUSB0',
-                                'tcpportreceive': 4321, 'connection': 'udp', 'udpportreceive': 57008,
-                                'serverport': 25345, 'reconnection': 'no', 'udpportsend': '57009',
+        self.CONNECTION_INFO = {'username': 'satnet_admin',
+                                'password': 'pass',
+                                'udpipsend': '172.19.51.145',
+                                'baudrate': '500000',
+                                'name': 'Universidade de Vigo',
+                                'parameters': 'yes',
+                                'tcpportsend': '1234',
+                                'tcpipsend': '127.0.0.1',
+                                'udpipreceive': '127.0.0.1',
+                                'attempts': '10', 'serverip': '172.19.51.143',
+                                'serialport': '/dev/ttyUSB0',
+                                'tcpportreceive': 4321, 'connection': 'udp',
+                                'udpportreceive': 57008,
+                                'serverport': 25345, 'reconnection': 'no',
+                                'udpportsend': '57009',
                                 'tcpipreceive': '127.0.0.1'}
 
         GS = 'VigoTest'
@@ -58,11 +63,21 @@ class TestUDPTheadsManagement(TestCase):
     def tearDown(self):
         pass
 
+    # FIXME Fix test and complete description
     def _test_runUDPThreadCorrectly(self):
+        """
+
+        @return:
+        """
         threads = Threads(self.CONNECTION_INFO, self.gsi)
-        self.assertIsNone(threads.runUDPThreadReceive())
+        return self.assertIsNone(threads.runUDPThreadReceive())
         # threads.stopUDPThreadReceive()
 
+    # FIXME Fix test and complete description
     def _test_runKISSThreadCorrectly(self):
+        """
+
+        @return:
+        """
         threads = Threads(self.CONNECTION_INFO, self.gsi)
         print threads.runKISSThreadReceive()

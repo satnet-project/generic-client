@@ -25,9 +25,6 @@ from threads import Threads
 from ampCommands import Login, StartRemote
 from errors import SlotErrorNotification
 
-# from protocol.ampauth.server import CredReceiver
-# from protocol import rpcrequests
-
 
 class MockServerFactory(Factory):
     active_protocols = {'xabi':'xabiprotocol'}
@@ -142,11 +139,22 @@ class ServerProtocol(AMP):
 
 
 class ClientProtocol(AMP):
+    # TODO Complete description
     def connectionMade(self):
+        """
+
+        @return:
+        """
         self.factory.protoInstance = self
         self.factory.onConnectionMade.callback(self)
 
+    # TODO Complete description
     def connectionLost(self, *a):
+        """
+
+        @param a:
+        @return:
+        """
         self.factory.onConnectionLost.callback(self)
 
 
@@ -175,7 +183,8 @@ class TestConnectionProcessIntegrated(unittest.TestCase):
         f.onConnectionLost = d
         f.protocol = ServerProtocol
 
-        return reactor.listenSSL(1234, f, contextFactory=ssl.DefaultOpenSSLContextFactory('../../key/server.pem',
+        return reactor.listenSSL(1234, f,
+                                 contextFactory=ssl.DefaultOpenSSLContextFactory('../../key/server.pem',
                                                                                           '../../key/public.pem'))
 
     def _connectClient(self, d1, d2):
@@ -191,22 +200,42 @@ class TestConnectionProcessIntegrated(unittest.TestCase):
     def tearDown(self):
         d = defer.maybeDeferred(self.serverPort.stopListening)
         self.clientConnection.disconnect()
-        return defer.gatherResults([d, self.clientDisconnected, self.serverDisconnected])
+        return defer.gatherResults([d, self.clientDisconnected,
+                                    self.serverDisconnected])
 
+    # FIXME Fix test and complete description
     def _test_loginRightUsernameRightPasswordRightConnection(self):
-        d = self.factory.protoInstance.callRemote(Login, sUsername='sgongar', sPassword='sgongarpass')
+        """
+
+        @return:
+        """
+        d = self.factory.protoInstance.callRemote(Login, sUsername='sgongar',
+                                                  sPassword='sgongarpass')
         d.addCallback(lambda res : self.assertTrue(res['bAuthenticated']))
         return d
 
+    # FIXME Fix test and complete description
     def _test_loginWrongUsernameRightPasswordRightConnection(self):
-        d = self.factory.protoInstance.callRemote(Login, sUsername='xabi', sPassword='xabipass')
+        """
+
+        @return:
+        """
+        d = self.factory.protoInstance.callRemote(Login, sUsername='xabi',
+                                                  sPassword='xabipass')
         d.addCallback(lambda res : self.assertFalse(res['bAuthenticated']))
         return d
 
+    # TODO Complete description
     def test_wrongUsernamestartRemoteFailed(self):
-        d = self.factory.protoInstance.callRemote(Login, sUsername='sgongar', sPassword='sgongarpass')
+        """
+
+        @return:
+        """
+        d = self.factory.protoInstance.callRemote(Login, sUsername='sgongar',
+                                                  sPassword='sgongarpass')
         d.addCallback(lambda l : self.factory.protoInstance.callRemote(StartRemote))
 
         def checkError(result):
-            self.assertEqual(result.message, 'This slot has not been assigned to this user')
+            self.assertEqual(result.message,
+                             'This slot has not been assigned to this user')
         return self.assertFailure(d, SlotErrorNotification).addCallback(checkError)

@@ -141,7 +141,7 @@ class ServerProtocol(AMP):
 class ClientProtocol(AMP):
     # TODO Complete description
     def connectionMade(self):
-        """
+        """ Override connection made method
 
         @return:
         """

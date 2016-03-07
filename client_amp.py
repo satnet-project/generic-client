@@ -122,8 +122,8 @@ class ClientProtocol(AMP):
     def vNotifyMsg(self, sMsg):
         log.msg(">>> NOTIFY MESSAGE invoked:")
 
-        # To-do. Check message integrity.
-        # To-do. Check IPs and ports plausibility.
+        # TODO. Check message integrity.
+        # TODO. Check IPs and ports plausibility.
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             sMsg = bytearray(sMsg)
@@ -284,8 +284,12 @@ class ClientReconnectFactory(ReconnectingClientFactory):
                     "..............................................." +
                     "...........................")
 
-    # Create an instance of a subclass of Protocol
     def buildProtocol(self, addr):
+        """ Override build protocol method
+        Create an instance of a subclass of protocol
+        @param addr:
+        @return:
+        """
         log.msg("Building protocol.............................." +
                 "..............................................." +
                 ".........................")
@@ -294,8 +298,13 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         return ClientProtocol(self.CONNECTION_INFO, self.gsi,
                               self.threads)
 
-    # Called when an established connection is lost
     def clientConnectionLost(self, connector, reason):
+        """ Override client connection lost method
+        Called when and established connection is lost
+        @param connector:
+        @param reason:
+        @return:
+        """
         if self.CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
         elif self.CONNECTION_INFO['reconnection'] == 'no':
@@ -308,6 +317,12 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
     # Called when a connection has failed to connect
     def clientConnectionFailed(self, connector, reason):
+        """ Override client connection failed method
+        Called when
+        @param connector:
+        @param reason:
+        @return:
+        """
         if self.CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
         elif self.CONNECTION_INFO['reconnection'] == 'no':
@@ -322,6 +337,10 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 class CtxFactory(ClientContextFactory):
 
     def getContext(self):
+        """
+
+        @return:
+        """
         self.method = SSL.SSLv23_METHOD
         ctx = ssl.ClientContextFactory.getContext(self)
 
@@ -345,11 +364,20 @@ class Client(object):
         self.threads = threads
 
     def createconnection(self, test):
+        """
+
+        @param test:
+        @return:
+        """
         if test is False:
             from qtreactor import pyqt4reactor
             pyqt4reactor.install()
 
     def setconnection(self, test):
+        """
+        @param test:
+        @return:
+        """
         from twisted.internet import reactor
         reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
                            int(self.CONNECTION_INFO['serverport']),
@@ -372,6 +400,10 @@ class Client(object):
         return True
 
     def destroyconnection(self):
+        """
+
+        @return:
+        """
         from twisted.internet import reactor
         reactor.stop()
         log.msg("Reactor destroyed")

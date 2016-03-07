@@ -168,7 +168,7 @@ fi
 if [ $1 == '-travisCI' ];
 then
 	echo ">>> [TravisCI] Installing generic client test modules..."
-	pip install -r "$project_path/requirements-tests.txt"
+	pip install -r "$project_path/requirements.txt"
     pip install coveralls
     pip install coverage
     pip install nose
@@ -180,7 +180,7 @@ fi
 if [ $1 == '-circleCI' ];
 then
 	echo ">>> [CircleCI] Installing generic client test modules..."
-	pip install -r "$project_path/requirements-tests.txt"
+	pip install -r "$project_path/requirements.txt"
 
 	echo '>>> SIP installation'
 	[[ $_install_sip == 'true' ]] && install_sip

@@ -125,7 +125,7 @@ class ServerProtocol(AMP):
 
         return slot, gs_user, sc_user, client_a, client_c
 
-    def iStartRemote(self):
+    def i_start_remote(self):
         """RPC Handler
         This function processes the remote request through the StartRemote AMP
         command.
@@ -138,7 +138,7 @@ class ServerProtocol(AMP):
             slot['ending_time'], slot['id'], client_a, client_c
         )
 
-    StartRemote.responder(iStartRemote)
+    StartRemote.responder(i_start_remote)
 
 
 class ClientProtocol(AMP):

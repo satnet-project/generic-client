@@ -25,10 +25,10 @@ serverip = 127.0.0.1
 serverport = 25345
 
 [Connection]
-reconnection = no
+reconnection = yes
 parameters = yes
 
 [Client]
 name = Universidade de Vigo
-attempts = 15
+attempts = 10
 

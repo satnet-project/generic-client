@@ -131,9 +131,7 @@ class ClientProtocol(AMP):
         if self.CONNECTION_INFO['connection'] == 'serial':
             sMsg = bytearray(sMsg)
 
-            # TODO Add 00 byte
             self.saveReceivedFrames(sMsg)
-            sMsg.insert(0, 0)
 
             frameprocessed = list(sMsg)
             frameprocessed = ":".join("{:02x}".format(c)
@@ -291,11 +289,17 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         """ Override build protocol method
         Create an instance of a subclass of protocol
         @param addr:
-        @return:
+        @return: ClientProtocol instance
         """
-        log.msg("Building protocol.............................." +
-                "..............................................." +
-                ".........................")
+        if self.ossystem == 'debian':
+            log.msg("Building protocol.............................." +
+                    "..............................................." +
+                    "...........")
+        elif self.ossystem == 'ubuntu':
+            log.msg("Building protocol.............................." +
+                    "..............................................." +
+                    ".........................")
+
         self.resetDelay()
 
         return ClientProtocol(self.CONNECTION_INFO, self.gsi,
@@ -308,10 +312,16 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         @param reason:
         @return:
         """
+        CONNECTION_INFO = misc.get_data_local_file(settingsFile='.settings')
+        print CONNECTION_INFO['reconnection']
+
+
+        """
         if self.CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
         elif self.CONNECTION_INFO['reconnection'] == 'no':
             self.continueTrying = None
+        """
 
         log.msg('Lost connection. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionLost(self,

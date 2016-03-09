@@ -114,13 +114,10 @@ class GroundStationInterface(object):
 
 
     def clear_slots(self):
-        if type(self.AMP.transport) == NoneType:
-            log.msg('hello')
         try:
             self.AMP.end_connection()
         except:
-            log.msg("Conexion no establecida")
-            log.msg('el transporte esta', str(type(self.AMP)))
+            log.msg("Connection not established")
             # FIX-ME Only must raises an error if the connection was unestablished.
             # raise ConnectionNotEnded('EndRemote call not completed')
 
@@ -401,7 +398,6 @@ class OperativeKISSThread(KISSThread):
 
     def doWork(self):
         if self.serialSignal:
-            # Only needs to be initialized one time.
             self.kissTNC.read(callback=self.catchValue)
 
             return True
@@ -411,8 +407,7 @@ class OperativeKISSThread(KISSThread):
         log.msg("----------------------------------------------- " +
                 "Message from Serial port" +
                 " -----------------------------------------------")
-        # TODO Remove initial byte
-        self.finished.emit(frame)
+        self.finished.emit(frame[1:])
 
     def stop(self):
         log.msg('Stopping serial port')

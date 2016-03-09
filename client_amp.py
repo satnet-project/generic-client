@@ -126,13 +126,12 @@ class ClientProtocol(AMP):
         # TODO. Check IPs and ports plausibility.
 
         import base64
-        sMsg = base64.b64encode(sMsg)
+        sMsg = base64.b64decode(sMsg)
 
         if self.CONNECTION_INFO['connection'] == 'serial':
             sMsg = bytearray(sMsg)
 
-            # TODO
-
+            # TODO Add 00 byte
             self.saveReceivedFrames(sMsg)
 
             import kiss

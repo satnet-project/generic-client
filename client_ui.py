@@ -38,6 +38,8 @@ class SatNetUI(QtGui.QWidget):
         self.enviromentDesktop = os.environ.get('DESKTOP_SESSION')
 
         self.connection = ''
+        self.settingsfile = '.settings'
+        self.setArguments(argumentsdict)
 
         self.initUI()
         self.initButtons()
@@ -46,9 +48,6 @@ class SatNetUI(QtGui.QWidget):
         self.initLogo()
         self.initConfiguration()
         self.initConsole()
-
-        #  Use a dict for passing arg.
-        self.setArguments(argumentsdict)
 
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
                                           client_amp.ClientProtocol)
@@ -72,12 +71,19 @@ class SatNetUI(QtGui.QWidget):
         else:
             self.CONNECTION_INFO['reconnection'] = 'no'
 
+        self.openInterface()
+
         return client_amp.Client(self.CONNECTION_INFO, self.gsi,
                                  self.threads).setconnection(test=False)
 
     def initUI(self):
+        """
         self.CONNECTION_INFO = misc.get_data_local_file(
             settingsFile='.settings')
+        """
+
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile=self.settingsfile)
 
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         self.setFixedSize(1300, 800)
@@ -85,7 +91,8 @@ class SatNetUI(QtGui.QWidget):
                             (self.CONNECTION_INFO['name']))
 
         if self.CONNECTION_INFO['parameters'] == 'yes':
-            self.LoadParameters()
+            self.CONNECTION_INFO = {}
+            self.UpdateFields()
         elif self.CONNECTION_INFO['parameters'] == 'no':
             pass
         else:
@@ -226,11 +233,14 @@ class SatNetUI(QtGui.QWidget):
 
     # Set parameters form arguments list.
     def setArguments(self, argumentsdict):
-        if argumentsdict['username'] != "":
-            self.LabelUsername.setText(argumentsdict['username'])
-        if argumentsdict['connection'] != "":
-            index = self.LabelConnection.findText(argumentsdict['connection'])
-            self.LabelConnection.setCurrentIndex(index)
+        try:
+            if argumentsdict['username'] != "":
+                self.LabelUsername.setText(argumentsdict['username'])
+            if argumentsdict['connection'] != "":
+                index = self.LabelConnection.findText(argumentsdict['connection'])
+                self.LabelConnection.setCurrentIndex(index)
+        except KeyError:
+            self.settingsfile =  argumentsdict['file']
 
     # Set parameters from CONNECTION_INFO dict.
     def setParameters(self):
@@ -252,15 +262,9 @@ class SatNetUI(QtGui.QWidget):
 
     def UpdateFields(self):
         self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
+            settingsFile=self.settingsfile)
 
         log.msg("Parameters loaded from .setting file.")
-
-    # Load connection parameters from .settings file.
-    def LoadParameters(self):
-        self.CONNECTION_INFO = {}
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
 
     @QtCore.pyqtSlot()
     def SetConfiguration(self):

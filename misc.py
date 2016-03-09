@@ -127,6 +127,19 @@ def readArguments(argumentsDict):
     return argumentsDict
 
 def readSettings(settingsDict):
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],
+                                   "fsf",
+                                   ["file="]
+                                   )
+    except getopt.GetoptError:
+        print "Error"
+
+    settingsDict = {}
+
+    for opt, arg in opts:
+        if opt == "-f":
+            settingsDict['file'] = args[0]
 
     return settingsDict
 
@@ -190,10 +203,7 @@ def checkarguments(sysargvdict):
     @rtype: dict
     """
     try:
-        if sysargvdict[1] == "-help":
-            import subprocess
-            subprocess.call(["man", "./satnetclient.1"])
-        elif sysargvdict[1] == "-g":
+        if sysargvdict[1] == "-g":
             readData = sys.argv
             argumentsdict = readArguments(readData)
             return argumentsdict

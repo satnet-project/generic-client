@@ -78,6 +78,9 @@ class Threads(object):
     def stopKISSThread(self):
         self.workerKISSThread.stop()
 
+    def KISSThreadSend(self, message):
+        self.workerKISSThread.send(message)
+
     # To-do
     def runTCPThread(self):
         self.CONNECTION_INFO = misc.get_data_local_file(

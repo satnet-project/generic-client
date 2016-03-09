@@ -133,13 +133,18 @@ class ClientProtocol(AMP):
 
             # TODO Add 00 byte
             self.saveReceivedFrames(sMsg)
+            sMsg.insert(0, 0)
 
-            import kiss
-            self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],
-                                     self.CONNECTION_INFO['baudrate'])
-            self.kissTNC.start()
+            frameprocessed = list(sMsg)
+            frameprocessed = ":".join("{:02x}".format(c)
+                                  for c in frameprocessed)
+
+
+            sMsg = str(sMsg)
+
+            log.msg(frameprocessed)
             log.msg(">>> Delivering message...")
-            self.kissTNC.write(sMsg)
+            self.threads.KISSThreadSend(sMsg)
 
             return {'bResult': True}
 

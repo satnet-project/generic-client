@@ -419,4 +419,7 @@ class OperativeKISSThread(KISSThread):
         del self.kissTNC
         self.running = False
 
+    def send(self, message):
+        self.kissTNC.write(message)
+
         # send signal to disable disconnected button

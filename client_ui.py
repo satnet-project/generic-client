@@ -362,6 +362,7 @@ class SatNetUI(QtGui.QWidget):
 
         # Non asynchronous way. Need to re implement this. TO-DO
         if self.reply == QtGui.QMessageBox.Yes:
+            self.stopInterface()
             self.gsi.clear_slots()
             client_amp.Client(self.CONNECTION_INFO, self.gsi, self.threads).destroyconnection()
         elif self.reply == QtGui.QMessageBox.No:

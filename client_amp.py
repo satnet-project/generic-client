@@ -271,8 +271,6 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         else:
             self.ossystem = 'ubuntu'
 
-        log.msg(self.CONNECTION_INFO['reconnection'])
-
     # Called when a connection has been started
     def startedConnecting(self, connector):
         if self.ossystem  == 'ubuntu':

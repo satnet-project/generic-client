@@ -71,7 +71,8 @@ class SatNetUI(QtGui.QWidget):
         else:
             self.CONNECTION_INFO['reconnection'] = 'no'
 
-        self.openInterface()
+        if self.connection == '':
+            self.openInterface()
 
         return client_amp.Client(self.CONNECTION_INFO, self.gsi,
                                  self.threads).setconnection(test=False)

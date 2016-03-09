@@ -125,9 +125,13 @@ class ClientProtocol(AMP):
         # TODO. Check message integrity.
         # TODO. Check IPs and ports plausibility.
 
+        import base64
+        sMsg = base64.b64encode(sMsg)
+
         if self.CONNECTION_INFO['connection'] == 'serial':
             sMsg = bytearray(sMsg)
-            del sMsg[:1]
+
+            # TODO
 
             self.saveReceivedFrames(sMsg)
 
@@ -142,7 +146,6 @@ class ClientProtocol(AMP):
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
             sMsg = bytearray(sMsg)
-            del sMsg[:1]
 
             self.saveReceivedFrames(sMsg)
             log.msg(">>> Delivering message...")
@@ -152,7 +155,6 @@ class ClientProtocol(AMP):
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             sMsg = bytearray(sMsg)
-            del sMsg[:1]
 
             self.saveReceivedFrames(sMsg)
             # To-do. Implement TCP callback.
@@ -161,7 +163,6 @@ class ClientProtocol(AMP):
 
         elif self.CONNECTION_INFO['connection'] == 'none':
             sMsg = bytearray(sMsg)
-            del sMsg[:1]
 
             self.saveReceivedFrames(sMsg)
 

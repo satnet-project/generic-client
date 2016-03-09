@@ -79,7 +79,7 @@ class GroundStationInterface(object):
 
     def _manageFrame(self, result):
         if self.AMP is not None:
-            # bytearray or string?
+            # FIXME
             if type(result) is str:
                 result = bytearray(result)
 
@@ -101,7 +101,6 @@ class GroundStationInterface(object):
     def _updateLocalFile(self, frame):
         filename = self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
 
-        del frame[:1]
         with open(filename, "a+") as f:
             f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S ")) + frame + "\n")
 
@@ -412,6 +411,7 @@ class OperativeKISSThread(KISSThread):
         log.msg("----------------------------------------------- " +
                 "Message from Serial port" +
                 " -----------------------------------------------")
+        # TODO Remove initial byte
         self.finished.emit(frame)
 
     def stop(self):

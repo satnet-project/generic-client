@@ -1,6 +1,7 @@
 # coding=utf-8
 from Queue import Queue
 from twisted.python import log
+import misc
 
 from gs_interface import GroundStationInterface, OperativeUDPThreadReceive
 from gs_interface import OperativeUDPThreadSend
@@ -35,10 +36,13 @@ class Threads(object):
         self.tcp_queue = Queue()
         self.udp_queue = Queue()
         self.serial_queue = Queue()
-        self.CONNECTION_INFO = CONNECTION_INFO
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
         self.gsi = gsi
 
     def runUDPThreadReceive(self):
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
         self.workerUDPThreadReceive = OperativeUDPThreadReceive(
             self.udp_queue, self.sendData, self.UDPSignal, self.CONNECTION_INFO
         )
@@ -48,6 +52,8 @@ class Threads(object):
         self.workerUDPThreadReceive.stop()
 
     def runUDPThreadSend(self):
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
         self.workerUDPThreadSend = OperativeUDPThreadSend(self.CONNECTION_INFO)
 
     def UDPThreadSend(self, message):
@@ -61,6 +67,8 @@ class Threads(object):
             self.workerUDPThreadSend.send(message)
 
     def runKISSThreadReceive(self):
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
         self.workerKISSThread = OperativeKISSThread(self.serial_queue,
                                                     self.sendData,
                                                     self.serialSignal,
@@ -72,6 +80,8 @@ class Threads(object):
 
     # To-do
     def runTCPThread(self):
+        self.CONNECTION_INFO = misc.get_data_local_file(
+            settingsFile='.settings')
         self.workerTCPThread = OperativeTCPThread(self.tcp_queue,
                                                   self.sendData,
                                                   self.TCPSignal,

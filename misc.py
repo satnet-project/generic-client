@@ -126,6 +126,10 @@ def readArguments(argumentsDict):
                 argumentsDict['udpportreceive'] = arg
     return argumentsDict
 
+def readSettings(settingsDict):
+
+    return settingsDict
+
 TIMESTAMP_0 = localize_date_utc(datetime.datetime(year=1970, month=1, day=1))
 
 def get_utc_timestamp(utc_datetime=None):
@@ -193,7 +197,10 @@ def checkarguments(sysargvdict):
             readData = sys.argv
             argumentsdict = readArguments(readData)
             return argumentsdict
-        # elif sys -s
+        elif sysargvdict[1] == "-s":
+            readData = sys.argv
+            settingsdict = readSettings(readData)
+            return settingsdict
         elif sysargvdict[1] != "-g" and sysargvdict[1] != "-help":
             print "Unknown option: %s" % (sysargvdict[1])
             print "Try 'python client_amp.py -help' for more information."

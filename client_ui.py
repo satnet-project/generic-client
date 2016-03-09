@@ -265,6 +265,7 @@ class SatNetUI(QtGui.QWidget):
     @QtCore.pyqtSlot()
     def SetConfiguration(self):
         self.dialogTextBrowser.exec_()
+        self.UpdateFields()
 
     def openInterface(self):
         if str(self.LabelConnection.currentText()) == 'udp':

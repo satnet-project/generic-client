@@ -57,14 +57,21 @@ class Threads(object):
         self.workerUDPThreadSend = OperativeUDPThreadSend(self.CONNECTION_INFO)
 
     def UDPThreadSend(self, message):
+        """ UDP send method.
+
+        @param message: Frame to be sent through UDP socket.
+        @return: A boolean pointing the routine successful.
+        """
         if not self.workerUDPThreadSend:
             log.msg(
                 '>>> No UDP Thread Send, dropping message, msg = ' + str(
                     message
                 )
             )
+            return False
         else:
             self.workerUDPThreadSend.send(message)
+            return True
 
     def runKISSThreadReceive(self):
         self.CONNECTION_INFO = misc.get_data_local_file(
@@ -81,7 +88,7 @@ class Threads(object):
     def KISSThreadSend(self, message):
         self.workerKISSThread.send(message)
 
-    # To-do
+    # TODO Method to be implemented.
     def runTCPThread(self):
         self.CONNECTION_INFO = misc.get_data_local_file(
             settingsFile='.settings')
@@ -91,7 +98,7 @@ class Threads(object):
                                                   self.CONNECTION_INFO)
         self.workerTCPThread.start()
 
-    # Stop TCP thread
+    # TODO Method to be implemented.
     def stopTCPThread(self):
         self.workerTCPThread.stop()
 

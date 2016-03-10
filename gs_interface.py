@@ -5,7 +5,10 @@ import time
 import os
 from types import NoneType
 
-from errors import WrongFormatNotification, FrameNotProcessed, ConnectionNotEnded, IOFileError
+from serial.serialutil import SerialException
+
+from errors import WrongFormatNotification, FrameNotProcessed
+from errors import ConnectionNotEnded, IOFileError, SerialPortUnreachable
 
 """
    Copyright 2014, 2015, 2016 Xabier Crespo Álvarez
@@ -372,49 +375,71 @@ class OperativeKISSThread(KISSThread):
         self.serialSignal = serialSignal
 
         self.signal = QtCore.SIGNAL('signal')
+        self.init_interface(CONNECTION_INFO)
 
+    def init_interface(self, CONNECTION_INFO):
         # Opening port
         import logging
         import kiss
         import kiss.constants
-        try:
-            log.msg("Opening serial port" + "...................." +
-                    "............................................" +
-                    "..................................")
+        log.msg("Opening serial port" + "...................." +
+                "............................................" +
+                "..................................")
 
-            self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],
-                                     CONNECTION_INFO['baudrate'])
-            self.kissTNC.console_handler.setLevel(logging.ERROR)
+        self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],
+                                 CONNECTION_INFO['baudrate'])
+        # TODO The logging level is actually set to ERROR because KISS tries
+        # TODO to show the frames using the log standard Python method.
+        # TODO This raises a codification error.
+        # TODO Implement a workaround or fork the entire KISS module.
+        self.kissTNC.console_handler.setLevel(logging.ERROR)
 
-        except Exception as e:
-            log.err('Error opening port')
-            log.err(e)
+
+        print CONNECTION_INFO['serialport']
 
         try:
             self.kissTNC.start()
-        except Exception as e:
-            log.err('Error starting KISS protocol')
-            log.err(e)
+        except SerialException:
+            raise SerialPortUnreachable("The port couldn't be open")
+            # return True
+
 
     def doWork(self):
+        """ Work thread method.
+
+        @return: True if everything goes alright.
+        """
         if self.serialSignal:
             self.kissTNC.read(callback=self.catchValue)
-
             return True
 
     def catchValue(self, frame):
-        # self.finished.emit(ResultObj(frame))
         log.msg("----------------------------------------------- " +
                 "Message from Serial port" +
                 " -----------------------------------------------")
         self.finished.emit(frame[1:])
 
     def stop(self):
+        """ Stop thread method.
+        Emits a log message follows by a del sentence which deletes the
+        KISS socket.
+        The class attribute running is set to False.
+
+        @return: Nothing,
+        """
         log.msg('Stopping serial port')
         del self.kissTNC
         self.running = False
 
     def send(self, message):
-        self.kissTNC.write(message)
+        """ Send message method.
+        Tries to send a frame through the formerly created KISS socket.
 
-        # send signal to disable disconnected button
+        @param message: A frame coded in a bytearray way.
+        @return: None if the message is properly send and a
+        SerialPortUnreachable exception if anything is wrong.
+        """
+        try:
+            self.kissTNC.write(message)
+        except AttributeError:
+            raise SerialPortUnreachable('The serial port is unreachable')

@@ -151,9 +151,12 @@ class ClientProtocol(AMP):
 
             self.saveReceivedFrames(sMsg)
             log.msg(">>> Delivering message...")
-            self.threads.UDPThreadSend(sMsg)
 
-            return {'bResult': True}
+            # Checks if the message has been delivered
+            if self.threads.UDPThreadSend(sMsg):
+                return {'bResult': True}
+            else:
+                return {'bResult': False}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
             sMsg = bytearray(sMsg)

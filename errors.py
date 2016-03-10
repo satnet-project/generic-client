@@ -94,3 +94,11 @@ class SettingsCorrupted(Exception):
     One of the following situations may raise this error:
         1. The file doesn't have some fields.
     """
+
+class SerialPortUnreachable(Exception):
+
+    """
+    One of the following situations may raise this error:
+        1. The selected serial port is already open.
+        2. The selected serial port is unreachable.
+    """

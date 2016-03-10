@@ -1,7 +1,7 @@
 argparse==1.2.1
 aprs==4.0.0
 cryptography==1.2.3
-kiss==3.1.1
+kiss==2.0.2
 mock==1.3.0
 ndg-httpsclient==0.4.0
 pyOpenSSL==0.15.1

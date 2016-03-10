@@ -3,8 +3,7 @@ import unittest
 import sys
 
 from os import path
-
-from mock import patch
+from mock import patch, Mock, MagicMock
 
 sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
 import misc
@@ -38,11 +37,13 @@ class TestReadDataFromTerminal(unittest.TestCase):
     def teardrown(self):
         pass
 
-    # TODO Complete description
-    def test_noArgumentsGiven(self):
-        """
+    def test_no_arguments_given(self):
+        """ No arguments passed by terminal.
+        If no argument has been pass using the terminal every parameter
+        are going to be empty.
+        Through a for structure this test checks this affirmation.
 
-        @return:
+        @return: A true boolean if there is no error.
         """
         argumentsDict = misc.noArguments()
 
@@ -54,10 +55,10 @@ class TestReadDataFromTerminal(unittest.TestCase):
         return True
 
     # TODO Complete description
-    def test_argumentsGiven(self):
-        """
+    def test_arguments_given(self):
+        """ Arguments passed by terminal.
 
-        @return:
+        @return: A true bolean if there is no error.
         """
         testargs = ["client_amp.py", "-g", "-n", "crespo", "-t",
                     "2", "-c", "serial", "-s", "/dev/ttyS1",
@@ -73,3 +74,78 @@ class TestReadDataFromTerminal(unittest.TestCase):
                                   "Dict value is not a string object")
 
         return True
+
+    # TODO Complete description
+    def test_file_allocation_given(self):
+        """ Settings file allocation given.
+
+        @return: An assertIs method which checks the value of the dictionary
+        created.
+        """
+        testargs = ["client_amp.py", "-s", "-f", ".settings"]
+        with patch.object(sys, 'argv', testargs):
+            arguments_dict = misc.readSettings(testargs)
+
+        return self.assertIs(arguments_dict['file'], '.settings')
+
+class TestSelectReadingArgumentsMethod(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    # TODO Complete description
+    def test_read_arguments_from_terminal(self):
+        """
+
+        @return:
+        """
+        misc.readArguments = MagicMock(return_value=True)
+
+        testargs = ["client_amp.py", "-g"]
+        with patch.object(sys, 'argv', testargs):
+            arguments_dict = misc.checkarguments(testargs)
+
+        return self.assertEqual(int(misc.readArguments.call_count), 1)
+
+    # TODO Complete description
+    def test_read_settings_from_terminal(self):
+        """
+
+        @return:
+        """
+        misc.readSettings = MagicMock(return_value=True)
+
+        testargs = ["client_amp.py", "-s"]
+        with patch.object(sys, 'argv', testargs):
+            arguments_dict = misc.checkarguments(testargs)
+
+        return self.assertEqual(misc.readSettings.call_count, 1)
+
+    # TODO Complete description
+    def test_option_not_valid(self):
+        """
+
+        @return:
+        """
+        testargs = ["client_amp.py", "-l"]
+        with patch.object(sys, 'argv', testargs):
+            arguments_dict = misc.checkarguments(testargs)
+
+        return self.assertIsNone(arguments_dict)
+
+    # TODO Complete description
+    def test_option_not_given(self):
+        """
+
+        @return:
+        """
+        misc.noArguments = MagicMock(return_value=True)
+
+        testargs = ["client_amp.py"]
+        with patch.object(sys, 'argv', testargs):
+            arguments_dict = misc.checkarguments(testargs)
+
+        return self.assertEqual(misc.noArguments.call_count, 1)

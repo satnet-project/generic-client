@@ -4,6 +4,8 @@ import pytz
 import sys
 import getopt
 
+from twisted.python import log
+
 """
    Copyright 2016 Samuel Góngora García
 
@@ -212,8 +214,9 @@ def checkarguments(sysargvdict):
             settingsdict = readSettings(readData)
             return settingsdict
         elif sysargvdict[1] != "-g" and sysargvdict[1] != "-help":
-            print "Unknown option: %s" % (sysargvdict[1])
-            print "Try 'python client_amp.py -help' for more information."
+            log.msg("Unknown option: %s" % (sysargvdict[1]))
+            log.msg("Try 'python client_amp.py -help' for more information.")
+            return None
     except IndexError:
         argumentsdict = noArguments()
-        return  argumentsdict
+        return argumentsdict

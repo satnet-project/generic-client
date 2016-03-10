@@ -110,8 +110,10 @@ class TestUserInterfaceInterfacesOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(Threads, 'runKISSThreadReceive', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_serialInterfaceIsOpenRightPort(self, createconnection,
-                                            runKISSThreadReceive, initLogo):
+                                            runKISSThreadReceive, initLogo,
+                                            setArguments):
         """
 
         @param createconnection:
@@ -129,8 +131,9 @@ class TestUserInterfaceInterfacesOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(Threads, 'stopKISSThread', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_serialInterfaceIsClose(self, createconnection, stopKISSThread,
-                                    initLogo):
+                                    initLogo, setArguments):
         """
 
         @param createconnection:
@@ -148,8 +151,10 @@ class TestUserInterfaceInterfacesOperation(TestCase):
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(Threads, 'runUDPThreadReceive')
     @patch.object(Threads, 'runUDPThreadSend')
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_udpInterfaceIsOpen(self, createconnection, initLogo,
-                                runUDPThreadReceive, runUDPThreadSend):
+                                runUDPThreadReceive, runUDPThreadSend,
+                                setArguments):
         """
 
         @param createconnection:
@@ -172,8 +177,9 @@ class TestUserInterfaceInterfacesOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(Threads, 'stopUDPThreadReceive')
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_udpInterfaceIsClose(self, createconnection, initLogo,
-                                 stopUDPThreadReceive):
+                                 stopUDPThreadReceive, setArguments):
         """
 
         @param createconnection:
@@ -269,8 +275,14 @@ class TestUserInterfaceParametersOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(SatNetUI, 'UpdateFields')
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
+    @patch.object(SatNetUI, 'setParameters', return_value=True)
+    @patch.object(SatNetUI, 'initConfiguration', return_value=True)
     def test_parametersAreLoadedWhenButtonIsClicked(self, createconnection,
-                                                    initLogo, UpdateFields):
+                                                    initLogo, UpdateFields,
+                                                    setArguments,
+                                                    setParameters,
+                                                    initConfiguration):
         """
 
         @param createconnection:
@@ -286,8 +298,10 @@ class TestUserInterfaceParametersOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(SatNetUI, 'SetConfiguration')
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_configurationOpenedWhenButtonClicked(self, createconnection,
-                                                  initLogo, SetConfiguration):
+                                                  initLogo, SetConfiguration,
+                                                  setArguments):
         """
 
         @param createconnection:
@@ -305,8 +319,12 @@ class TestUserInterfaceParametersOperation(TestCase):
     @patch.object(SatNetUI, 'initButtons', return_value=True)
     @patch.object(SatNetUI, 'setParameters', return_value=True)
     @patch.object(misc, 'get_data_local_file')
-    def test_parametersLoadedWhenUpdateFieldsIsCalled(self, createconnection, initLogo, initButtons,
-                                                      setParameters, get_data_local_file):
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
+    def test_parametersLoadedWhenUpdateFieldsIsCalled(self, createconnection,
+                                                      initLogo, initButtons,
+                                                      setParameters,
+                                                      get_data_local_file,
+                                                      setArguments):
         """
 
         @param createconnection:
@@ -318,29 +336,6 @@ class TestUserInterfaceParametersOperation(TestCase):
         """
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         testUI.UpdateFields()
-        return self.assertTrue(get_data_local_file.called)
-
-    # TODO Complete description
-    @patch.object(Client, 'createconnection', return_value=True)
-    @patch.object(SatNetUI, 'initLogo', return_value=True)
-    @patch.object(SatNetUI, 'initButtons', return_value=True)
-    @patch.object(SatNetUI, 'setParameters', return_value=True)
-    @patch.object(misc, 'get_data_local_file')
-    def test_parametersLoadedWhenLoadParametersIsCalled(self, createconnection,
-                                                        initLogo, initButtons,
-                                                        setParameters,
-                                                        get_data_local_file):
-        """
-
-        @param createconnection:
-        @param initLogo:
-        @param initButtons:
-        @param setParameters:
-        @param get_data_local_file:
-        @return:
-        """
-        testUI = SatNetUI(argumentsdict=self.argumentsdict)
-        testUI.LoadParameters()
         return self.assertTrue(get_data_local_file.called)
 
 
@@ -423,8 +418,10 @@ class TestUserInterfaceConnectionsOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(SatNetUI, 'NewConnection')
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_newConnectionWhenButtonClicked(self, createconnection,
-                                             initLogo, NewConnection):
+                                             initLogo, NewConnection,
+                                            setArguments):
         """
 
         @param createconnection:
@@ -440,9 +437,11 @@ class TestUserInterfaceConnectionsOperation(TestCase):
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(Client, 'setconnection')
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_loadReconnectionParametersOkNewConnection(self, initLogo,
                                                        createconnection,
-                                                       setconnection):
+                                                       setconnection,
+                                                       setArguments):
         """
 
         @param initLogo:
@@ -460,9 +459,11 @@ class TestUserInterfaceConnectionsOperation(TestCase):
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(Client, 'setconnection')
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_loadReconnectionParametersNotNewConnection(self, initLogo,
                                                         createconnection,
-                                                        setconnection):
+                                                        setconnection,
+                                                        setArguments):
         """
 
         @param initLogo:
@@ -550,7 +551,10 @@ class TestUserInterfaceDisconnectionsOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(SatNetUI, 'CloseConnection')
-    def test_closeConnectionWhenButtonClicked(self, createconnection, initLogo, CloseConnection):
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
+    def test_closeConnectionWhenButtonClicked(self, createconnection,
+                                              initLogo, CloseConnection,
+                                              setArguments):
         """
 
         @param createconnection:
@@ -566,7 +570,10 @@ class TestUserInterfaceDisconnectionsOperation(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(GroundStationInterface, 'clear_slots')
-    def test_methodsAreCallWhenUserClosesConnection(self, createconnection, initLogo, clear_slots):
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
+    def test_methodsAreCallWhenUserClosesConnection(self, createconnection,
+                                                    initLogo, clear_slots,
+                                                    setArguments):
         """
 
         @param createconnection:
@@ -655,10 +662,12 @@ class TestUserInterfaceCloseWindow(TestCase):
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(GroundStationInterface, 'clear_slots')
     @patch.object(Client, 'destroyconnection')
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_methodsAreCallWhenUserClosesWindow(self, question, initLogo,
                                                 createconnection,
                                                 clear_slots,
-                                                destroyconnection):
+                                                destroyconnection,
+                                                setArguments):
         """ Methods are called when user closes the main window
         Checks if the disconnection methods are call when user closes the main
         window.
@@ -682,8 +691,10 @@ class TestUserInterfaceCloseWindow(TestCase):
                   return_value=QtGui.QMessageBox.No)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
     @patch.object(Client, 'createconnection', return_value=True)
+    @patch.object(SatNetUI, 'setArguments', return_value=True)
     def test_userCancelsWindowClosing(self, question, initLogo,
-                                      createconnection):
+                                      createconnection,
+                                      setArguments):
         """
 
         @param question: QMessageBox object mocked for test purpuses.

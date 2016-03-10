@@ -159,13 +159,62 @@ class ClientProtocol(AMP):
 
 
 class TestConnectionProcessIntegrated(unittest.TestCase):
+
+    def createSettingsFile(self):
+        """
+
+        @return:
+        """
+        testFile = open(".settings", "w")
+        testFile.write("[User]\n"
+                       "username = test-sc-user\n"
+                       "password = sgongarpass\n"
+                       "slot_id = -1\n"
+                       "connection = none\n"
+                       "\n"
+                       "[Serial]\n"
+                       "serialport = /dev/ttyUSB0\n"
+                       "baudrate = 500000\n"
+                       "\n"
+                       "[udp]\n"
+                       "udpipreceive = 127.0.0.1\n"
+                       "udpportreceive = 1234\n"
+                       "udpipsend = 172.19.51.145\n"
+                       "udpportsend = 57009\n"
+                       "\n"
+                       "[tcp]\n"
+                       "tcpipreceive = 127.0.0.1\n"
+                       "tcpportreceive = 4321\n"
+                       "tcpipsend = 127.0.0.1\n"
+                       "tcpportsend = 1234\n"
+                       "\n"
+                       "[server]\n"
+                       "serverip = 172.19.51.133\n"
+                       "serverport = 25345\n"
+                       "\n"
+                       "[Connection]\n"
+                       "reconnection = no\n"
+                       "parameters = yes\n"
+                       "\n"
+                       "[Client]\n"
+                       "name = Universidade de Vigo\n"
+                       "attempts = 10")
+        testFile.close()
+
     def setUp(self):
-        self.CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass', 'udpipsend': '172.19.51.145',
-                                'baudrate': '500000', 'name': 'Universidade de Vigo', 'parameters': 'yes',
-                                'tcpportsend': '1234', 'tcpipsend': '127.0.0.1', 'udpipreceive': '127.0.0.1',
-                                'attempts': '10', 'serverip': '172.19.51.143', 'serialport': '/dev/ttyUSB0',
-                                'tcpportreceive': 4321, 'connection': 'udp', 'udpportreceive': 57008,
-                                'serverport': 25345, 'reconnection': 'no', 'udpportsend': '57009',
+        self.CONNECTION_INFO = {'username': 'satnet_admin', 'password': 'pass',
+                                'udpipsend': '172.19.51.145',
+                                'baudrate': '500000',
+                                'name': 'Universidade de Vigo',
+                                'parameters': 'yes',
+                                'tcpportsend': '1234',
+                                'tcpipsend': '127.0.0.1',
+                                'udpipreceive': '127.0.0.1',
+                                'attempts': '10', 'serverip': '172.19.51.143',
+                                'serialport': '/dev/ttyUSB0',
+                                'tcpportreceive': 4321, 'connection': 'udp',
+                                'udpportreceive': 57008, 'serverport': 25345,
+                                'reconnection': 'no', 'udpportsend': '57009',
                                 'tcpipreceive': '127.0.0.1'}
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, 'Vigo', AMP)
         self.threads = Threads(self.CONNECTION_INFO, self.gsi)

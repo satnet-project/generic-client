@@ -107,8 +107,11 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         pass
 
     def tearDown(self):
-        pass
-        # os.remove('.settings')
+        """ Tear down method.
+        Between each test the settings configuration file must be remove.
+        @return: Nothing.
+        """
+        os.remove('.settings')
 
 
     def test_openWindowWithWrongSettingsFile(self):
@@ -119,12 +122,13 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         self.createWrongSettingsFile()
         return self.assertRaises(SettingsCorrupted, ConfigurationWindow)
 
-    def test_readConfiguration(self):
-        """
-        Creates a new ConfigurationWindow object which loads the settings from the
-        mocked .settings file already created.
+    def _test_read_configuration_file(self):
+        """ Reads configuration file.
+        Creates a new ConfigurationWindow object which loads the settings
+        from the mocked .settings file created.
 
-        @return: a few assertEqual methods who checks if the registers saved are right.
+        @return: Few assertEqual methods who checks if the registers
+        saved are correct.
         """
         self.createSettingsFile()
         testSave = ConfigurationWindow()
@@ -150,12 +154,13 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         self.assertEqual(str(testSave.FieldLabelTCPPortRececeive.text()),
                          '4321')
 
-    def test_saveConfigurationWhenButtonClicked(self):
-        """
+    def _test_save_configuration_when_button_clicked(self):
+        """ Save configuration when the button is clicked
         Sets the content of the text insertion fields and runs the function
         responsible for storing the fields.
 
-        Checks if the saved records on the file are equal to the records desired.
+        Checks if the saved records on the file are equals to the records
+        desired.
         @return: a bunch of assertEqual statements.
         """
         self.createSettingsFile()
@@ -196,23 +201,26 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         self.assertEqual('1.0.0.127', str(FieldLabelTCPIPReceive))
         self.assertEqual('1234', str(FieldLabelTCPPortReceive))
 
-    # TODO Complete description
     @patch.object(ConfigurationWindow, 'closeWindow')
-    def test_buttonsOperationCloseWindow(self, closeWindow):
-        """
+    def _test_buttons_operation_close_window(self, closeWindow):
+        """ Window will close by pressing the button.
+        Creates a new configuration window, then, the close button will be
+        press.
 
-        @param closeWindow: method closedWindow patched from ConfigurationWindow class.
-        @return: a assertEqual statement which checks if closeWindow is called.
+        @param closeWindow: Method closedWindow patched from
+        ConfigurationWindow class.
+        @return: A assertEqual statement which checks if closeWindow is called.
         """
         self.createSettingsFile()
         testOperation = ConfigurationWindow()
-        closebutton = testOperation.buttonBox.button(QtGui.QDialogButtonBox.Close)
+        closebutton = testOperation.buttonBox.button(
+            QtGui.QDialogButtonBox.Close)
         QTest.mouseClick(closebutton, QtCore.Qt.LeftButton)
         return self.assertEqual(int(closeWindow.call_count), 1)
 
     # TODO Complete description
     @patch.object(ConfigurationWindow, 'save')
-    def test_buttonsOperationSaveCall(self, save):
+    def test_buttons_operation_save_registers(self, save):
         """
 
         @param save: method save patched from ConfigurationWindow class.
@@ -220,7 +228,8 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         """
         self.createSettingsFile()
         testOperation = ConfigurationWindow()
-        savebutton = testOperation.buttonBox.button(QtGui.QDialogButtonBox.Save)
+        savebutton = testOperation.buttonBox.button(
+            QtGui.QDialogButtonBox.Save)
         QTest.mouseClick(savebutton, QtCore.Qt.LeftButton)
         return self.assertEqual(int(save.call_count), 1)
 
@@ -229,8 +238,9 @@ class TestUserConfigurationInterfaceOperation(TestCase):
     def test_closeFunctionCalledWhenQuitWindow(self, close):
         """
 
-        @param close: patch method
-        @return: assertEqual statement
+        @param close: Method close patched from ConfigurationWindow class.
+        @return: A assertEqual statement which checks if close method is
+        called.
         """
         self.createSettingsFile()
         testWindowConfiguration = ConfigurationWindow()

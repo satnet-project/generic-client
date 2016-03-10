@@ -217,16 +217,21 @@ class ClientProtocol(AMP):
         """
         log.msg('---- Message received saved to local file ----')
 
+        frameprocessed = list(frame)
+        frameprocessed = ":".join("{:02x}".format(c)
+                                  for c in frameprocessed)
+        """
         if type(frame) is not bytearray:
             raise WrongFormatNotification('Frame is %s' %(type(frame)))
+        """
 
-        filename = ("RECEIVED-FRAMES-" +
+        filename = ("Rec-frames-" +
                     self.CONNECTION_INFO['name'] +
                     "-" + time.strftime("%Y.%m.%d") + ".csv")
 
         with open(filename, "a+") as f:
             f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S")) + ' ' +
-                    frame + "\n")
+                    frameprocessed + "\n")
 
         if os.path.exists(filename):
             return True

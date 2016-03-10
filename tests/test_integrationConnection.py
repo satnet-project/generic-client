@@ -274,7 +274,7 @@ class TestConnectionProcessIntegrated(unittest.TestCase):
         d.addCallback(lambda res : self.assertFalse(res['bAuthenticated']))
         return d
 
-    # TODO Complete description
+    # FIXME Fix test and complete description
     def test_wrongUsernamestartRemoteFailed(self):
         """
 

@@ -102,10 +102,16 @@ class GroundStationInterface(object):
                 raise WrongFormatNotification("Bad format frame")
 
     def _updateLocalFile(self, frame):
+
+        frameprocessed = list(frame)
+        frameprocessed = ":".join("{:02x}".format(c)
+                                  for c in frameprocessed)
+
         filename = self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
 
         with open(filename, "a+") as f:
-            f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S ")) + frame + "\n")
+            f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S ")) + frameprocessed
+                    + "\n")
 
         if os.path.exists(filename):
             log.msg("--------------------------------------------- " +

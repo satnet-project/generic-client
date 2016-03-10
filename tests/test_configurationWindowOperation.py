@@ -221,7 +221,8 @@ class TestUserConfigurationInterfaceOperation(TestCase):
     # TODO Complete description
     @patch.object(ConfigurationWindow, 'save')
     def test_buttons_operation_save_registers(self, save):
-        """
+        """ Save method will be call by pressing the button.
+
 
         @param save: method save patched from ConfigurationWindow class.
         @return: a assertEqual statement which checks if save is called.

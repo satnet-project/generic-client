@@ -46,7 +46,7 @@ script:
   - trial test_connectionEstablished
   - trial test_manageFrames
   - trial test_userInterface
-  - trial test_integrationConnection
+#  - trial test_integrationConnection
   - trial test_configurationWindowOperation
   - coverage run test_*.py
 

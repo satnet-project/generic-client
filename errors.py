@@ -62,9 +62,7 @@ class WrongFormatNotification(Exception):
 
     """
     One of the following situations may raise this error:
-        1. Remote user not connected yet
-        2. Remote user and invoking user coincide
-            (i.e. MCC and GSS are the same)
+        1. The actual frame has an incorrect format
     """
 
 class IOFileError(Exception):

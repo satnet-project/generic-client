@@ -136,8 +136,6 @@ class ClientProtocol(AMP):
             frameprocessed = list(sMsg)
             frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
-
-
             sMsg = str(sMsg)
 
             log.msg(frameprocessed)
@@ -182,7 +180,10 @@ class ClientProtocol(AMP):
         @return:
         """
         frameprocessed = []
-        frameprocessed = list(frame)
+        try:
+            frameprocessed = list(frame)
+        except TypeError:
+            raise WrongFormatNotification('The frame has an unexpected format')
         frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
 
@@ -213,11 +214,12 @@ class ClientProtocol(AMP):
         """ Save received frames method.
 
         @param frame: A frame coded in a byte array way
-        @return:
+        @return: True.
         """
-        log.msg('---- Message received saved to local file ----')
-
-        frameprocessed = list(frame)
+        try:
+            frameprocessed = list(frame)
+        except TypeError:
+            raise WrongFormatNotification('The frame has an unexpected format')
         frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
         """
@@ -237,6 +239,8 @@ class ClientProtocol(AMP):
             return True
         else:
             raise IOFileError('Record file not created')
+
+        log.msg('---- Message received saved to local file ----')
 
     def vNotifyEvent(self, iEvent, sDetails):
         """

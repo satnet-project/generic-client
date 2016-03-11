@@ -80,7 +80,7 @@ class TestClientProtocolSaveFrame(TestCase):
 
     # TODO Complete description
     def test_clientSaveCorrectFrame(self):
-        """
+        """ Client saves a good frame.
 
         @return:
         """
@@ -88,7 +88,7 @@ class TestClientProtocolSaveFrame(TestCase):
 
     # TODO Complete description
     def test_clientSaveWrongFrame(self):
-        """
+        """ Client saves a bad formated frame.
 
         @return:
         """

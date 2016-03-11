@@ -21,6 +21,7 @@ from errors import SettingsCorrupted
 """
 __author__ = 's.gongoragarcia@gmail.com'
 
+# TODO Gets a "Segmentation fault (core dumped)" after opens this window.
 
 class ConfigurationWindow(QtGui.QDialog):
     def __init__(self, parent=None):

@@ -30,16 +30,27 @@ from threads import Threads
 __author__ = 's.gongoragarcia@gmail.com'
 
 
+# TODO El programa aún carga los datos desde el fichero de configuracion
+# TODO aunque se pasen por la terminal.
+
+# TODO Change twisted log module for a standard one?
+# TODO Create a log configuration file.
+
+# TODO Si solo inicio los argumentos una vez luego no podré cambiarlos
+# TODO I should:
+# TODO  - Write and read arguents each time I change them.
+# TODO  - Pass the new arguments in some pythonic way.
+# TODO    - Using an object who stores them.
+
 class SatNetUI(QtGui.QWidget):
     def __init__(self, argumentsdict, parent=None):
         QtGui.QWidget.__init__(self, parent)
-        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 18))
 
+        self.setFont(QtGui.QFont('Verdana', 11))
         self.enviromentDesktop = os.environ.get('DESKTOP_SESSION')
 
         self.connection = ''
-        self.settingsfile = '.settings'
-        self.setArguments(argumentsdict)
+        self.checkarguments(argumentsdict)
 
         self.initUI()
         self.initButtons()
@@ -49,18 +60,25 @@ class SatNetUI(QtGui.QWidget):
         self.initConfiguration()
         self.initConsole()
 
+        self.dialogTextBrowser = configurationWindow.ConfigurationWindow(self)
+
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
                                           client_amp.ClientProtocol)
 
         self.threads = Threads(self.CONNECTION_INFO, self.gsi)
 
         # Initialize the reactor parameters needed for the pyqt enviroment
-        client_amp.Client(self.CONNECTION_INFO, self.gsi, self.threads).createconnection(test=False)
+        client_amp.Client(self.CONNECTION_INFO, self.gsi,
+                          self.threads).createconnection(test=False)
 
-
-    # Create a new connection by loading the connection parameters
-    # from the interface window
     def NewConnection(self, test=False):
+        """ New connection method.
+        Create a new connection by loading the connection parameters
+        from the interface window
+
+        @param test: Useful flag for switch off reactor installation.
+        @return: A call to the setconnection method.
+        """
         self.CONNECTION_INFO['username'] = str(self.LabelUsername.text())
         self.CONNECTION_INFO['password'] = str(self.LabelPassword.text())
         self.CONNECTION_INFO['connection'] =\
@@ -75,18 +93,17 @@ class SatNetUI(QtGui.QWidget):
             self.openInterface()
 
         return client_amp.Client(self.CONNECTION_INFO, self.gsi,
-                                 self.threads).setconnection(test=False)
+                                 self.threads).setconnection(test)
 
     def initUI(self):
-        """
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
-        """
+        """ Init user interface method.
+        Sets the initial parameters for the user interface main window.
 
+        @return: None
+        """
         self.CONNECTION_INFO = misc.get_data_local_file(
             settingsFile=self.settingsfile)
 
-        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         self.setFixedSize(1300, 800)
         self.setWindowTitle("SatNet client - %s" %
                             (self.CONNECTION_INFO['name']))
@@ -116,7 +133,7 @@ class SatNetUI(QtGui.QWidget):
         self.ButtonCancel.clicked.connect(self.CloseConnection)
         self.ButtonCancel.setEnabled(False)
         self.ButtonLoad = QtGui.QPushButton("Load parameters from file")
-        self.ButtonLoad.setToolTip("Load parameters from <i>.settings</i> file")
+        self.ButtonLoad.setToolTip("Load parameters from settings file")
         self.ButtonLoad.setFixedWidth(296)
         self.ButtonLoad.clicked.connect(self.UpdateFields)
         self.ButtonConfiguration = QtGui.QPushButton("Configuration")
@@ -135,10 +152,11 @@ class SatNetUI(QtGui.QWidget):
         buttons.setTitle("Connection")
         buttons.move(10, 10)
 
-        self.dialogTextBrowser = configurationWindow.ConfigurationWindow(self)
-
     def initFields(self):
-        # Connection parameters group
+        """
+
+        @return: None.
+        """
         connectionParameters = QtGui.QGroupBox(self)
         gridConnection = QtGui.QFormLayout()
         connectionParameters.setLayout(gridConnection)
@@ -151,7 +169,7 @@ class SatNetUI(QtGui.QWidget):
 
         connectionParameters.setTitle("Connection parameters")
         connectionParameters.move(10, 140)
-        # Configuration group.
+
         configuration = QtGui.QGroupBox(self)
         configurationLayout = QtGui.QVBoxLayout()
         configuration.setLayout(configurationLayout)
@@ -165,7 +183,6 @@ class SatNetUI(QtGui.QWidget):
 
         configuration.move(10, 180)
 
-        # User parameters group
         parameters = QtGui.QGroupBox(self)
         self.layout = QtGui.QFormLayout()
         parameters.setLayout(self.layout)
@@ -190,7 +207,6 @@ class SatNetUI(QtGui.QWidget):
         parameters.setTitle("User data")
         parameters.move(10, 265)
 
-        # User interface group
         interfaceControl = QtGui.QGroupBox(self)
         gridControl = QtGui.QGridLayout(interfaceControl)
         interfaceControl.setLayout(gridControl)
@@ -206,13 +222,16 @@ class SatNetUI(QtGui.QWidget):
         interfaceControl.move(155, 380)
 
     def initLogo(self):
+        """ Init logo method.
+        Place the log in its position.
+
+        @return: None
+        """
         LabelLogo = QtGui.QLabel(self)
         LabelLogo.move(20, 450)
 
         pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
-        pic = pic.scaledToWidth(300)
 
-        # pic = pic.scaled(400, 400, QtCore.Qt.KeepAspectRatio)
         LabelLogo.setPixmap(pic)
         LabelLogo.show()
 
@@ -227,23 +246,38 @@ class SatNetUI(QtGui.QWidget):
             self.LoadDefaultSettings.setChecked(False)
 
     def initConsole(self):
+        """
+
+        @return:
+        """
         self.console = QtGui.QTextBrowser(self)
         self.console.move(340, 10)
         self.console.resize(950, 780)
-        self.console.setFont(QtGui.QFont('SansSerif', 11))
+        self.console.setFont(QtGui.QFont('Helvetica', 12))
 
-    # Set parameters form arguments list.
-    def setArguments(self, argumentsdict):
+    def checkarguments(self, argumentsdict):
+        """ Set arguments method.
+        Check the arguments given in the argumentsdict. According these
+        registers takes differents choices.
+
+        @param argumentsdict:
+        @return:
+        """
         try:
             if argumentsdict['username'] != "":
                 self.LabelUsername.setText(argumentsdict['username'])
             if argumentsdict['connection'] != "":
                 index = self.LabelConnection.findText(argumentsdict['connection'])
                 self.LabelConnection.setCurrentIndex(index)
+            if argumentsdict['username'] == '':
+                self.settingsfile = '.settings'
+                log.msg("No arguments given by terminal, using configuration "
+                        "file.")
         except KeyError:
             self.settingsfile =  argumentsdict['file']
 
     # Set parameters from CONNECTION_INFO dict.
+    # TODO Merge!
     def setParameters(self):
         self.FieldLabelAttemps.setText(self.CONNECTION_INFO['attempts'])
         self.LabelUsername.setText(self.CONNECTION_INFO['username'])
@@ -256,6 +290,10 @@ class SatNetUI(QtGui.QWidget):
             log.err(e)
 
     def CloseConnection(self):
+        """ Close connection method
+
+        @return: None
+        """
         self.gsi.clear_slots()
 
         self.ButtonNew.setEnabled(True)
@@ -265,18 +303,28 @@ class SatNetUI(QtGui.QWidget):
         self.CONNECTION_INFO = misc.get_data_local_file(
             settingsFile=self.settingsfile)
 
-        log.msg("Parameters loaded from .setting file.")
+        from os import getcwd
+        settingsfile = str(getcwd()) + '/' + str(self.settingsfile)
+
+        log.msg("Parameters loaded from %s." %(settingsfile))
 
     @QtCore.pyqtSlot()
     def SetConfiguration(self):
         self.dialogTextBrowser.exec_()
         self.UpdateFields()
 
+    # TODO Check connection is established before changing buttons state
     def openInterface(self):
         if str(self.LabelConnection.currentText()) == 'udp':
             self.threads.runUDPThreadReceive()
             self.threads.runUDPThreadSend()
             self.connection = 'udp'
+            self.LabelConnection.setEnabled(False)
+            self.stopInterfaceButton.setEnabled(True)
+        elif str(self.LabelConnection.currentText()) == 'tcp':
+            self.threads.runTCPThreadReceive()
+            self.threads.runTCPThreadSend()
+            self.connection = 'tcp'
             self.LabelConnection.setEnabled(False)
             self.stopInterfaceButton.setEnabled(True)
         elif str(self.LabelConnection.currentText()) == 'serial':
@@ -285,8 +333,13 @@ class SatNetUI(QtGui.QWidget):
             self.LabelConnection.setEnabled(False)
             self.stopInterfaceButton.setEnabled(True)
 
+    # TODO Check connection is gone before disabling button
     def stopInterface(self):
         if self.connection == 'udp':
+            self.threads.stopUDPThreadReceive()
+            self.LabelConnection.setEnabled(True)
+            self.stopInterfaceButton.setEnabled(False)
+        if self.connection == 'tcp':
             self.threads.stopUDPThreadReceive()
             self.LabelConnection.setEnabled(True)
             self.stopInterfaceButton.setEnabled(False)
@@ -327,6 +380,11 @@ class SatNetUI(QtGui.QWidget):
         log.msg("udpport: 5005")
 
     def center(self):
+        """ Center window method.
+        Puts the main window in the center of the screen.
+
+        @return: None.
+        """
         frameGm = self.frameGeometry()
         screen_pos = QtGui.QApplication.desktop().cursor().pos()
         screen = QtGui.QApplication.desktop().screenNumber(screen_pos)
@@ -365,7 +423,7 @@ class SatNetUI(QtGui.QWidget):
                                                 QtGui.QMessageBox.No,
                                                 QtGui.QMessageBox.No)
 
-        # Non asynchronous way. Need to re implement this. TO-DO
+        # TODO Non asynchronous way. Need to re implement this.
         if self.reply == QtGui.QMessageBox.Yes:
             self.stopInterface()
             self.gsi.clear_slots()

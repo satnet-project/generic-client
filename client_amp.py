@@ -5,24 +5,26 @@ import time
 import client_ui
 import os.path
 
+from ampCommands import Login, StartRemote, NotifyMsg
+from ampCommands import NotifyEvent, SendMsg, EndRemote
+
 from Queue import Queue
 from OpenSSL import SSL
 
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 
 from errors import WrongFormatNotification, IOFileError
+from threads import MessagesThread, WriteStream
 
 from twisted.python import log
 from twisted.internet import ssl
 from twisted.internet import error
-
 from twisted.internet.ssl import ClientContextFactory
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.protocols.amp import AMP
 from twisted.internet.defer import inlineCallbacks
 
-from ampCommands import Login, StartRemote, NotifyMsg
-from ampCommands import NotifyEvent, SendMsg, EndRemote
+
 
 """
    Copyright 2015, 2016 Samuel Góngora García
@@ -108,8 +110,6 @@ class ClientProtocol(AMP):
                                     sUsername=self.CONNECTION_INFO['username'],
                                     sPassword=self.CONNECTION_INFO['password']
                                     )
-
-
 
         if res['bAuthenticated'] is True:
             res = yield self.callRemote(StartRemote)
@@ -280,8 +280,8 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         self.gsi = gsi
         self.threads = threads
         import platform
-        os = platform.linux_distribution()
-        if os[0] == 'debian':
+        ossystem = platform.linux_distribution()
+        if ossystem[0] == 'debian':
             self.ossystem = 'debian'
         else:
             self.ossystem = 'ubuntu'
@@ -340,10 +340,9 @@ class ClientReconnectFactory(ReconnectingClientFactory):
                                                        connector,
                                                        reason)
 
-    # Called when a connection has failed to connect
     def clientConnectionFailed(self, connector, reason):
         """ Override client connection failed method
-        Called when
+        Called when a connection has failed to connect
         @param connector:
         @param reason:
         @return:
@@ -372,6 +371,7 @@ class CtxFactory(ClientContextFactory):
         return ctx
 
 
+# TODO Improve security?
 class Client(object):
     """
     This class starts the client using the data provided by user interface.
@@ -391,8 +391,9 @@ class Client(object):
     def createconnection(self, test):
         """
 
-        @param test:
-        @return:
+        @param test: Useful flag for switch off pyqt4reactor installation
+        during tests.
+        @return: None
         """
         if test is False:
             from qtreactor import pyqt4reactor
@@ -400,8 +401,9 @@ class Client(object):
 
     def setconnection(self, test):
         """
-        @param test:
-        @return:
+        @param test: Useful flag for switch off reactor installation during
+        tests.
+        @return: A boolean True if everything go alright.
         """
         from twisted.internet import reactor
         reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
@@ -425,92 +427,24 @@ class Client(object):
         return True
 
     def destroyconnection(self):
-        """
+        """ Destroy connection method.
+        Stops the actual reactor instance. Emits a helpful message.
 
-        @return:
+        @return: None.
         """
         from twisted.internet import reactor
         reactor.stop()
         log.msg("Reactor destroyed")
 
 
-class WriteStream(object):
-    """
-
-    """
-    def __init__(self, queue):
-        """
-
-        @param queue:
-        @return:
-        """
-        self.queue = queue
-
-    def write(self, text):
-        """
-
-        @param text:
-        @return:
-        """
-        self.queue.put(text)
-
-    def flush(self):
-        """
-
-        @return:
-        """
-        pass
-
-
-class MyReceiver(QtCore.QThread):
-    """
-    A QObject (to be run in a QThread) which sits waiting for data to come
-    through a Queue.Queue().
-    It blocks until data is available, and one it has got something from the
-    queue, it sends it to the "MainThread" by emitting a Qt Signal
-    """
-    mysignal = QtCore.pyqtSignal(str)
-
-    def __init__(self, queue, *args, **kwargs):
-        """
-
-        @param queue:
-        @param args:
-        @param kwargs:
-        @return:
-        """
-        QtCore.QThread.__init__(self, *args, **kwargs)
-        self.queue = queue
-
-    @QtCore.pyqtSlot()
-    def run(self):
-        """
-
-        @return:
-        """
-        while True:
-            text = self.queue.get()
-            self.mysignal.emit(text)
-
-
-class ResultObj(QtCore.QObject):
-    """
-
-    """
-    def __init__(self, val):
-        """
-
-        @param val:
-        @return:
-        """
-        self.val = val
-
-
 if __name__ == '__main__':
 
     textqueue = Queue()
+    # TODO Actually only standard messages are logged.
+    # TODO Should we register standard error too?
     sys.stdout = WriteStream(textqueue)
 
+    # TODO Create differente logger levels.
     log.startLogging(sys.stdout)
     log.msg('------------------------------------------------ ' +
             'SATNet - Generic client' +
@@ -519,12 +453,12 @@ if __name__ == '__main__':
     argumentsdict = misc.checkarguments(sysargvdict=sys.argv)
 
     qapp = QtGui.QApplication(sys.argv)
-    app = client_ui.SatNetUI(argumentsdict=argumentsdict)
-    app.setWindowIcon(QtGui.QIcon('icon.png'))
-    app.show()
+    main_application = client_ui.SatNetUI(argumentsdict=argumentsdict)
+    main_application.setWindowIcon(QtGui.QIcon('icon.png'))
+    main_application.show()
 
-    my_receiver = MyReceiver(textqueue)
-    my_receiver.mysignal.connect(app.append_text)
-    my_receiver.start()
+    messages_receiver = MessagesThread(textqueue)
+    messages_receiver.mysignal.connect(main_application.append_text)
+    messages_receiver.start()
 
     sys.exit(qapp.exec_())

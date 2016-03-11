@@ -1,9 +1,12 @@
+# User parameters
 [User]
+institution = Universidade de Vigo
 username = test-user-sc
 password = pass
 slot_id = -1
 connection = udp
 
+# Interfaces parameters.
 [Serial]
 serialport = /dev/ttyUSB0
 baudrate = 500000
@@ -24,11 +27,8 @@ tcpportsend = 1234
 serverip = 127.0.0.1
 serverport = 25345
 
+# Connection parameters.
 [Connection]
 reconnection = yes
 parameters = yes
-
-[Client]
-name = Universidade de Vigo
 attempts = 10
-

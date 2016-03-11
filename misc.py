@@ -92,58 +92,59 @@ def readArguments(argumentsDict):
 
     @rtype: dict
     """
-    try:
-        opts, args = getopt.getopt(sys.argv[1:],
-                                   "hfgn:t:c:s:b:is:us:ir:ur",
-                                   ["name=",
-                                    "slot=", "connection=",
-                                    "serialport=",
-                                    "baudrate=", "udpipsend=",
-                                    "udpportsend=", "udpipreceive=",
-                                    "udpportreceive="]
-                                   )
-    except getopt.GetoptError:
-        print "error"
+    if argumentsDict[1] == '-g':
+        try:
+            opts, args = getopt.getopt(argumentsDict[1:],
+                                       "hfgn:t:c:s:b:is:us:ir:ur",
+                                       ["name=",
+                                        "slot=", "connection=",
+                                        "serialport=",
+                                        "baudrate=", "udpipsend=",
+                                        "udpportsend=", "udpipreceive=",
+                                        "udpportreceive="]
+                                       )
+        except getopt.GetoptError:
+            print "error"
 
-    argumentsDict = {}
-    if ('-g', '') in opts:
+        settingsDict = {}
+        if ('-g', '') in opts:
+            for opt, arg in opts:
+                if opt == "-n":
+                    argumentsDict['username'] = arg
+                elif opt == "-t":
+                    argumentsDict['slot'] = arg
+                elif opt == "-c":
+                    argumentsDict['connection'] = arg
+                elif opt == "-s":
+                    argumentsDict['serialport'] = arg
+                elif opt == "-b":
+                    argumentsDict['baudrate'] = arg
+                elif opt == "-is":
+                    argumentsDict['udpipsend'] = arg
+                elif opt == "-us":
+                    argumentsDict['udpportsend'] = arg
+                elif opt == "-ir":
+                    argumentsDict['udpipreceive'] = arg
+                elif opt == "-ur":
+                    argumentsDict['udpportreceive'] = arg
+        return settingsDict
+
+    elif argumentsDict[1] == '-s':
+        try:
+            opts, args = getopt.getopt(argumentsDict[1:],
+                                       "fsf",
+                                       ["file="]
+                                       )
+        except getopt.GetoptError:
+            print "Error"
+
+        settingsDict = {}
+
         for opt, arg in opts:
-            if opt == "-n":
-                argumentsDict['username'] = arg
-            elif opt == "-t":
-                argumentsDict['slot'] = arg
-            elif opt == "-c":
-                argumentsDict['connection'] = arg
-            elif opt == "-s":
-                argumentsDict['serialport'] = arg
-            elif opt == "-b":
-                argumentsDict['baudrate'] = arg
-            elif opt == "-is":
-                argumentsDict['udpipsend'] = arg
-            elif opt == "-us":
-                argumentsDict['udpportsend'] = arg
-            elif opt == "-ir":
-                argumentsDict['udpipreceive'] = arg
-            elif opt == "-ur":
-                argumentsDict['udpportreceive'] = arg
-    return argumentsDict
+            if opt == "-f":
+                settingsDict['file'] = args[0]
 
-def readSettings(settingsDict):
-    try:
-        opts, args = getopt.getopt(sys.argv[1:],
-                                   "fsf",
-                                   ["file="]
-                                   )
-    except getopt.GetoptError:
-        print "Error"
-
-    settingsDict = {}
-
-    for opt, arg in opts:
-        if opt == "-f":
-            settingsDict['file'] = args[0]
-
-    return settingsDict
+        return settingsDict
 
 TIMESTAMP_0 = localize_date_utc(datetime.datetime(year=1970, month=1, day=1))
 
@@ -162,7 +163,10 @@ def get_utc_timestamp(utc_datetime=None):
 
 def get_data_local_file(settingsFile):
     """
-    Returns a dictionary which contains the connection's data.
+
+    @param settingsFile:
+    @return: A dictionary which contains the connection's data.
+
     """
 
     CONNECTION_INFO = {}
@@ -175,8 +179,8 @@ def get_data_local_file(settingsFile):
                                                  'reconnection')
     CONNECTION_INFO['parameters'] = config.get('Connection',
                                                'parameters')
-    CONNECTION_INFO['name'] = config.get('Client', 'name')
-    CONNECTION_INFO['attempts'] = config.get('Client', 'attempts')
+    CONNECTION_INFO['name'] = config.get('User', 'institution')
+    CONNECTION_INFO['attempts'] = config.get('Connection', 'attempts')
     CONNECTION_INFO['username'] = config.get('User', 'username')
     CONNECTION_INFO['connection'] = config.get('User', 'connection')
 
@@ -211,7 +215,7 @@ def checkarguments(sysargvdict):
             return argumentsdict
         elif sysargvdict[1] == "-s":
             readData = sys.argv
-            settingsdict = readSettings(readData)
+            settingsdict = readArguments(readData)
             return settingsdict
         elif sysargvdict[1] != "-g" and sysargvdict[1] != "-help":
             log.msg("Unknown option: %s" % (sysargvdict[1]))

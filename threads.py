@@ -3,6 +3,8 @@ from Queue import Queue
 from twisted.python import log
 import misc
 
+from PyQt4 import QtCore
+
 from gs_interface import GroundStationInterface, OperativeUDPThreadReceive
 from gs_interface import OperativeUDPThreadSend
 from gs_interface import OperativeTCPThread, OperativeKISSThread
@@ -89,7 +91,7 @@ class Threads(object):
         self.workerKISSThread.send(message)
 
     # TODO Method to be implemented.
-    def runTCPThread(self):
+    def runTCPThreadReceive(self):
         self.CONNECTION_INFO = misc.get_data_local_file(
             settingsFile='.settings')
         self.workerTCPThread = OperativeTCPThread(self.tcp_queue,
@@ -99,8 +101,74 @@ class Threads(object):
         self.workerTCPThread.start()
 
     # TODO Method to be implemented.
+    def runTCPThreadSend(self):
+        pass
+
+    # TODO Method to be implemented.
     def stopTCPThread(self):
         self.workerTCPThread.stop()
 
     def sendData(self, result):
         self.gsi._manageFrame(result)
+
+
+class MessagesThread(QtCore.QThread):
+    """
+    A QObject (to be run in a QThread) which sits waiting for data to come
+    through a Queue.Queue().
+    It blocks until data is available, and one it has got something from the
+    queue, it sends it to the "MainThread" by emitting a Qt Signal
+    """
+    mysignal = QtCore.pyqtSignal(str)
+
+    def __init__(self, queue, *args, **kwargs):
+        """
+
+        @param queue: queue object already created.
+        @param args: Inhered, Not used
+        @param kwargs: Inhered. Not used.
+        @return: None.
+        """
+        QtCore.QThread.__init__(self, *args, **kwargs)
+        self.queue = queue
+
+    @QtCore.pyqtSlot()
+    def run(self):
+        """
+
+        @return:
+        """
+        while True:
+            text = self.queue.get()
+            self.mysignal.emit(text)
+
+
+class WriteStream(object):
+    """
+    Messages from standard output are save to a queue object.
+
+    """
+    def __init__(self, queue):
+        """ Init method.
+
+        @param queue: The queue created for register the text messages.
+        @return: None.
+        """
+        self.queue = queue
+
+    def write(self, text):
+        """ Write method.
+        Append a new element to the queue.
+
+        @param text: Text string to be show in screen.
+        @return: None
+        """
+        self.queue.put(text)
+
+    # TODO Improve description
+    def flush(self):
+        """
+
+        @return:
+        """
+        pass

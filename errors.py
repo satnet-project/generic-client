@@ -65,12 +65,14 @@ class WrongFormatNotification(Exception):
         1. The actual frame has an incorrect format
     """
 
+
 class IOFileError(Exception):
 
     """
     One of the following situations may raise this error:
         1. Some file hasn't been created
     """
+
 
 class FrameNotProcessed(Exception):
 
@@ -79,12 +81,14 @@ class FrameNotProcessed(Exception):
         1. Some error processing the frames
     """
 
+
 class ConnectionNotEnded(Exception):
 
     """
     One of the following situations may raise this error:
         1. The connection has a failure and couldn't be ended
     """
+
 
 class SettingsCorrupted(Exception):
 
@@ -93,10 +97,19 @@ class SettingsCorrupted(Exception):
         1. The file doesn't have some fields.
     """
 
+
 class SerialPortUnreachable(Exception):
 
     """
     One of the following situations may raise this error:
         1. The selected serial port is already open.
         2. The selected serial port is unreachable.
+    """
+
+
+class ArgumentsInvalid(Exception):
+
+    """
+    One of the following situations may raise this error:
+        1. The arguments given by terminal are invalid.
     """

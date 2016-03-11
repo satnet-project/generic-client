@@ -5,6 +5,7 @@ import sys
 import getopt
 
 from twisted.python import log
+from errors import ArgumentsInvalid
 
 """
    Copyright 2016 Samuel Góngora García
@@ -104,7 +105,7 @@ def readArguments(argumentsDict):
                                         "udpportreceive="]
                                        )
         except getopt.GetoptError:
-            print "error"
+            raise ArgumentsInvalid("Some arguments are no valid.")
 
         settingsDict = {}
         if ('-g', '') in opts:
@@ -136,7 +137,7 @@ def readArguments(argumentsDict):
                                        ["file="]
                                        )
         except getopt.GetoptError:
-            print "Error"
+            raise ArgumentsInvalid("Some arguments are no valid.")
 
         settingsDict = {}
 

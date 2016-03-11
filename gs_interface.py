@@ -125,25 +125,31 @@ class GroundStationInterface(object):
     def clear_slots(self):
         try:
             self.AMP.end_connection()
+            self.disconnectProtocol()
+            return True
         except:
             log.msg("Connection not established")
             # FIX-ME Only must raises an error if the connection was unestablished.
             # raise ConnectionNotEnded('EndRemote call not completed')
 
-    """
-    :ivar AMP:
-        Client protocol to which received frames will be sent to be
-        processed. This object shall contain a method called 'processFrame'
-    :type AMP:
-        L{ClientProtocol}
-    """
     def connectProtocol(self, AMP):
+        """
+
+        @param AMP: Client protocol to which received frames will be sent to be
+        processed.
+        @return:
+        """
         log.msg('Protocol connected to the GS')
         self.AMP = AMP
 
     # Removes the reference to the protocol object (self.AMP). It shall
     # be invocked when the connection to the SATNET server is lost.
     def disconnectProtocol(self):
+        """
+        Removes the reference to the protocol object (self.AMP). It shall
+        be invocked when the connection to the SATNET server is lost.
+        @return:
+        """
         log.msg("Protocol disconnected from the GS")
         self.AMP = None
 
@@ -286,9 +292,6 @@ class OperativeUDPThreadReceive(UDPThread):
         self.CONNECTION_INFO = CONNECTION_INFO
 
     def doWork(self):
-        log.msg('Listening on ' + self.CONNECTION_INFO['udpipreceive'] +
-                " port: " + str(self.CONNECTION_INFO['udpportreceive']))
-
         if str(self.CONNECTION_INFO['udpipreceive']) == 'localhost':
             self.CONNECTION_INFO['udpipreceive'] = ''
         if str(self.CONNECTION_INFO['udpipreceive']) == '127.0.0.1':
@@ -300,10 +303,12 @@ class OperativeUDPThreadReceive(UDPThread):
         from socket import socket, AF_INET, SOCK_DGRAM
         from socket import SOL_SOCKET, SO_REUSEADDR, SHUT_RD
         try:
-            log.msg("Opening UPD socket" + ".........................." +
-                    '............................................' +
-                    '............................................')
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
+            if str(self.CONNECTION_INFO['udpipreceive']) == '':
+                self.CONNECTION_INFO['udpipreceive'] = '127.0.0.1'
+            log.msg("Opening UDP socket ---> " + "Listening on " +
+                    self.CONNECTION_INFO['udpipreceive'] + " port: " +
+                    str(self.CONNECTION_INFO['udpportreceive']))
         except Exception as e:
             log.err('Error opening UPD socket')
             log.err(e)
@@ -328,25 +333,25 @@ class OperativeUDPThreadReceive(UDPThread):
         self.finished.emit(frame)
 
     def stop(self):
-        log.msg('Stopping UDPSocket' + "...................." +
-                "..............................................." +
-                "...............................................")
-
         self.UDPSocket.close()
 
         self.UDPSignal = False
-        self.running = False
 
-        # send signal for disable disconnected button.
+        del self.UDPSocket
+
+        try:
+            print self.UDPSocket
+        except AttributeError:
+            log.msg("UDPSocket stopped.")
+            return True
+
+        self.running = False
 
 
 class OperativeUDPThreadSend():
 
     def __init__(self, CONNECTION_INFO):
         self.CONNECTION_INFO = CONNECTION_INFO
-
-        log.msg("Writing on " + self.CONNECTION_INFO['udpipsend'] +
-                " port: " + str(self.CONNECTION_INFO['udpportsend']))
 
         if str(self.CONNECTION_INFO['udpipsend']) == 'localhost':
             self.CONNECTION_INFO['udpipsend'] = ''
@@ -358,10 +363,10 @@ class OperativeUDPThreadSend():
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
-            log.msg("Opening UPD socket" + ".........................." +
-                    '............................................' +
-                    '............................................')
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
+            log.msg("                                         Writing on " +
+                    self.CONNECTION_INFO['udpipsend'] + " port: " +
+                    str(self.CONNECTION_INFO['udpportsend']))
         except Exception as e:
             log.err('Error opening UPD socket')
             log.err(e)

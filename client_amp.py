@@ -69,7 +69,7 @@ class ClientProtocol(AMP):
         self.user_login()
         self.gsi.connectProtocol(self)
 
-        log.msg("Connection sucessful")
+        log.msg("Connection sucessful.")
 
     def connectionLost(self, reason):
         """ Connection lost method.
@@ -78,7 +78,7 @@ class ClientProtocol(AMP):
         @param reason:
         @return:
         """
-        log.msg("Connection lost")
+        log.msg("Connection lost.")
         log.msg(reason)
 
     def connectionFailed(self, reason):
@@ -88,7 +88,7 @@ class ClientProtocol(AMP):
         @param reason:
         @return:
         """
-        log.msg("Connection failed")
+        log.msg("Connection failed.")
         log.msg(reason)
 
     @inlineCallbacks
@@ -286,6 +286,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         else:
             self.ossystem = 'ubuntu'
 
+    """
     # Called when a connection has been started
     def startedConnecting(self, connector):
         if self.ossystem  == 'ubuntu':
@@ -296,6 +297,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
             log.msg("Starting connection............................" +
                     "..............................................." +
                     "...........................")
+    """
 
     def buildProtocol(self, addr):
         """ Override build protocol method
@@ -303,15 +305,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         @param addr:
         @return: ClientProtocol instance
         """
-        if self.ossystem == 'debian':
-            log.msg("Building protocol.............................." +
-                    "..............................................." +
-                    "...........")
-        elif self.ossystem == 'ubuntu':
-            log.msg("Building protocol.............................." +
-                    "..............................................." +
-                    ".........................")
-
+        log.msg("Building client protocol at %s" %(addr))
         self.resetDelay()
 
         return ClientProtocol(self.CONNECTION_INFO, self.gsi,
@@ -327,13 +321,10 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         CONNECTION_INFO = misc.get_data_local_file(settingsFile='.settings')
         print CONNECTION_INFO['reconnection']
 
-
-        """
         if self.CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
         elif self.CONNECTION_INFO['reconnection'] == 'no':
             self.continueTrying = None
-        """
 
         log.msg('Lost connection. Reason: ', reason)
         ReconnectingClientFactory.clientConnectionLost(self,
@@ -413,17 +404,10 @@ class Client(object):
                            CtxFactory()
                            )
 
-        try:
-            reactor.run(installSignalHandlers=0)
-        except error.ReactorAlreadyRunning:
-            log.msg("Reactor already running")
-        """
         if test is False:
-            try:
+            if not reactor.running:
                 reactor.run(installSignalHandlers=0)
-            except:
-                pass
-        """
+
         return True
 
     def destroyconnection(self):

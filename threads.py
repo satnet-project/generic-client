@@ -51,7 +51,7 @@ class Threads(object):
         self.workerUDPThreadReceive.start()
 
     def stopUDPThreadReceive(self):
-        self.workerUDPThreadReceive.stop()
+        return self.workerUDPThreadReceive.stop()
 
     def runUDPThreadSend(self):
         self.CONNECTION_INFO = misc.get_data_local_file(

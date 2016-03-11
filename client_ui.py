@@ -294,10 +294,9 @@ class SatNetUI(QtGui.QWidget):
 
         @return: None
         """
-        self.gsi.clear_slots()
-
-        self.ButtonNew.setEnabled(True)
-        self.ButtonCancel.setEnabled(False)
+        if self.gsi.clear_slots():
+            self.ButtonNew.setEnabled(True)
+            self.ButtonCancel.setEnabled(False)
 
     def UpdateFields(self):
         self.CONNECTION_INFO = misc.get_data_local_file(
@@ -336,9 +335,9 @@ class SatNetUI(QtGui.QWidget):
     # TODO Check connection is gone before disabling button
     def stopInterface(self):
         if self.connection == 'udp':
-            self.threads.stopUDPThreadReceive()
-            self.LabelConnection.setEnabled(True)
-            self.stopInterfaceButton.setEnabled(False)
+            if self.threads.stopUDPThreadReceive():
+                self.LabelConnection.setEnabled(True)
+                self.stopInterfaceButton.setEnabled(False)
         if self.connection == 'tcp':
             self.threads.stopUDPThreadReceive()
             self.LabelConnection.setEnabled(True)

@@ -148,6 +148,7 @@ def readArguments(argumentsDict):
 
 TIMESTAMP_0 = localize_date_utc(datetime.datetime(year=1970, month=1, day=1))
 
+
 def get_utc_timestamp(utc_datetime=None):
     """
     Returns a timestamp with the number of microseconds ellapsed since January
@@ -161,61 +162,20 @@ def get_utc_timestamp(utc_datetime=None):
     return int(diff.total_seconds() * 10**6)
 
 
-def get_data_local_file(settingsFile):
-    """
-
-    @param settingsFile:
-    @return: A dictionary which contains the connection's data.
-
-    """
-
-    CONNECTION_INFO = {}
-
-    import ConfigParser
-    config = ConfigParser.ConfigParser()
-    config.read(settingsFile)
-
-    CONNECTION_INFO['reconnection'] = config.get('Connection',
-                                                 'reconnection')
-    CONNECTION_INFO['parameters'] = config.get('Connection',
-                                               'parameters')
-    CONNECTION_INFO['name'] = config.get('User', 'institution')
-    CONNECTION_INFO['attempts'] = config.get('Connection', 'attempts')
-    CONNECTION_INFO['username'] = config.get('User', 'username')
-    CONNECTION_INFO['connection'] = config.get('User', 'connection')
-
-    CONNECTION_INFO['serialport'] = config.get('Serial', 'serialport')
-    CONNECTION_INFO['baudrate'] = config.get('Serial', 'baudrate')
-    CONNECTION_INFO['udpipreceive'] = config.get('udp', 'udpipreceive')
-    CONNECTION_INFO['udpportreceive'] = int(config.get('udp',
-                                                       'udpportreceive'))
-    CONNECTION_INFO['udpipsend'] = config.get('udp', 'udpipsend')
-    CONNECTION_INFO['udpportsend'] = config.get('udp', 'udpportsend')
-    CONNECTION_INFO['tcpipreceive'] = config.get('tcp', 'tcpipreceive')
-    CONNECTION_INFO['tcpportreceive'] = int(config.get('tcp',
-                                                       'tcpportreceive'))
-    CONNECTION_INFO['tcpipsend'] = config.get('tcp', 'tcpipsend')
-    CONNECTION_INFO['tcpportsend'] = config.get('tcp', 'tcpportsend')
-
-    CONNECTION_INFO['serverip'] = config.get('server', 'serverip')
-    CONNECTION_INFO['serverport'] = int(config.get('server',
-                                                   'serverport'))
-
-    return CONNECTION_INFO
-
 def checkarguments(sysargvdict):
     """
 
-    @rtype: dict
+    @param sysargvdict:
+    @return:
     """
     try:
         if sysargvdict[1] == "-g":
-            readData = sys.argv
-            argumentsdict = readArguments(readData)
+            # read_data = sys.argv
+            argumentsdict = readArguments(sysargvdict)
             return argumentsdict
         elif sysargvdict[1] == "-s":
-            readData = sys.argv
-            settingsdict = readArguments(readData)
+            # read_data = sys.argv
+            settingsdict = readArguments(sysargvdict)
             return settingsdict
         elif sysargvdict[1] != "-g" and sysargvdict[1] != "-help":
             log.msg("Unknown option: %s" % (sysargvdict[1]))
@@ -224,3 +184,68 @@ def checkarguments(sysargvdict):
     except IndexError:
         argumentsdict = noArguments()
         return argumentsdict
+
+
+def get_data_local_file(settingsfile):
+    """ Gets data from local file.
+    Gets configuration settings from local file.
+
+    @param settingsfile: Settings file location.
+    @return: A dictionary which contains the connection's data.
+    """
+    connect_info = {}
+
+    from ConfigParser import ConfigParser
+    config = ConfigParser()
+    config.read(settingsfile)
+
+    connect_info['reconnection'] = config.get('Connection', 'reconnection')
+    connect_info['parameters'] = config.get('Connection', 'parameters')
+    connect_info['name'] = config.get('User', 'institution')
+    connect_info['attempts'] = config.get('Connection', 'attempts')
+    connect_info['username'] = config.get('User', 'username')
+    connect_info['connection'] = config.get('User', 'connection')
+    connect_info['serialport'] = config.get('Serial', 'serialport')
+    connect_info['baudrate'] = config.get('Serial', 'baudrate')
+    connect_info['udpipreceive'] = config.get('udp', 'udpipreceive')
+    connect_info['udpportreceive'] = int(config.get('udp', 'udpportreceive'))
+    connect_info['udpipsend'] = config.get('udp', 'udpipsend')
+    connect_info['udpportsend'] = config.get('udp', 'udpportsend')
+    connect_info['tcpipreceive'] = config.get('tcp', 'tcpipreceive')
+    connect_info['tcpportreceive'] = int(config.get('tcp', 'tcpportreceive'))
+    connect_info['tcpipsend'] = config.get('tcp', 'tcpipsend')
+    connect_info['tcpportsend'] = config.get('tcp', 'tcpportsend')
+    connect_info['serverip'] = config.get('server', 'serverip')
+    connect_info['serverport'] = int(config.get('server', 'serverport'))
+
+    return connect_info
+
+
+def set_data_local_file(settingsfile, connect_info):
+    """ Sets data to local file.
+    Compares reconnection and parameters field and it changes them in the
+    settings file if there is any difference.
+
+    @param settingsfile: Settings file location.
+    @param connect_info: Settings dictionary.
+    @return: True if everything is alright.
+    """
+    old_connect_info = get_data_local_file(settingsfile)
+
+    from ConfigParser import SafeConfigParser
+    config = SafeConfigParser()
+    config.read(settingsfile)
+
+    if connect_info['reconnection'] != old_connect_info['reconnection']:
+        config.set('Connection', 'reconnection',
+                   str(connect_info['reconnection']))
+        with open('.settings', 'wb') as configfile:
+            config.write(configfile)
+
+    if connect_info['parameters'] != old_connect_info['parameters']:
+        config.set('Connection', 'parameters',
+                   str(connect_info['parameters']))
+        with open('.settings', 'wb') as configfile:
+            config.write(configfile)
+
+    return True

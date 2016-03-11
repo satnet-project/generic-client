@@ -38,13 +38,11 @@ class Threads(object):
         self.tcp_queue = Queue()
         self.udp_queue = Queue()
         self.serial_queue = Queue()
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
+        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
         self.gsi = gsi
 
     def runUDPThreadReceive(self):
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
+        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
         self.workerUDPThreadReceive = OperativeUDPThreadReceive(
             self.udp_queue, self.sendData, self.UDPSignal, self.CONNECTION_INFO
         )
@@ -54,8 +52,7 @@ class Threads(object):
         return self.workerUDPThreadReceive.stop()
 
     def runUDPThreadSend(self):
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
+        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
         self.workerUDPThreadSend = OperativeUDPThreadSend(self.CONNECTION_INFO)
 
     def UDPThreadSend(self, message):
@@ -76,24 +73,22 @@ class Threads(object):
             return True
 
     def runKISSThreadReceive(self):
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
+        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
         self.workerKISSThread = OperativeKISSThread(self.serial_queue,
                                                     self.sendData,
                                                     self.serialSignal,
                                                     self.CONNECTION_INFO)
-        self.workerKISSThread.start()
+        return self.workerKISSThread.start()
 
     def stopKISSThread(self):
         self.workerKISSThread.stop()
 
     def KISSThreadSend(self, message):
-        self.workerKISSThread.send(message)
+        return self.workerKISSThread.send(message)
 
     # TODO Method to be implemented.
     def runTCPThreadReceive(self):
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
+        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
         self.workerTCPThread = OperativeTCPThread(self.tcp_queue,
                                                   self.sendData,
                                                   self.TCPSignal,

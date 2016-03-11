@@ -44,7 +44,7 @@ class ConfigurationWindow(QtGui.QDialog):
 
         # Read fields
         try:
-            self.CONNECTION_INFO = misc.get_data_local_file(settingsFile='.settings')
+            self.CONNECTION_INFO = misc.get_data_local_file('.settings')
         except:
             raise SettingsCorrupted('Some fields are lost or corrupted')
 
@@ -230,7 +230,7 @@ class ConfigurationWindow(QtGui.QDialog):
         config.read(".settings")
 
         self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile='.settings')
+            settingsfile='.settings')
 
         server = self.FieldLabelServer.text()
         port = self.FieldLabelPort.text()

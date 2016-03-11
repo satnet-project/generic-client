@@ -204,12 +204,11 @@ class KISSThread(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
-        log.msg('Listening' + '...................................' +
-                '.................................................' +
-                '................................................')
-
         self.running = True
-        self.doWork()
+        try:
+            self.doWork()
+        except:
+            pass
 
     def doWork(self):
         return True
@@ -334,45 +333,44 @@ class OperativeUDPThreadReceive(UDPThread):
 
     def stop(self):
         self.UDPSocket.close()
-
         self.UDPSignal = False
-
         del self.UDPSocket
 
         try:
-            print self.UDPSocket
+            log.msg("UDP socket, %s ,not closed" %(str(type(self.UDPSocket))))
         except AttributeError:
             log.msg("UDPSocket stopped.")
+            self.running = False
             return True
-
-        self.running = False
 
 
 class OperativeUDPThreadSend():
 
     def __init__(self, CONNECTION_INFO):
-        self.CONNECTION_INFO = CONNECTION_INFO
+        if str(CONNECTION_INFO['udpipsend']) == 'localhost':
+            CONNECTION_INFO['udpipsend'] = ''
+        if str(CONNECTION_INFO['udpipsend']) == '127.0.0.1':
+            CONNECTION_INFO['udpipsend'] = ''
 
-        if str(self.CONNECTION_INFO['udpipsend']) == 'localhost':
-            self.CONNECTION_INFO['udpipsend'] = ''
-        if str(self.CONNECTION_INFO['udpipsend']) == '127.0.0.1':
-            self.CONNECTION_INFO['udpipsend'] = ''
-
-        self.server_address = (str(self.CONNECTION_INFO['udpipsend']),
-                               int(self.CONNECTION_INFO['udpportsend']))
+        self.server_address = (str(CONNECTION_INFO['udpipsend']),
+                               int(CONNECTION_INFO['udpportsend']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
             log.msg("                                         Writing on " +
-                    self.CONNECTION_INFO['udpipsend'] + " port: " +
-                    str(self.CONNECTION_INFO['udpportsend']))
+                    CONNECTION_INFO['udpipsend'] + " port: " +
+                    str(CONNECTION_INFO['udpportsend']))
         except Exception as e:
             log.err('Error opening UPD socket')
             log.err(e)
 
     def send(self, message):
         self.UDPSocket.sendto(message, self.server_address)
+
+    def stop(self):
+        self.UDPSocket.close()
+        del self.UDPSocket
 
 
 class OperativeKISSThread(KISSThread):
@@ -393,9 +391,6 @@ class OperativeKISSThread(KISSThread):
         import logging
         import kiss
         import kiss.constants
-        log.msg("Opening serial port" + "...................." +
-                "............................................" +
-                "..................................")
 
         self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],
                                  CONNECTION_INFO['baudrate'])
@@ -405,26 +400,33 @@ class OperativeKISSThread(KISSThread):
         # TODO Implement a workaround or fork the entire KISS module.
         self.kissTNC.console_handler.setLevel(logging.ERROR)
 
-
-        print CONNECTION_INFO['serialport']
-
         try:
             self.kissTNC.start()
+            log.msg("Opening KISS socket ---> " + "Serial port: " +
+                    CONNECTION_INFO['serialport'] + " baudrate: " +
+                    str(CONNECTION_INFO['baudrate']))
         except SerialException:
             raise SerialPortUnreachable("The port couldn't be open")
-            # return True
 
 
     def doWork(self):
         """ Work thread method.
 
-        @return: True if everything goes alright.
+        @return: True if everything goes alright, false if read method can't
+        be set.
         """
         if self.serialSignal:
             self.kissTNC.read(callback=self.catchValue)
             return True
+        else:
+            return False
 
     def catchValue(self, frame):
+        """
+
+        @param frame:
+        @return:
+        """
         log.msg("----------------------------------------------- " +
                 "Message from Serial port" +
                 " -----------------------------------------------")
@@ -452,5 +454,6 @@ class OperativeKISSThread(KISSThread):
         """
         try:
             self.kissTNC.write(message)
+            return True
         except AttributeError:
             raise SerialPortUnreachable('The serial port is unreachable')

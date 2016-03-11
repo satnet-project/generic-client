@@ -1,8 +1,9 @@
 # coding=utf-8
 import os
-import misc
 import time
 import configurationWindow
+
+from misc import set_data_local_file, get_data_local_file
 
 from PyQt4 import QtGui, QtCore
 from twisted.python import log
@@ -89,6 +90,8 @@ class SatNetUI(QtGui.QWidget):
         else:
             self.CONNECTION_INFO['reconnection'] = 'no'
 
+        set_data_local_file(self.settingsfile, self.CONNECTION_INFO)
+
         if self.connection == '':
             self.openInterface()
 
@@ -101,8 +104,7 @@ class SatNetUI(QtGui.QWidget):
 
         @return: None
         """
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile=self.settingsfile)
+        self.CONNECTION_INFO = get_data_local_file(self.settingsfile)
 
         self.setFixedSize(1300, 800)
         self.setWindowTitle("SatNet client - %s" %
@@ -152,6 +154,19 @@ class SatNetUI(QtGui.QWidget):
         buttons.setTitle("Connection")
         buttons.move(10, 10)
 
+    def savefields(self):
+        if self.LoadDefaultSettings.isChecked():
+            self.CONNECTION_INFO['parameters'] = 'yes'
+        elif not self.LoadDefaultSettings.isChecked():
+            self.CONNECTION_INFO['parameters'] = 'no'
+
+        if self.AutomaticReconnection.isChecked():
+            self.CONNECTION_INFO['reconnection'] = 'yes'
+        elif not self.AutomaticReconnection.isChecked():
+            self.CONNECTION_INFO['reconnection'] = 'no'
+
+        set_data_local_file(self.settingsfile, self.CONNECTION_INFO)
+
     def initFields(self):
         """
 
@@ -176,9 +191,11 @@ class SatNetUI(QtGui.QWidget):
 
         self.LoadDefaultSettings =\
             QtGui.QCheckBox("Automatically load settings from file")
+        self.LoadDefaultSettings.stateChanged.connect(self.savefields)
         configurationLayout.addWidget(self.LoadDefaultSettings)
         self.AutomaticReconnection =\
             QtGui.QCheckBox("Reconnect after a failure")
+        self.AutomaticReconnection.stateChanged.connect(self.savefields)
         configurationLayout.addWidget(self.AutomaticReconnection)
 
         configuration.move(10, 180)
@@ -299,8 +316,7 @@ class SatNetUI(QtGui.QWidget):
             self.ButtonCancel.setEnabled(False)
 
     def UpdateFields(self):
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsFile=self.settingsfile)
+        self.CONNECTION_INFO = get_data_local_file(self.settingsfile)
 
         from os import getcwd
         settingsfile = str(getcwd()) + '/' + str(self.settingsfile)
@@ -327,10 +343,10 @@ class SatNetUI(QtGui.QWidget):
             self.LabelConnection.setEnabled(False)
             self.stopInterfaceButton.setEnabled(True)
         elif str(self.LabelConnection.currentText()) == 'serial':
-            self.threads.runKISSThreadReceive()
-            self.connection = 'serial'
-            self.LabelConnection.setEnabled(False)
-            self.stopInterfaceButton.setEnabled(True)
+            if self.threads.runKISSThreadReceive():
+                self.connection = 'serial'
+                self.LabelConnection.setEnabled(False)
+                self.stopInterfaceButton.setEnabled(True)
 
     # TODO Check connection is gone before disabling button
     def stopInterface(self):

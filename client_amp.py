@@ -1,29 +1,24 @@
 # coding=utf-8
-import sys
-import misc
-import time
 import client_ui
+import sys
 import os.path
 
 from ampCommands import Login, StartRemote, NotifyMsg
 from ampCommands import NotifyEvent, SendMsg, EndRemote
-
-from Queue import Queue
-from OpenSSL import SSL
-
-from PyQt4 import QtGui
-
+from base64 import b64encode, b64decode
 from errors import WrongFormatNotification, IOFileError
+from Queue import Queue
+from misc import checkarguments, get_utc_timestamp, get_data_local_file
+from OpenSSL import SSL
+from PyQt4 import QtGui
 from threads import MessagesThread, WriteStream
-
+from time import strftime
 from twisted.python import log
 from twisted.internet import ssl
-from twisted.internet import error
-from twisted.internet.ssl import ClientContextFactory
-from twisted.internet.protocol import ReconnectingClientFactory
-from twisted.protocols.amp import AMP
 from twisted.internet.defer import inlineCallbacks
-
+from twisted.internet.protocol import ReconnectingClientFactory
+from twisted.internet.ssl import ClientContextFactory
+from twisted.protocols.amp import AMP
 
 
 """
@@ -112,27 +107,29 @@ class ClientProtocol(AMP):
                                     )
 
         if res['bAuthenticated'] is True:
-            res = yield self.callRemote(StartRemote)
+            # res = yield self.callRemote(StartRemote)
+            yield self.callRemote(StartRemote)
         elif res['bAuthenticated'] is False:
             log.msg('False')
         else:
             log.msg('No data')
 
-    # To-do. Do we need a return connection?
     def vNotifyMsg(self, sMsg):
+        """ Notify message from SatNet protocol.
+
+        @param sMsg: A frame received from SatNet protocol,
+        @return: A dictionary.
+        """
         log.msg(">>> NOTIFY MESSAGE invoked:")
 
         # TODO. Check message integrity.
         # TODO. Check IPs and ports plausibility.
 
-        import base64
-        sMsg = base64.b64decode(sMsg)
+        sMsg = b64decode(sMsg)
+        sMsg = bytearray(sMsg)
+        self.saveReceivedFrames(sMsg)
 
         if self.CONNECTION_INFO['connection'] == 'serial':
-            sMsg = bytearray(sMsg)
-
-            self.saveReceivedFrames(sMsg)
-
             frameprocessed = list(sMsg)
             frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
@@ -140,14 +137,12 @@ class ClientProtocol(AMP):
 
             log.msg(frameprocessed)
             log.msg(">>> Delivering message...")
-            self.threads.KISSThreadSend(sMsg)
-
-            return {'bResult': True}
+            if self.threads.KISSThreadSend(sMsg):
+                return {'bResult': True}
+            else:
+                return {'bResult': False}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            sMsg = bytearray(sMsg)
-
-            self.saveReceivedFrames(sMsg)
             log.msg(">>> Delivering message...")
 
             # Checks if the message has been delivered
@@ -157,18 +152,10 @@ class ClientProtocol(AMP):
                 return {'bResult': False}
 
         elif self.CONNECTION_INFO['connection'] == 'tcp':
-            sMsg = bytearray(sMsg)
-
-            self.saveReceivedFrames(sMsg)
-            # To-do. Implement TCP callback.
-
+            # TODO. Implement.
             return {'bResult': True}
 
         elif self.CONNECTION_INFO['connection'] == 'none':
-            sMsg = bytearray(sMsg)
-
-            self.saveReceivedFrames(sMsg)
-
             return {'bResult': True}
 
     NotifyMsg.responder(vNotifyMsg)
@@ -177,9 +164,9 @@ class ClientProtocol(AMP):
         """ Process frame method.
 
         @param frame: A frame coded in a byte array way.
-        @return:
+        @return: Nothing if everything is alright. A WrongFormatNotifiction
+        exception if the frame cannot be processed.
         """
-        frameprocessed = []
         try:
             frameprocessed = list(frame)
         except TypeError:
@@ -190,8 +177,7 @@ class ClientProtocol(AMP):
         log.msg("Received frame: ", frameprocessed)
 
         # Convert to base64 string
-        import base64
-        frame = base64.b64encode(frame)
+        frame = b64encode(frame)
 
         self.processFrame(frame)
 
@@ -203,9 +189,8 @@ class ClientProtocol(AMP):
         @return:
         """
         try:
-            # yield self.callRemote(SendMsg, sMsg=frameProcessed,
             yield self.callRemote(SendMsg, sMsg=frame,
-                                  iTimestamp=misc.get_utc_timestamp())
+                                  iTimestamp=get_utc_timestamp())
         except Exception as e:
             log.err(e)
             log.err("Error")
@@ -222,25 +207,20 @@ class ClientProtocol(AMP):
             raise WrongFormatNotification('The frame has an unexpected format')
         frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
-        """
-        if type(frame) is not bytearray:
-            raise WrongFormatNotification('Frame is %s' %(type(frame)))
-        """
 
         filename = ("Rec-frames-" +
                     self.CONNECTION_INFO['name'] +
-                    "-" + time.strftime("%Y.%m.%d") + ".csv")
+                    "-" + strftime("%Y.%m.%d") + ".csv")
 
         with open(filename, "a+") as f:
-            f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S")) + ' ' +
+            f.write(str(strftime("%Y.%m.%d-%H:%M:%S")) + ' ' +
                     frameprocessed + "\n")
 
         if os.path.exists(filename):
+            log.msg('---- Message received saved to local file ----')
             return True
         else:
             raise IOFileError('Record file not created')
-
-        log.msg('---- Message received saved to local file ----')
 
     def vNotifyEvent(self, iEvent, sDetails):
         """
@@ -249,7 +229,8 @@ class ClientProtocol(AMP):
         @param sDetails:
         @return:
         """
-        sDetails = None
+        log.msg(sDetails)
+
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
@@ -279,25 +260,6 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         self.maxRetries = int(self.CONNECTION_INFO['attempts'])
         self.gsi = gsi
         self.threads = threads
-        import platform
-        ossystem = platform.linux_distribution()
-        if ossystem[0] == 'debian':
-            self.ossystem = 'debian'
-        else:
-            self.ossystem = 'ubuntu'
-
-    """
-    # Called when a connection has been started
-    def startedConnecting(self, connector):
-        if self.ossystem  == 'ubuntu':
-            log.msg("Starting connection............................" +
-                    "..............................................." +
-                    ".........................................")
-        elif self.ossystem == 'debian':
-            log.msg("Starting connection............................" +
-                    "..............................................." +
-                    "...........................")
-    """
 
     def buildProtocol(self, addr):
         """ Override build protocol method
@@ -305,7 +267,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         @param addr:
         @return: ClientProtocol instance
         """
-        log.msg("Building client protocol at %s" %(addr))
+        log.msg("Building client protocol at %s" % addr )
         self.resetDelay()
 
         return ClientProtocol(self.CONNECTION_INFO, self.gsi,
@@ -318,12 +280,11 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         @param reason:
         @return:
         """
-        CONNECTION_INFO = misc.get_data_local_file(settingsFile='.settings')
-        print CONNECTION_INFO['reconnection']
+        CONNECTION_INFO = get_data_local_file('.settings')
 
-        if self.CONNECTION_INFO['reconnection'] == 'yes':
+        if CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
-        elif self.CONNECTION_INFO['reconnection'] == 'no':
+        elif CONNECTION_INFO['reconnection'] == 'no':
             self.continueTrying = None
 
         log.msg('Lost connection. Reason: ', reason)
@@ -338,9 +299,12 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         @param reason:
         @return:
         """
-        if self.CONNECTION_INFO['reconnection'] == 'yes':
+
+        CONNECTION_INFO = get_data_local_file('.settings')
+
+        if CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
-        elif self.CONNECTION_INFO['reconnection'] == 'no':
+        elif CONNECTION_INFO['reconnection'] == 'no':
             self.continueTrying = None
 
         log.msg('Connection failed. Reason: ', reason)
@@ -350,6 +314,9 @@ class ClientReconnectFactory(ReconnectingClientFactory):
 
 
 class CtxFactory(ClientContextFactory):
+
+    def __init__(self):
+        pass
 
     def getContext(self):
         """
@@ -400,7 +367,7 @@ class Client(object):
         reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
                            int(self.CONNECTION_INFO['serverport']),
                            ClientReconnectFactory(self.CONNECTION_INFO,
-                                                  self.gsi,self.threads),
+                                                  self.gsi, self.threads),
                            CtxFactory()
                            )
 
@@ -434,7 +401,7 @@ if __name__ == '__main__':
             'SATNet - Generic client' +
             ' ------------------------------------------------')
 
-    argumentsdict = misc.checkarguments(sysargvdict=sys.argv)
+    argumentsdict = checkarguments(sysargvdict=sys.argv)
 
     qapp = QtGui.QApplication(sys.argv)
     main_application = client_ui.SatNetUI(argumentsdict=argumentsdict)

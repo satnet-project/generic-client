@@ -13,10 +13,16 @@ sip*
 
 # Log files
 log*
+info.log*
+debug.log*
+error.log*
 *.csv
 
 # PyCharm directories
-.idea/
+.idea/*
 
 # Post-installation folders
 key/*
+
+# Old coverage tests
+tests/.coverage

@@ -1,7 +1,6 @@
 # coding=utf-8
 import datetime
 import pytz
-import sys
 import getopt
 
 from twisted.python import log
@@ -25,7 +24,6 @@ from errors import ArgumentsInvalid
         Samuel Góngora García (s.gongoragarcia@gmail.com)
 """
 __author__ = 's.gongoragarcia@gmail.com'
-
 
 
 def get_now_utc(no_microseconds=True):
@@ -72,81 +70,6 @@ def localize_time_utc(non_utc_time):
     """
     return pytz.utc.localize(non_utc_time)
 
-
-def noArguments():
-    """
-
-    @rtype: dict
-    """
-    argumentsDict = {}
-    arguments = ['username', 'slot', 'connection',
-                 'serialport', 'baudrate', 'udpipsend', 'udpportsend',
-                 'udpipreceive', 'udpportreceive']
-    for i in range(len(arguments)):
-        argumentsDict[arguments[i]] = ""
-
-    return argumentsDict
-
-
-def readArguments(argumentsDict):
-    """
-
-    @rtype: dict
-    """
-    if argumentsDict[1] == '-g':
-        try:
-            opts, args = getopt.getopt(argumentsDict[1:],
-                                       "hfgn:t:c:s:b:is:us:ir:ur",
-                                       ["name=",
-                                        "slot=", "connection=",
-                                        "serialport=",
-                                        "baudrate=", "udpipsend=",
-                                        "udpportsend=", "udpipreceive=",
-                                        "udpportreceive="]
-                                       )
-        except getopt.GetoptError:
-            raise ArgumentsInvalid("Some arguments are no valid.")
-
-        settingsDict = {}
-        if ('-g', '') in opts:
-            for opt, arg in opts:
-                if opt == "-n":
-                    argumentsDict['username'] = arg
-                elif opt == "-t":
-                    argumentsDict['slot'] = arg
-                elif opt == "-c":
-                    argumentsDict['connection'] = arg
-                elif opt == "-s":
-                    argumentsDict['serialport'] = arg
-                elif opt == "-b":
-                    argumentsDict['baudrate'] = arg
-                elif opt == "-is":
-                    argumentsDict['udpipsend'] = arg
-                elif opt == "-us":
-                    argumentsDict['udpportsend'] = arg
-                elif opt == "-ir":
-                    argumentsDict['udpipreceive'] = arg
-                elif opt == "-ur":
-                    argumentsDict['udpportreceive'] = arg
-        return settingsDict
-
-    elif argumentsDict[1] == '-s':
-        try:
-            opts, args = getopt.getopt(argumentsDict[1:],
-                                       "fsf",
-                                       ["file="]
-                                       )
-        except getopt.GetoptError:
-            raise ArgumentsInvalid("Some arguments are no valid.")
-
-        settingsDict = {}
-
-        for opt, arg in opts:
-            if opt == "-f":
-                settingsDict['file'] = args[0]
-
-        return settingsDict
-
 TIMESTAMP_0 = localize_date_utc(datetime.datetime(year=1970, month=1, day=1))
 
 
@@ -163,28 +86,106 @@ def get_utc_timestamp(utc_datetime=None):
     return int(diff.total_seconds() * 10**6)
 
 
-def checkarguments(sysargvdict):
-    """
+def no_arguments():
+    """ No arguments given function.
+    Creates a new empty dictionary with the fields needed.
 
-    @param sysargvdict:
-    @return:
+    @return: arguments_dict. An empty dictionary.
+    """
+    arguments_dict = {}
+    arguments = ['username', 'slot', 'connection',
+                 'serialport', 'baudrate', 'udpipsend', 'udpportsend',
+                 'udpipreceive', 'udpportreceive']
+    for i in range(len(arguments)):
+        arguments_dict[arguments[i]] = ''
+
+    return arguments_dict
+
+
+def read_arguments(arguments_dict):
+    """ Reads arguments through terminal.
+
+
+    @rtype: A dictionary with
+    """
+    if arguments_dict[1] == '-g':
+        try:
+            opts, args = getopt.getopt(arguments_dict[1:],
+                                       "hfgn:t:c:s:b:is:us:ir:ur",
+                                       ["name=",
+                                        "slot=", "connection=",
+                                        "serialport=",
+                                        "baudrate=", "udpipsend=",
+                                        "udpportsend=", "udpipreceive=",
+                                        "udpportreceive="]
+                                       )
+        except getopt.GetoptError:
+            raise ArgumentsInvalid("Some arguments are no valid.")
+
+        settings_dict = {}
+        if ('-g', '') in opts:
+            for opt, arg in opts:
+                if opt == "-n":
+                    settings_dict['username'] = arg
+                elif opt == "-t":
+                    settings_dict['slot'] = arg
+                elif opt == "-c":
+                    settings_dict['connection'] = arg
+                elif opt == "-s":
+                    settings_dict['serialport'] = arg
+                elif opt == "-b":
+                    settings_dict['baudrate'] = arg
+                elif opt == "-is":
+                    settings_dict['udpipsend'] = arg
+                elif opt == "-us":
+                    settings_dict['udpportsend'] = arg
+                elif opt == "-ir":
+                    settings_dict['udpipreceive'] = arg
+                elif opt == "-ur":
+                    settings_dict['udpportreceive'] = arg
+        return settings_dict
+
+    elif arguments_dict[1] == '-s':
+        try:
+            opts, args = getopt.getopt(arguments_dict[1:],
+                                       "fsf",
+                                       ["file="]
+                                       )
+        except getopt.GetoptError:
+            raise ArgumentsInvalid("Some arguments are no valid.")
+
+        settings_dict = {}
+
+        for opt, arg in opts:
+            if opt == "-f":
+                settings_dict['file'] = args[0]
+
+        return settings_dict
+
+
+def checkarguments(sysargv_dict):
+    """ Checks arguments given by terminal.
+    Compares the second value of the list given. If there is no value runs
+    no_arguments function.
+
+    @param sysargv_dict: A list containing all the arguments.
+    @return: A dictionary of configuration parameters. Nothing if the
+    arguments are invalid.
     """
     try:
-        if sysargvdict[1] == "-g":
-            # read_data = sys.argv
-            argumentsdict = readArguments(sysargvdict)
-            return argumentsdict
-        elif sysargvdict[1] == "-s":
-            # read_data = sys.argv
-            settingsdict = readArguments(sysargvdict)
-            return settingsdict
-        elif sysargvdict[1] != "-g" and sysargvdict[1] != "-help":
-            log.msg("Unknown option: %s" % (sysargvdict[1]))
+        if sysargv_dict[1] == "-g":
+            settings_dict = read_arguments(sysargv_dict)
+            return settings_dict
+        elif sysargv_dict[1] == "-s":
+            settings_dict = read_arguments(sysargv_dict)
+            return settings_dict
+        elif sysargv_dict[1] != "-g" and sysargv_dict[1] != "-help":
+            log.msg("Unknown option: %s" % (sysargv_dict[1]))
             log.msg("Try 'python client_amp.py -help' for more information.")
             return None
     except IndexError:
-        argumentsdict = noArguments()
-        return argumentsdict
+        settings_dict = no_arguments()
+        return settings_dict
 
 
 def get_data_local_file(settingsfile):

@@ -49,6 +49,9 @@ the parameters as follows:
 
     python client_amp.py -g -n username -p userpassword -t slot -c udp -i ip -u ipport
 
+Each client uses his own configuration file. The default location of this file is the client's main folder. If you want to use another file could be specified through the following command:
+python client_amp.py -s -f `file allocation`
+
 For help about script usage enter:
 
 `python client_amp -help`

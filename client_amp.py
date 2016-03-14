@@ -393,7 +393,7 @@ if __name__ == '__main__':
     textqueue = Queue()
     # TODO Actually only standard messages are logged.
     # TODO Should we register standard error too?
-    sys.stdout = WriteStream(textqueue)
+    #sys.stdout = WriteStream(textqueue)
 
     # TODO Create differente logger levels.
     log.startLogging(sys.stdout)
@@ -401,7 +401,7 @@ if __name__ == '__main__':
             'SATNet - Generic client' +
             ' ------------------------------------------------')
 
-    argumentsdict = checkarguments(sysargvdict=sys.argv)
+    argumentsdict = checkarguments(sysargv_dict=sys.argv)
 
     qapp = QtGui.QApplication(sys.argv)
     main_application = client_ui.SatNetUI(argumentsdict=argumentsdict)

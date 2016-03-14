@@ -1,5 +1,5 @@
 # coding=utf-8
-from twisted.python import log
+import logging
 from PyQt4 import QtCore
 import time
 import os
@@ -76,7 +76,6 @@ class GroundStationInterface(object):
 
     def __init__(self, CONNECTION_INFO, GS, AMP):
         self.CONNECTION_INFO = CONNECTION_INFO
-        # self.AMP = None
         self.AMP = AMP
         self.GS = GS
 
@@ -114,9 +113,9 @@ class GroundStationInterface(object):
                     + "\n")
 
         if os.path.exists(filename):
-            log.msg("--------------------------------------------- " +
-                    "Message saved to local file" +
-                    " ---------------------------------------------")
+            logging.debug("------------------------------------------- " +
+                          "Message saved to local file" +
+                          " -------------------------------------------")
             return True
         else:
             raise IOFileError('Record file not created')
@@ -128,7 +127,7 @@ class GroundStationInterface(object):
             self.disconnectProtocol()
             return True
         except:
-            log.msg("Connection not established")
+            logging.debug("Connection not established")
             # FIX-ME Only must raises an error if the connection was unestablished.
             # raise ConnectionNotEnded('EndRemote call not completed')
 
@@ -139,7 +138,7 @@ class GroundStationInterface(object):
         processed.
         @return:
         """
-        log.msg('Protocol connected to the GS')
+        logging.debug('Protocol connected to the GS')
         self.AMP = AMP
 
     # Removes the reference to the protocol object (self.AMP). It shall
@@ -150,7 +149,7 @@ class GroundStationInterface(object):
         be invocked when the connection to the SATNET server is lost.
         @return:
         """
-        log.msg("Protocol disconnected from the GS")
+        logging.debug("Protocol disconnected from the GS")
         self.AMP = None
 
 
@@ -173,9 +172,8 @@ class UDPThread(QtCore.QThread):
         pass
 
 
-# Class associated to TCP protocol
+# TODO
 class TCPThread(QtCore.QThread):
-
     def __init__(self, parent=None):
         QtCore.QThread.__init__(self, parent)
 
@@ -217,6 +215,7 @@ class KISSThread(QtCore.QThread):
         pass
 
 
+# TODO
 class OperativeTCPThread(TCPThread):
     finished = QtCore.pyqtSignal(object)
 
@@ -305,12 +304,12 @@ class OperativeUDPThreadReceive(UDPThread):
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
             if str(self.CONNECTION_INFO['udpipreceive']) == '':
                 self.CONNECTION_INFO['udpipreceive'] = '127.0.0.1'
-            log.msg("Opening UDP socket ---> " + "Listening on " +
-                    self.CONNECTION_INFO['udpipreceive'] + " port: " +
-                    str(self.CONNECTION_INFO['udpportreceive']))
+            logging.info("Opening UDP socket ---> " + "Listening on " +
+                         self.CONNECTION_INFO['udpipreceive'] + " port: " +
+                         str(self.CONNECTION_INFO['udpportreceive']))
         except Exception as e:
-            log.err('Error opening UPD socket')
-            log.err(e)
+            logging.error('Error opening UPD socket')
+            logging.error(e)
 
         self.UDPSocket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.UDPSocket.bind(server_address)
@@ -321,13 +320,13 @@ class OperativeUDPThreadReceive(UDPThread):
                 self.catchValue(frame, address)
 
     def catchValue(self, frame, address):
-        log.msg("--------------------------------------------- " +
-                "Message from UDP socket" + " -----------------" +
-                "----------------------------")
-        log.msg("--------------------------------" +
-                " Received from ip: " + str(address[0]) +
-                " port: " + str(address[1]) + " --------------" +
-                "------------------")
+        logging.info("--------------------------------------------- " +
+                     "Message from UDP socket" + " -----------------" +
+                     "----------------------------")
+        logging.debug("--------------------------------" +
+                      " Received from ip: " + str(address[0]) +
+                      " port: " + str(address[1]) + " --------------" +
+                      "------------------")
 
         self.finished.emit(frame)
 
@@ -337,9 +336,10 @@ class OperativeUDPThreadReceive(UDPThread):
         del self.UDPSocket
 
         try:
-            log.msg("UDP socket, %s ,not closed" %(str(type(self.UDPSocket))))
+            logging.debug("UDP socket, %s ,not closed" %(str(type(
+                          self.UDPSocket))))
         except AttributeError:
-            log.msg("UDPSocket stopped.")
+            logging.info("UDPSocket receive stopped.")
             self.running = False
             return True
 
@@ -358,12 +358,12 @@ class OperativeUDPThreadSend():
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
-            log.msg("                                         Writing on " +
-                    CONNECTION_INFO['udpipsend'] + " port: " +
-                    str(CONNECTION_INFO['udpportsend']))
+            logging.info("                                         Writing "
+                         "on " + CONNECTION_INFO['udpipsend'] + " port: " +
+                         str(CONNECTION_INFO['udpportsend']))
         except Exception as e:
-            log.err('Error opening UPD socket')
-            log.err(e)
+            logging.error('Error opening UPD socket')
+            logging.error(e)
 
     def send(self, message):
         self.UDPSocket.sendto(message, self.server_address)
@@ -371,6 +371,14 @@ class OperativeUDPThreadSend():
     def stop(self):
         self.UDPSocket.close()
         del self.UDPSocket
+
+        try:
+            logging.debug("UDP socket, %s ,not closed" %(str(type(
+                          self.UDPSocket))))
+        except AttributeError:
+            logging.info("UDPSocket send stopped.")
+            self.running = False
+            return True
 
 
 class OperativeKISSThread(KISSThread):
@@ -388,7 +396,6 @@ class OperativeKISSThread(KISSThread):
 
     def init_interface(self, CONNECTION_INFO):
         # Opening port
-        import logging
         import kiss
         import kiss.constants
 
@@ -398,7 +405,7 @@ class OperativeKISSThread(KISSThread):
         # TODO to show the frames using the log standard Python method.
         # TODO This raises a codification error.
         # TODO Implement a workaround or fork the entire KISS module.
-        self.kissTNC.console_handler.setLevel(logging.ERROR)
+        self.kissTNC.console_handler.setLevel(logging.CRITICAL)
 
         try:
             self.kissTNC.start()

@@ -11,7 +11,7 @@ baudrate = 500000
 
 [udp]
 udpipreceive = 127.0.0.1
-udpportreceive = 57009
+udpportreceive = 57109
 udpipsend = 172.19.51.145
 udpportsend = 57009
 
@@ -27,6 +27,6 @@ serverport = 25345
 
 [Connection]
 reconnection = no
-parameters = yes
+parameters = no
 attempts = 10
 

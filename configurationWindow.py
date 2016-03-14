@@ -1,6 +1,7 @@
 # coding=utf-8
 import misc
 import ConfigParser
+import logging
 
 from PyQt4 import QtGui, QtCore
 from errors import SettingsCorrupted
@@ -24,9 +25,9 @@ __author__ = 's.gongoragarcia@gmail.com'
 # TODO Gets a "Segmentation fault (core dumped)" after opens this window.
 
 class ConfigurationWindow(QtGui.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, settings=None):
         super(ConfigurationWindow, self).__init__(parent)
-
+        self.settings_file = settings
         self.setWindowTitle("SatNet client - Advanced configuration")
 
         self.serverInterface()
@@ -46,7 +47,8 @@ class ConfigurationWindow(QtGui.QDialog):
         try:
             self.CONNECTION_INFO = misc.get_data_local_file('.settings')
         except:
-            raise SettingsCorrupted('Some fields are lost or corrupted')
+            logging.error("Some fields are lost or corrupted")
+            raise SettingsCorrupted("Some fields are lost or corrupted")
 
         self.setfields()
 
@@ -219,8 +221,6 @@ class ConfigurationWindow(QtGui.QDialog):
             controlParameters.move(590, 265)
         else:
             controlParameters.move(590, 240)
-
-
 
     def closeWindow(self):
         self.close()

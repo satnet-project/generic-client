@@ -89,17 +89,20 @@ def get_utc_timestamp(utc_datetime=None):
 def no_arguments():
     """ No arguments given function.
     Creates a new empty dictionary with the fields needed.
+    If there is no value for log_level assumes that DEBUG level is required.
 
     @return: arguments_dict. An empty dictionary.
     """
-    arguments_dict = {}
+    settings_dict = {}
     arguments = ['username', 'slot', 'connection',
                  'serialport', 'baudrate', 'udpipsend', 'udpportsend',
-                 'udpipreceive', 'udpportreceive']
+                 'udpipreceive', 'udpportreceive', 'log_level']
     for i in range(len(arguments)):
-        arguments_dict[arguments[i]] = ''
+        settings_dict[arguments[i]] = ''
 
-    return arguments_dict
+    settings_dict['log_level'] = 'DEBUG'
+
+    return settings_dict
 
 
 def read_arguments(arguments_dict):
@@ -111,13 +114,13 @@ def read_arguments(arguments_dict):
     if arguments_dict[1] == '-g':
         try:
             opts, args = getopt.getopt(arguments_dict[1:],
-                                       "hfgn:t:c:s:b:is:us:ir:ur",
+                                       "hfgn:t:c:s:b:is:us:ir:ur:l:",
                                        ["name=",
                                         "slot=", "connection=",
                                         "serialport=",
                                         "baudrate=", "udpipsend=",
                                         "udpportsend=", "udpipreceive=",
-                                        "udpportreceive="]
+                                        "udpportreceive=", "log_level"]
                                        )
         except getopt.GetoptError:
             raise ArgumentsInvalid("Some arguments are no valid.")
@@ -143,22 +146,25 @@ def read_arguments(arguments_dict):
                     settings_dict['udpipreceive'] = arg
                 elif opt == "-ur":
                     settings_dict['udpportreceive'] = arg
+                elif opt == "-l":
+                    settings_dict['log_level'] = arg
         return settings_dict
 
     elif arguments_dict[1] == '-s':
         try:
             opts, args = getopt.getopt(arguments_dict[1:],
-                                       "fsf",
-                                       ["file="]
+                                       "sf:l:",
+                                       ["file=", "log_level="]
                                        )
         except getopt.GetoptError:
             raise ArgumentsInvalid("Some arguments are no valid.")
 
         settings_dict = {}
-
         for opt, arg in opts:
             if opt == "-f":
-                settings_dict['file'] = args[0]
+                settings_dict['file'] = arg
+            elif opt == "-l":
+                settings_dict['log_level'] = arg
 
         return settings_dict
 

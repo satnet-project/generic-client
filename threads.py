@@ -1,6 +1,6 @@
 # coding=utf-8
 from Queue import Queue
-from twisted.python import log
+import logging
 import misc
 
 from PyQt4 import QtCore
@@ -62,7 +62,7 @@ class Threads(object):
         @return: A boolean pointing the routine successful.
         """
         if not self.workerUDPThreadSend:
-            log.msg(
+            logging.debug(
                 '>>> No UDP Thread Send, dropping message, msg = ' + str(
                     message
                 )

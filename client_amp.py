@@ -20,6 +20,10 @@ from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.internet.ssl import ClientContextFactory
 from twisted.protocols.amp import AMP
 
+import os
+import json
+import logging.config
+
 
 """
    Copyright 2015, 2016 Samuel Góngora García
@@ -53,9 +57,8 @@ class ClientProtocol(AMP):
         super(ClientProtocol, self).__init__()
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
-        self.threads = threads
 
-        # self.factory.protoInstance = self
+        self.threads = threads
 
     def connectionMade(self):
         """ Connection made method.
@@ -63,8 +66,7 @@ class ClientProtocol(AMP):
         """
         self.user_login()
         self.gsi.connectProtocol(self)
-
-        log.msg("Connection sucessful.")
+        logging.info("Connection sucessful.")
 
     def connectionLost(self, reason):
         """ Connection lost method.
@@ -73,8 +75,8 @@ class ClientProtocol(AMP):
         @param reason:
         @return:
         """
-        log.msg("Connection lost.")
-        log.msg(reason)
+        logging.info("Connection lost.")
+        logging.debug(reason)
 
     def connectionFailed(self, reason):
         """ Connection failed method.
@@ -83,8 +85,8 @@ class ClientProtocol(AMP):
         @param reason:
         @return:
         """
-        log.msg("Connection failed.")
-        log.msg(reason)
+        logging.info("Connection failed.")
+        logging.debug(reason)
 
     @inlineCallbacks
     def end_connection(self):
@@ -93,7 +95,7 @@ class ClientProtocol(AMP):
         @return:
         """
         res = yield self.callRemote(EndRemote)
-        log.msg(res)
+        logging.debug(res)
 
     @inlineCallbacks
     def user_login(self):
@@ -110,9 +112,9 @@ class ClientProtocol(AMP):
             # res = yield self.callRemote(StartRemote)
             yield self.callRemote(StartRemote)
         elif res['bAuthenticated'] is False:
-            log.msg('False')
+            logging.debug("Not authenticated")
         else:
-            log.msg('No data')
+            logging.debug(("Authenticated"))
 
     def vNotifyMsg(self, sMsg):
         """ Notify message from SatNet protocol.
@@ -120,7 +122,7 @@ class ClientProtocol(AMP):
         @param sMsg: A frame received from SatNet protocol,
         @return: A dictionary.
         """
-        log.msg(">>> NOTIFY MESSAGE invoked:")
+        logging.debug(">>> NOTIFY MESSAGE invoked:")
 
         # TODO. Check message integrity.
         # TODO. Check IPs and ports plausibility.
@@ -135,15 +137,15 @@ class ClientProtocol(AMP):
                                   for c in frameprocessed)
             sMsg = str(sMsg)
 
-            log.msg(frameprocessed)
-            log.msg(">>> Delivering message...")
+            # logging.debug(frameprocessed)
+            logging.info(">>> Delivering message...")
             if self.threads.KISSThreadSend(sMsg):
                 return {'bResult': True}
             else:
                 return {'bResult': False}
 
         elif self.CONNECTION_INFO['connection'] == 'udp':
-            log.msg(">>> Delivering message...")
+            logging.info(">>> Delivering message...")
 
             # Checks if the message has been delivered
             if self.threads.UDPThreadSend(sMsg):
@@ -174,7 +176,7 @@ class ClientProtocol(AMP):
         frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
 
-        log.msg("Received frame: ", frameprocessed)
+        # logging.info("Received frame: ", frameprocessed)
 
         # Convert to base64 string
         frame = b64encode(frame)
@@ -204,7 +206,8 @@ class ClientProtocol(AMP):
         try:
             frameprocessed = list(frame)
         except TypeError:
-            raise WrongFormatNotification('The frame has an unexpected format')
+            logging.error("The frame has an unexpected format")
+            raise WrongFormatNotification("The frame has an unexpected format")
         frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
 
@@ -217,10 +220,11 @@ class ClientProtocol(AMP):
                     frameprocessed + "\n")
 
         if os.path.exists(filename):
-            log.msg('---- Message received saved to local file ----')
+            logging.debug("---- Message received saved to local file ----")
             return True
         else:
-            raise IOFileError('Record file not created')
+            logging.error("Record file not created")
+            raise IOFileError("Record file not created")
 
     def vNotifyEvent(self, iEvent, sDetails):
         """
@@ -234,16 +238,16 @@ class ClientProtocol(AMP):
         log.msg("(" + self.CONNECTION_INFO['username'] +
                 ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
-            log.msg('Disconnection because the slot has ended')
+            logging.info("Disconnection because the slot has ended")
             self.callRemote(EndRemote)
         elif iEvent == NotifyEvent.REMOTE_DISCONNECTED:
-            log.msg("Remote client has lost the connection")
+            logging.info("Remote client has lost the connection")
             self.callRemote(EndRemote)
         elif iEvent == NotifyEvent.END_REMOTE:
-            log.msg("The remote client has closed the connection")
+            logging.info("The remote client has closed the connection")
             self.callRemote(EndRemote)
         elif iEvent == NotifyEvent.REMOTE_CONNECTED:
-            log.msg("The remote client has just connected")
+            logging.info("The remote client has just connected")
 
         return {}
     NotifyEvent.responder(vNotifyEvent)
@@ -267,7 +271,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         @param addr:
         @return: ClientProtocol instance
         """
-        log.msg("Building client protocol at %s" % addr )
+        logging.debug("Building client protocol at %s" % addr )
         self.resetDelay()
 
         return ClientProtocol(self.CONNECTION_INFO, self.gsi,
@@ -287,7 +291,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         elif CONNECTION_INFO['reconnection'] == 'no':
             self.continueTrying = None
 
-        log.msg('Lost connection. Reason: ', reason)
+        logging.debug('Lost connection. Reason: %s' %(str(reason)))
         ReconnectingClientFactory.clientConnectionLost(self,
                                                        connector,
                                                        reason)
@@ -307,7 +311,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         elif CONNECTION_INFO['reconnection'] == 'no':
             self.continueTrying = None
 
-        log.msg('Connection failed. Reason: ', reason)
+        logging.debug('Connection failed. Reason: %s' %(str(reason)))
         ReconnectingClientFactory.clientConnectionFailed(self,
                                                          connector,
                                                          reason)
@@ -385,23 +389,55 @@ class Client(object):
         """
         from twisted.internet import reactor
         reactor.stop()
-        log.msg("Reactor destroyed")
+        logging.debug("Reactor destroyed")
+        logging.shutdown()
+
+
+def start_logging(level=None):
+    log_settings = logging.getLogger()
+    if level == 'DEBUG':
+        log_settings.setLevel(logging.DEBUG)
+    elif level == 'INFO':
+        log_settings.setLevel(logging.INFO)
+    elif level == 'ERROR':
+        log_settings.setLevel(logging.ERROR)
+
+    debug_log = logging.StreamHandler(sys.stdout)
+    debug_log.setLevel(logging.DEBUG)
+    debug_formatter = logging.Formatter('%(asctime)s - %(message)s')
+    debug_log.setFormatter(debug_formatter)
+
+    info_log = logging.FileHandler('info.log')
+    info_log.setLevel(logging.INFO)
+    info_formatter = logging.Formatter('%(asctime)s - %(message)s')
+    info_log.setFormatter(info_formatter)
+
+    error_log = logging.FileHandler('error.log')
+    error_log.setLevel(logging.ERROR)
+    error_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %('
+                                        'message)s')
+    error_log.setFormatter(error_formatter)
+
+    log_settings.addHandler(debug_log)
+    log_settings.addHandler(info_log)
+    log_settings.addHandler(error_log)
+
+    logging.info('------------------------------------------------ ' +
+                 'SATNet - Generic client' +
+                 ' ------------------------------------------------')
 
 
 if __name__ == '__main__':
-
     textqueue = Queue()
     # TODO Actually only standard messages are logged.
     # TODO Should we register standard error too?
-    #sys.stdout = WriteStream(textqueue)
 
     # TODO Create differente logger levels.
-    log.startLogging(sys.stdout)
-    log.msg('------------------------------------------------ ' +
-            'SATNet - Generic client' +
-            ' ------------------------------------------------')
 
     argumentsdict = checkarguments(sysargv_dict=sys.argv)
+    sys.stdout = WriteStream(textqueue)
+    logging_level = argumentsdict['log_level']
+    start_logging(level=logging_level)
 
     qapp = QtGui.QApplication(sys.argv)
     main_application = client_ui.SatNetUI(argumentsdict=argumentsdict)

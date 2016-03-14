@@ -1,7 +1,8 @@
 # coding=utf-8
 import os
 import time
-import configurationWindow
+import logging
+from configurationWindow import ConfigurationWindow
 
 from misc import set_data_local_file, get_data_local_file
 
@@ -31,17 +32,7 @@ from threads import Threads
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-# TODO El programa aún carga los datos desde el fichero de configuracion
-# TODO aunque se pasen por la terminal.
-
-# TODO Change twisted log module for a standard one?
 # TODO Create a log configuration file.
-
-# TODO Si solo inicio los argumentos una vez luego no podré cambiarlos
-# TODO I should:
-# TODO  - Write and read arguents each time I change them.
-# TODO  - Pass the new arguments in some pythonic way.
-# TODO    - Using an object who stores them.
 
 class SatNetUI(QtGui.QWidget):
     def __init__(self, argumentsdict, parent=None):
@@ -61,7 +52,8 @@ class SatNetUI(QtGui.QWidget):
         self.initConfiguration()
         self.initConsole()
 
-        self.dialogTextBrowser = configurationWindow.ConfigurationWindow(self)
+        self.dialogTextBrowser = ConfigurationWindow(self,
+                                                     settings=self.settingsfile)
 
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
                                           client_amp.ClientProtocol)
@@ -116,10 +108,14 @@ class SatNetUI(QtGui.QWidget):
         elif self.CONNECTION_INFO['parameters'] == 'no':
             pass
         else:
-            log.msg("No parameters configuration found." +
-                    " Using default parameter - Yes")
+            logging.info("No parameters configuration found." +
+                         " Using default parameter - Yes")
 
     def initButtons(self):
+        """
+
+        @return: None
+        """
         buttons = QtGui.QGroupBox(self)
         grid = QtGui.QGridLayout(buttons)
         buttons.setLayout(grid)
@@ -155,6 +151,10 @@ class SatNetUI(QtGui.QWidget):
         buttons.move(10, 10)
 
     def savefields(self):
+        """ Save fields method.
+
+        @return: None
+        """
         if self.LoadDefaultSettings.isChecked():
             self.CONNECTION_INFO['parameters'] = 'yes'
         elif not self.LoadDefaultSettings.isChecked():
@@ -253,6 +253,10 @@ class SatNetUI(QtGui.QWidget):
         LabelLogo.show()
 
     def initConfiguration(self):
+        """
+
+        @return: None
+        """
         if self.CONNECTION_INFO['reconnection'] == 'yes':
             self.AutomaticReconnection.setChecked(True)
         elif self.CONNECTION_INFO['reconnection'] == 'no':
@@ -265,7 +269,7 @@ class SatNetUI(QtGui.QWidget):
     def initConsole(self):
         """
 
-        @return:
+        @return: None.
         """
         self.console = QtGui.QTextBrowser(self)
         self.console.move(340, 10)
@@ -288,8 +292,8 @@ class SatNetUI(QtGui.QWidget):
                 self.LabelConnection.setCurrentIndex(index)
             if argumentsdict['username'] == '':
                 self.settingsfile = '.settings'
-                log.msg("No arguments given by terminal, using configuration "
-                        "file.")
+                logging.info("No arguments given by terminal, using "
+                             "configuration file.")
         except KeyError:
             self.settingsfile =  argumentsdict['file']
 
@@ -316,20 +320,33 @@ class SatNetUI(QtGui.QWidget):
             self.ButtonCancel.setEnabled(False)
 
     def UpdateFields(self):
+        """
+
+        @return:
+        """
         self.CONNECTION_INFO = get_data_local_file(self.settingsfile)
 
         from os import getcwd
         settingsfile = str(getcwd()) + '/' + str(self.settingsfile)
 
-        log.msg("Parameters loaded from %s." %(settingsfile))
+        logging.info("Parameters loaded from %s." %(settingsfile))
+
 
     @QtCore.pyqtSlot()
     def SetConfiguration(self):
+        """
+
+        @return:
+        """
         self.dialogTextBrowser.exec_()
         self.UpdateFields()
 
     # TODO Check connection is established before changing buttons state
     def openInterface(self):
+        """
+
+        @return:
+        """
         if str(self.LabelConnection.currentText()) == 'udp':
             self.threads.runUDPThreadReceive()
             self.threads.runUDPThreadSend()
@@ -350,6 +367,10 @@ class SatNetUI(QtGui.QWidget):
 
     # TODO Check connection is gone before disabling button
     def stopInterface(self):
+        """
+
+        @return:
+        """
         if self.connection == 'udp':
             if self.threads.stopUDPThreadReceive():
                 self.LabelConnection.setEnabled(True)
@@ -364,35 +385,41 @@ class SatNetUI(QtGui.QWidget):
             self.stopInterfaceButton.setEnabled(False)
 
     def usage(self):
-        log.msg("USAGE of client_amp.py")
-        log.msg("")
-        log.msg("python client_amp.py")
-        log.msg("       [-n <username>] # Set SATNET username to login")
-        log.msg("       [-p <password>] # Set SATNET user password to login")
-        log.msg("       [-c <connection>] # Set the type of interface with "
-                "the GS (serial, udp or tcp)")
-        log.msg("       [-s <serialport>] # Set serial port")
-        log.msg("       [-b <baudrate>] # Set serial port baudrate")
-        log.msg("       [-i <ip>] # Set ip direction")
-        log.msg("       [-u <udpport>] # Set port address")
-        log.msg("")
-        log.msg("Example for serial config:")
-        log.msg("python client_amp.py -g -n crespo -p cre.spo -t 2 -c serial"
-                "-s /dev/ttyS1 -b 115200")
-        log.msg("Example for udp config:")
-        log.msg("python client_amp.py -g -n crespo -p cre.spo -t 2 -c udp -i"
-                "127.0.0.1 -u 5001")
-        log.msg("")
-        log.msg("[User]")
-        log.msg("username: test-sc-user")
-        log.msg("password: password")
-        log.msg("connection: udp")
-        log.msg("[Serial]")
-        log.msg("serialport: /dev/ttyUSB0")
-        log.msg("baudrate: 500000")
-        log.msg("[UDP]")
-        log.msg("ip: 127.0.0.1")
-        log.msg("udpport: 5005")
+        """ Emits a useful message.
+        Emits a useful message involved in program configuration.
+
+        @return: None.
+        """
+        logging.info("USAGE of client_amp.py")
+        logging.info("")
+        logging.info("python client_amp.py")
+        logging.info("       [-n <username>] # Set SATNET username to login")
+        logging.info("       [-p <password>] # Set SATNET user password "
+                     "to login")
+        logging.info("       [-c <connection>] # Set the type of interface "
+                     "with the GS (serial, udp or tcp)")
+        logging.info("       [-s <serialport>] # Set serial port")
+        logging.info("       [-b <baudrate>] # Set serial port baudrate")
+        logging.info("       [-i <ip>] # Set ip direction")
+        logging.info("       [-u <udpport>] # Set port address")
+        logging.info("")
+        logging.info("Example for serial config:")
+        logging.info("python client_amp.py -g -n crespo -p cre.spo -t 2 "
+                    "-c serial -s /dev/ttyS1 -b 115200")
+        logging.info("Example for udp config:")
+        logging.info("python client_amp.py -g -n crespo -p cre.spo -t 2 -c "
+                    "udp -i 127.0.0.1 -u 5001")
+        logging.info("")
+        logging.info("[User]")
+        logging.info("username: test-sc-user")
+        logging.info("password: password")
+        logging.info("connection: udp")
+        logging.info("[Serial]")
+        logging.info("serialport: /dev/ttyUSB0")
+        logging.info("baudrate: 500000")
+        logging.info("[UDP]")
+        logging.info("ip: 127.0.0.1")
+        logging.info("udpport: 5005")
 
     def center(self):
         """ Center window method.
@@ -408,9 +435,13 @@ class SatNetUI(QtGui.QWidget):
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-    # Functions designed to output information
     @QtCore.pyqtSlot(str)
     def append_text(self, text):
+        """
+
+        @param text:
+        @return:
+        """
         self.console.moveCursor(QtGui.QTextCursor.End)
         self.console.insertPlainText(text)
 
@@ -432,6 +463,11 @@ class SatNetUI(QtGui.QWidget):
             f.write(text)
 
     def closeEvent(self, event):
+        """
+
+        @param event:
+        @return:
+        """
         self.reply = QtGui.QMessageBox.question(self, 'Exit confirmation',
                                                 "Are you sure to quit?",
                                                 QtGui.QMessageBox.Yes |

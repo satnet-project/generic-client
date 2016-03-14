@@ -358,8 +358,11 @@ class Client(object):
         @return: None
         """
         if test is False:
-            from qtreactor import pyqt4reactor
-            pyqt4reactor.install()
+            from qtreactor import qtreactor_config
+            qtreactor_config._instance.qtname = 'PySide'
+
+            import qtreactor.pyside4reactor
+            qtreactor.pyside4reactor.install()
 
     def setconnection(self, test):
         """

@@ -10,7 +10,7 @@ from errors import WrongFormatNotification, IOFileError
 from Queue import Queue
 from misc import checkarguments, get_utc_timestamp, get_data_local_file
 from OpenSSL import SSL
-from PyQt4 import QtGui
+from PySide import QtGui
 from threads import MessagesThread, WriteStream
 from time import strftime
 from twisted.python import log
@@ -441,7 +441,6 @@ if __name__ == '__main__':
 
     qapp = QtGui.QApplication(sys.argv)
     main_application = client_ui.SatNetUI(argumentsdict=argumentsdict)
-    main_application.setWindowIcon(QtGui.QIcon('icon.png'))
     main_application.show()
 
     messages_receiver = MessagesThread(textqueue)

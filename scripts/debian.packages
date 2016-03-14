@@ -8,3 +8,4 @@ libffi-dev
 libssl-dev
 libcanberra-gtk-module
 unzip
+cmake

@@ -3,7 +3,7 @@ import misc
 import ConfigParser
 import logging
 
-from PyQt4 import QtGui, QtCore
+from PySide import QtGui, QtCore
 from errors import SettingsCorrupted
 
 """
@@ -25,8 +25,8 @@ __author__ = 's.gongoragarcia@gmail.com'
 # TODO Gets a "Segmentation fault (core dumped)" after opens this window.
 
 class ConfigurationWindow(QtGui.QDialog):
-    def __init__(self, parent=None, settings=None):
-        super(ConfigurationWindow, self).__init__(parent)
+    def __init__(self, settings=None):
+        super(ConfigurationWindow, self).__init__()
         self.settings_file = settings
         self.setWindowTitle("SatNet client - Advanced configuration")
 

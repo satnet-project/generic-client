@@ -1,6 +1,6 @@
 # coding=utf-8
 import logging
-from PyQt4 import QtCore
+from PySide import QtCore
 import time
 import os
 from types import NoneType
@@ -217,7 +217,7 @@ class KISSThread(QtCore.QThread):
 
 # TODO
 class OperativeTCPThread(TCPThread):
-    finished = QtCore.pyqtSignal(object)
+    finished = QtCore.Signal(object)
 
     def __init__(self, queue, callback, TCPSignal, CONNECTION_INFO,
                  parent=None):
@@ -279,7 +279,7 @@ class OperativeTCPThread(TCPThread):
 
 
 class OperativeUDPThreadReceive(UDPThread):
-    finished = QtCore.pyqtSignal(object)
+    finished = QtCore.Signal(object)
 
     def __init__(self, queue, callback, UDPSignal, CONNECTION_INFO,
                  parent=None):
@@ -382,7 +382,7 @@ class OperativeUDPThreadSend():
 
 
 class OperativeKISSThread(KISSThread):
-    finished = QtCore.pyqtSignal(object)
+    finished = QtCore.Signal(object)
 
     def __init__(self, queue, callback, serialSignal, CONNECTION_INFO,
                  parent=None):

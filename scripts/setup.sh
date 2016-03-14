@@ -153,11 +153,12 @@ then
 	# Activate virtualenv
 	source "$venv_dir/bin/activate"
 
-	echo '>>> SIP installation'
-	[[ $_install_sip == 'true' ]] && install_sip
 
-	echo '>>> PyQt4 installation'
-	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
+	# echo '>>> SIP installation'
+	# [[ $_install_sip == 'true' ]] && install_sip
+
+	# echo '>>> PyQt4 installation'
+	# [[ $_install_pyqt4 == 'true' ]] && install_pyqt4
 
 	echo '>>> Keys installation...'
 	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys

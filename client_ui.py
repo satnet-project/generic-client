@@ -6,8 +6,8 @@ from configurationWindow import ConfigurationWindow
 
 from misc import set_data_local_file, get_data_local_file
 
-from PyQt4 import QtGui, QtCore
-from twisted.python import log
+#from PyQt4 import QtGui, QtCore
+from PySide import QtGui, QtCore
 
 from gs_interface import GroundStationInterface
 
@@ -52,8 +52,7 @@ class SatNetUI(QtGui.QWidget):
         self.initConfiguration()
         self.initConsole()
 
-        self.dialogTextBrowser = ConfigurationWindow(self,
-                                                     settings=self.settingsfile)
+        self.dialogTextBrowser = ConfigurationWindow(self.settingsfile)
 
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
                                           client_amp.ClientProtocol)
@@ -63,6 +62,9 @@ class SatNetUI(QtGui.QWidget):
         # Initialize the reactor parameters needed for the pyqt enviroment
         client_amp.Client(self.CONNECTION_INFO, self.gsi,
                           self.threads).createconnection(test=False)
+
+        self.setWindowIcon(QtGui.QIcon('icon.png'))
+
 
     def NewConnection(self, test=False):
         """ New connection method.
@@ -332,7 +334,7 @@ class SatNetUI(QtGui.QWidget):
         logging.info("Parameters loaded from %s." %(settingsfile))
 
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def SetConfiguration(self):
         """
 
@@ -435,7 +437,7 @@ class SatNetUI(QtGui.QWidget):
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-    @QtCore.pyqtSlot(str)
+    @QtCore.Slot(str)
     def append_text(self, text):
         """
 

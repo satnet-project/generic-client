@@ -3,7 +3,7 @@ from Queue import Queue
 import logging
 import misc
 
-from PyQt4 import QtCore
+from PySide import QtCore
 
 from gs_interface import GroundStationInterface, OperativeUDPThreadReceive
 from gs_interface import OperativeUDPThreadSend
@@ -114,7 +114,7 @@ class MessagesThread(QtCore.QThread):
     It blocks until data is available, and one it has got something from the
     queue, it sends it to the "MainThread" by emitting a Qt Signal
     """
-    mysignal = QtCore.pyqtSignal(str)
+    mysignal = QtCore.Signal(str)
 
     def __init__(self, queue, *args, **kwargs):
         """
@@ -127,7 +127,7 @@ class MessagesThread(QtCore.QThread):
         QtCore.QThread.__init__(self, *args, **kwargs)
         self.queue = queue
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def run(self):
         """
 

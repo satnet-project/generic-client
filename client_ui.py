@@ -1,19 +1,18 @@
 # coding=utf-8
 import os
+from os import getcwd
 import time
 import logging
-from configurationWindow import ConfigurationWindow
 
-from misc import set_data_local_file, get_data_local_file
-
-#from PyQt4 import QtGui, QtCore
 from PySide import QtGui, QtCore
-
-from gs_interface import GroundStationInterface
 
 # FIXME import sentence no optimized
 import client_amp
+from gs_interface import GroundStationInterface
 from threads import Threads
+from configurationWindow import ConfigurationWindow
+from misc import set_data_local_file, get_data_local_file
+
 
 """
    Copyright 2016 Samuel Góngora García
@@ -33,7 +32,6 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 
 # TODO Create a log configuration file.
-
 class SatNetUI(QtGui.QWidget):
     def __init__(self, argumentsdict, parent=None):
         QtGui.QWidget.__init__(self, parent)
@@ -89,8 +87,10 @@ class SatNetUI(QtGui.QWidget):
         if self.connection == '':
             self.openInterface()
 
+
         return client_amp.Client(self.CONNECTION_INFO, self.gsi,
-                                 self.threads).setconnection(test)
+                                 self.threads).setconnection(test,
+                                                             self.settingsfile)
 
     def initUI(self):
         """ Init user interface method.
@@ -310,7 +310,7 @@ class SatNetUI(QtGui.QWidget):
                 self.CONNECTION_INFO['connection'])
             self.LabelConnection.setCurrentIndex(index)
         except Exception as e:
-            log.err(e)
+            logging.error(e)
 
     def CloseConnection(self):
         """ Close connection method
@@ -328,9 +328,7 @@ class SatNetUI(QtGui.QWidget):
         """
         self.CONNECTION_INFO = get_data_local_file(self.settingsfile)
 
-        from os import getcwd
         settingsfile = str(getcwd()) + '/' + str(self.settingsfile)
-
         logging.info("Parameters loaded from %s." %(settingsfile))
 
 

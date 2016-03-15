@@ -247,13 +247,13 @@ def set_data_local_file(settingsfile, connect_info):
     if connect_info['reconnection'] != old_connect_info['reconnection']:
         config.set('Connection', 'reconnection',
                    str(connect_info['reconnection']))
-        with open('.settings', 'wb') as configfile:
+        with open(settingsfile, 'wb') as configfile:
             config.write(configfile)
 
     if connect_info['parameters'] != old_connect_info['parameters']:
         config.set('Connection', 'parameters',
                    str(connect_info['parameters']))
-        with open('.settings', 'wb') as configfile:
+        with open(settingsfile, 'wb') as configfile:
             config.write(configfile)
 
     return True

@@ -68,34 +68,6 @@ function uninstall_packages()
 	sudo aptitude remove $( cat "$linux_packages" ) -y
 }
 
-function install_sip()
-{
-	cd $venv_dir
-	mkdir build && cd build
-	wget http://downloads.sourceforge.net/project/pyqt/sip/sip-4.17/sip-4.17.tar.gz	
-	tar -xvf sip-4.17.tar.gz
-	cd sip-4.17
-	python configure.py
-	make
-	sudo make install
-	cd ../ && rm -rf sip-4.17
-}
-
-function install_pyqt4()
-{
-    # PyQt4 installation.
-    wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
-    tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
-    cd PyQt-x11-gpl-4.11.4
-    python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore -e QtTest
-    make
-    # Bug. Needed ldconfig, copy it from /usr/sbin
-    cp /sbin/ldconfig ../../bin/
-    sudo ldconfig
-    sudo make install
-    cd ../ && rm -rf PyQt*
-}
-
 function install_venv()
 {
 	[[ -e "$venv_dir/bin/activate" ]] || {
@@ -150,16 +122,6 @@ then
 	echo '>>> Installing virtualenv'
 	[[ $_install_venv == 'true' ]] && install_venv
 
-	# Activate virtualenv
-	source "$venv_dir/bin/activate"
-
-
-	# echo '>>> SIP installation'
-	# [[ $_install_sip == 'true' ]] && install_sip
-
-	# echo '>>> PyQt4 installation'
-	# [[ $_install_pyqt4 == 'true' ]] && install_pyqt4
-
 	echo '>>> Keys installation...'
 	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
 
@@ -182,12 +144,6 @@ if [ $1 == '-circleCI' ];
 then
 	echo ">>> [CircleCI] Installing generic client test modules..."
 	pip install -r "$project_path/requirements.txt"
-
-	echo '>>> SIP installation'
-	[[ $_install_sip == 'true' ]] && install_sip
-
-	echo '>>> PyQt4 installation'
-	[[ $_install_pyqt4 == 'true' ]] && install_pyqt4
 
 	echo '>>> Keys installation...'
 	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys

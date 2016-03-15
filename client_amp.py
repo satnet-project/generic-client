@@ -1,28 +1,26 @@
 # coding=utf-8
-import client_ui
-import sys
-import os.path
-
-from ampCommands import Login, StartRemote, NotifyMsg
-from ampCommands import NotifyEvent, SendMsg, EndRemote
+from sys import argv, stdout, exit
 from base64 import b64encode, b64decode
-from errors import WrongFormatNotification, IOFileError
 from Queue import Queue
-from misc import checkarguments, get_utc_timestamp, get_data_local_file
+import os
+import logging.config
+from time import strftime, gmtime
+
 from OpenSSL import SSL
 from PySide import QtGui
-from threads import MessagesThread, WriteStream
-from time import strftime
-from twisted.python import log
 from twisted.internet import ssl
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.internet.ssl import ClientContextFactory
 from twisted.protocols.amp import AMP
 
-import os
-import json
-import logging.config
+from ampCommands import Login, StartRemote, NotifyMsg
+from ampCommands import NotifyEvent, SendMsg, EndRemote
+import client_ui
+from errors import WrongFormatNotification, IOFileError
+from threads import MessagesThread, WriteStream
+from misc import checkarguments, get_utc_timestamp
+from misc import get_data_local_file
 
 
 """
@@ -47,16 +45,18 @@ class ClientProtocol(AMP):
     Client class
     """
 
-    def __init__(self, CONNECTION_INFO, gsi, threads):
+    def __init__(self, CONNECTION_INFO, gsi, threads, file_settings):
         """
 
         @param CONNECTION_INFO:
         @param gsi:
         @param threads:
+        @param file_settings:
         """
         super(ClientProtocol, self).__init__()
         self.CONNECTION_INFO = CONNECTION_INFO
         self.gsi = gsi
+        self.file_settings = file_settings
 
         self.threads = threads
 
@@ -67,6 +67,7 @@ class ClientProtocol(AMP):
         self.user_login()
         self.gsi.connectProtocol(self)
         logging.info("Connection sucessful.")
+        logging.debug("Protocol instance %s" %(str(self)))
 
     def connectionLost(self, reason):
         """ Connection lost method.
@@ -76,7 +77,8 @@ class ClientProtocol(AMP):
         @return:
         """
         logging.info("Connection lost.")
-        logging.debug(reason)
+        logging.debug("Message from %s. Lost connection. Reason %s"
+                      %(self, str(reason)))
 
     def connectionFailed(self, reason):
         """ Connection failed method.
@@ -86,8 +88,10 @@ class ClientProtocol(AMP):
         @return:
         """
         logging.info("Connection failed.")
-        logging.debug(reason)
+        logging.debug("Message from %s. Failed connection. Reason %s"
+                      %(self, str(reason)))
 
+    # TODO Catch possible exception!
     @inlineCallbacks
     def end_connection(self):
         """
@@ -172,13 +176,14 @@ class ClientProtocol(AMP):
         try:
             frameprocessed = list(frame)
         except TypeError:
+            logging.error("The frame has an unexpect format"
+                          "Expected bytearray. Found %s" %(str(type(frame))))
             raise WrongFormatNotification('The frame has an unexpected format')
+
         frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
 
-        # logging.info("Received frame: ", frameprocessed)
-
-        # Convert to base64 string
+        # Convert to base64 string.
         frame = b64encode(frame)
 
         self.processFrame(frame)
@@ -190,12 +195,13 @@ class ClientProtocol(AMP):
         @param frame: A frame coded in base64.
         @return:
         """
+        # TODO Catch exception!
         try:
             yield self.callRemote(SendMsg, sMsg=frame,
                                   iTimestamp=get_utc_timestamp())
         except Exception as e:
-            log.err(e)
-            log.err("Error")
+            logging.error("CallRemote to SendMsg not performed")
+            logging.error(e)
 
     def saveReceivedFrames(self, frame):
         """ Save received frames method.
@@ -208,6 +214,7 @@ class ClientProtocol(AMP):
         except TypeError:
             logging.error("The frame has an unexpected format")
             raise WrongFormatNotification("The frame has an unexpected format")
+
         frameprocessed = ":".join("{:02x}".format(c)
                                   for c in frameprocessed)
 
@@ -220,10 +227,11 @@ class ClientProtocol(AMP):
                     frameprocessed + "\n")
 
         if os.path.exists(filename):
-            logging.debug("---- Message received saved to local file ----")
+            logging.debug("Message received saved to local file: %s"
+                          %(str(filename)))
             return True
         else:
-            logging.error("Record file not created")
+            logging.error("Record file %s not created" %(str(filename)))
             raise IOFileError("Record file not created")
 
     def vNotifyEvent(self, iEvent, sDetails):
@@ -233,10 +241,10 @@ class ClientProtocol(AMP):
         @param sDetails:
         @return:
         """
-        log.msg(sDetails)
+        logging.debug(sDetails)
 
-        log.msg("(" + self.CONNECTION_INFO['username'] +
-                ") --------- Notify Event ---------")
+        logging.debug("(" + self.CONNECTION_INFO['username'] +
+                      ") --------- Notify Event ---------")
         if iEvent == NotifyEvent.SLOT_END:
             logging.info("Disconnection because the slot has ended")
             self.callRemote(EndRemote)
@@ -258,9 +266,9 @@ class ClientReconnectFactory(ReconnectingClientFactory):
     ReconnectingClientFactory inherited object class to handle
     the reconnection process.
     """
-    def __init__(self, CONNECTION_INFO, gsi, threads):
+    def __init__(self, CONNECTION_INFO, gsi, threads, file_settings):
         self.CONNECTION_INFO = CONNECTION_INFO
-
+        self.file_settings = file_settings
         self.maxRetries = int(self.CONNECTION_INFO['attempts'])
         self.gsi = gsi
         self.threads = threads
@@ -275,23 +283,24 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         self.resetDelay()
 
         return ClientProtocol(self.CONNECTION_INFO, self.gsi,
-                              self.threads)
+                              self.threads, self.file_settings)
 
     def clientConnectionLost(self, connector, reason):
         """ Override client connection lost method
         Called when and established connection is lost
         @param connector:
         @param reason:
-        @return:
+        @return: None.
         """
-        CONNECTION_INFO = get_data_local_file('.settings')
+        CONNECTION_INFO = get_data_local_file(self.file_settings)
 
         if CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
         elif CONNECTION_INFO['reconnection'] == 'no':
             self.continueTrying = None
 
-        logging.debug('Lost connection. Reason: %s' %(str(reason)))
+        logging.debug("Message from %s. Lost connection. Reason %s"
+                      %(self, (str(reason))))
         ReconnectingClientFactory.clientConnectionLost(self,
                                                        connector,
                                                        reason)
@@ -301,10 +310,10 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         Called when a connection has failed to connect
         @param connector:
         @param reason:
-        @return:
+        @return: None,
         """
 
-        CONNECTION_INFO = get_data_local_file('.settings')
+        CONNECTION_INFO = get_data_local_file(self.file_settings)
 
         if CONNECTION_INFO['reconnection'] == 'yes':
             self.continueTrying = True
@@ -364,7 +373,7 @@ class Client(object):
             import qtreactor.pyside4reactor
             qtreactor.pyside4reactor.install()
 
-    def setconnection(self, test):
+    def setconnection(self, test, file_settings):
         """
         @param test: Useful flag for switch off reactor installation during
         tests.
@@ -374,13 +383,15 @@ class Client(object):
         reactor.connectSSL(str(self.CONNECTION_INFO['serverip']),
                            int(self.CONNECTION_INFO['serverport']),
                            ClientReconnectFactory(self.CONNECTION_INFO,
-                                                  self.gsi, self.threads),
+                                                  self.gsi, self.threads,
+                                                  file_settings),
                            CtxFactory()
                            )
 
         if test is False:
             if not reactor.running:
                 reactor.run(installSignalHandlers=0)
+                logging.debug("Reactor %s started." %(str(reactor)))
 
         return True
 
@@ -391,8 +402,10 @@ class Client(object):
         @return: None.
         """
         from twisted.internet import reactor
-        reactor.stop()
-        logging.debug("Reactor destroyed")
+        if reactor.running:
+            logging.debug("Reactor %s destroyed." %(str(reactor)))
+            reactor.stop()
+        logging.debug("Reactor don't running.")
         logging.shutdown()
 
 
@@ -405,9 +418,11 @@ def start_logging(level=None):
     elif level == 'ERROR':
         log_settings.setLevel(logging.ERROR)
 
-    debug_log = logging.StreamHandler(sys.stdout)
+    debug_log = logging.StreamHandler(stdout)
     debug_log.setLevel(logging.DEBUG)
     debug_formatter = logging.Formatter('%(asctime)s - %(message)s')
+    debug_formatter.converter = gmtime
+
     debug_log.setFormatter(debug_formatter)
 
     info_log = logging.FileHandler('info.log')
@@ -437,12 +452,12 @@ if __name__ == '__main__':
 
     # TODO Create differente logger levels.
 
-    argumentsdict = checkarguments(sysargv_dict=sys.argv)
-    sys.stdout = WriteStream(textqueue)
+    argumentsdict = checkarguments(sysargv_dict=argv)
+    stdout = WriteStream(textqueue)
     logging_level = argumentsdict['log_level']
     start_logging(level=logging_level)
 
-    qapp = QtGui.QApplication(sys.argv)
+    qapp = QtGui.QApplication(argv)
     main_application = client_ui.SatNetUI(argumentsdict=argumentsdict)
     main_application.show()
 
@@ -450,4 +465,4 @@ if __name__ == '__main__':
     messages_receiver.mysignal.connect(main_application.append_text)
     messages_receiver.start()
 
-    sys.exit(qapp.exec_())
+    exit(qapp.exec_())

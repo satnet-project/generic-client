@@ -1,11 +1,8 @@
 # coding=utf-8
-import unittest
 import sys
-
 from os import path
 
 from mock import Mock, MagicMock, patch
-
 from twisted.python import log
 from twisted.protocols.amp import AMP
 from twisted.protocols.policies import TimeoutMixin
@@ -13,7 +10,7 @@ from twisted.test.proto_helpers import StringTransport
 from twisted.internet import defer, reactor, ssl
 from twisted.internet.protocol import Factory,Protocol, ServerFactory, ClientFactory
 from twisted.internet import defer, protocol
-from twisted.trial import unittest
+from twisted.trial.unittest import TestCase
 from twisted.protocols.amp import AMP
 
 sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
@@ -158,7 +155,7 @@ class ClientProtocol(AMP):
         self.factory.onConnectionLost.callback(self)
 
 
-class TestConnectionProcessIntegrated(unittest.TestCase):
+class TestConnectionProcessIntegrated(TestCase):
 
     def createSettingsFile(self):
         """

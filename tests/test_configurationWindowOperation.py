@@ -4,8 +4,8 @@ import sys
 import ConfigParser
 
 from mock import patch
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
+from PySide.QtTest import QTest
+from PySide import QtGui, QtCore
 from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -36,72 +36,72 @@ class TestUserConfigurationInterfaceOperation(TestCase):
     app = QtGui.QApplication(sys.argv)
 
     # TODO Complete description
-    def createWrongSettingsFile(self):
+    def create_wrong_settings_file(self):
         """
 
         @return:
         """
-        testFile = open(".settings", "w")
-        testFile.write("[User]\n"
-                       "username = test-sc-user\n"
-                       "password = sgongarpass\n"
-                       "slot_id = -1\n"
-                       "connection = none\n"
-                       "\n"
-                       "[Serial]\n"
-                       "serialport = /dev/ttyUSB0\n"
-                       "baudrate = 500000\n"
-                       "\n"
-                       "[Connection]\n"
-                       "reconnection = no\n"
-                       "parameters = yes\n"
-                       "\n"
-                       "[Client]\n"
-                       "name = Universidade de Vigo\n"
-                       "attempts = 10")
-        testFile.close()
+        test_file = open(".settings", "w")
+        test_file.write("[User]\n"
+                        "username = test-sc-user\n"
+                        "password = sgongarpass\n"
+                        "slot_id = -1\n"
+                        "connection = none\n"
+                        "\n"
+                        "[Serial]\n"
+                        "serialport = /dev/ttyUSB0\n"
+                        "baudrate = 500000\n"
+                        "\n"
+                        "[Connection]\n"
+                        "reconnection = no\n"
+                        "parameters = yes\n"
+                        "\n"
+                        "[Client]\n"
+                        "name = Universidade de Vigo\n"
+                        "attempts = 10")
+        test_file.close()
 
     # TODO Complete description
-    def createSettingsFile(self):
+    def create_settings_file(self):
         """
 
         @return:
         """
-        testFile = open(".settings", "w")
-        testFile.write("[User]\n"
-                       "username = test-sc-user\n"
-                       "password = sgongarpass\n"
-                       "slot_id = -1\n"
-                       "connection = none\n"
-                       "\n"
-                       "[Serial]\n"
-                       "serialport = /dev/ttyUSB0\n"
-                       "baudrate = 500000\n"
-                       "\n"
-                       "[udp]\n"
-                       "udpipreceive = 127.0.0.1\n"
-                       "udpportreceive = 1234\n"
-                       "udpipsend = 172.19.51.145\n"
-                       "udpportsend = 57009\n"
-                       "\n"
-                       "[tcp]\n"
-                       "tcpipreceive = 127.0.0.1\n"
-                       "tcpportreceive = 4321\n"
-                       "tcpipsend = 127.0.0.1\n"
-                       "tcpportsend = 1234\n"
-                       "\n"
-                       "[server]\n"
-                       "serverip = 172.19.51.133\n"
-                       "serverport = 25345\n"
-                       "\n"
-                       "[Connection]\n"
-                       "reconnection = no\n"
-                       "parameters = yes\n"
-                       "\n"
-                       "[Client]\n"
-                       "name = Universidade de Vigo\n"
-                       "attempts = 10")
-        testFile.close()
+        test_file = open(".settings", "w")
+        test_file.write("[User]\n"
+                        "username = test-sc-user\n"
+                        "password = sgongarpass\n"
+                        "slot_id = -1\n"
+                        "connection = none\n"
+                        "\n"
+                        "[Serial]\n"
+                        "serialport = /dev/ttyUSB0\n"
+                        "baudrate = 500000\n"
+                        "\n"
+                        "[udp]\n"
+                        "udpipreceive = 127.0.0.1\n"
+                        "udpportreceive = 1234\n"
+                        "udpipsend = 172.19.51.145\n"
+                        "udpportsend = 57009\n"
+                        "\n"
+                        "[tcp]\n"
+                        "tcpipreceive = 127.0.0.1\n"
+                        "tcpportreceive = 4321\n"
+                        "tcpipsend = 127.0.0.1\n"
+                        "tcpportsend = 1234\n"
+                        "\n"
+                        "[server]\n"
+                        "serverip = 172.19.51.133\n"
+                        "serverport = 25345\n"
+                        "\n"
+                        "[Connection]\n"
+                        "reconnection = no\n"
+                        "parameters = yes\n"
+                        "\n"
+                        "[Client]\n"
+                        "name = Universidade de Vigo\n"
+                        "attempts = 10")
+        test_file.close()
 
     def setUp(self):
         pass
@@ -113,8 +113,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         """
         os.remove('.settings')
 
-
-    def test_openWindowWithWrongSettingsFile(self):
+    def test_open_window_with_wrong_settings_file(self):
         """
         Actually the code doesn't raise any error if the the settings file.
         @return: assertIs statement.
@@ -130,28 +129,28 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         @return: Few assertEqual methods who checks if the registers
         saved are correct.
         """
-        self.createSettingsFile()
-        testSave = ConfigurationWindow()
+        self.create_settings_file()
+        test_save = ConfigurationWindow()
 
-        self.assertEqual(str(testSave.FieldLabelServer.text()),
+        self.assertEqual(str(test_save.FieldLabelServer.text()),
                          '172.19.51.133')
-        self.assertEqual(str(testSave.FieldLabelPort.text()),
+        self.assertEqual(str(test_save.FieldLabelPort.text()),
                          '25345')
-        self.assertEqual(str(testSave.FieldLabelUDPIpSend.text()),
+        self.assertEqual(str(test_save.FieldLabelUDPIpSend.text()),
                          '172.19.51.145')
-        self.assertEqual(str(testSave.FieldLabelUDPPortSend.text()),
+        self.assertEqual(str(test_save.FieldLabelUDPPortSend.text()),
                          '57009')
-        self.assertEqual(str(testSave.FieldLabelUDPIPReceive.text()),
+        self.assertEqual(str(test_save.FieldLabelUDPIPReceive.text()),
                          '127.0.0.1')
-        self.assertEqual(str(testSave.FieldLabelUDPPortRececeive.text()),
+        self.assertEqual(str(test_save.FieldLabelUDPPortRececeive.text()),
                          '1234')
-        self.assertEqual(str(testSave.FieldLabelTCPIPSend.text()),
+        self.assertEqual(str(test_save.FieldLabelTCPIPSend.text()),
                          '127.0.0.1')
-        self.assertEqual(str(testSave.FieldLabelTCPPortSend.text()),
+        self.assertEqual(str(test_save.FieldLabelTCPPortSend.text()),
                          '1234')
-        self.assertEqual(str(testSave.FieldLabelTCPIPReceive.text()),
+        self.assertEqual(str(test_save.FieldLabelTCPIPReceive.text()),
                          '127.0.0.1')
-        self.assertEqual(str(testSave.FieldLabelTCPPortRececeive.text()),
+        self.assertEqual(str(test_save.FieldLabelTCPPortRececeive.text()),
                          '4321')
 
     def _test_save_configuration_when_button_clicked(self):
@@ -163,20 +162,20 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         desired.
         @return: a bunch of assertEqual statements.
         """
-        self.createSettingsFile()
-        testSave = ConfigurationWindow()
-        testSave.FieldLabelServer.setText('133.51.19.172')
-        testSave.FieldLabelPort.setText('54352')
-        testSave.FieldLabelUDPIpSend.setText('145.51.19.172')
-        testSave.FieldLabelUDPPortSend.setText('90075')
-        testSave.FieldLabelUDPIPReceive.setText('1.0.0.127')
-        testSave.FieldLabelUDPPortRececeive.setText('4321')
-        testSave.FieldLabelTCPIPSend.setText('1.0.0.127')
-        testSave.FieldLabelTCPPortSend.setText('4321')
-        testSave.FieldLabelTCPIPReceive.setText('1.0.0.127')
-        testSave.FieldLabelTCPPortRececeive.setText('1234')
+        self.create_settings_file()
+        test_save = ConfigurationWindow()
+        test_save.FieldLabelServer.setText('133.51.19.172')
+        test_save.FieldLabelPort.setText('54352')
+        test_save.FieldLabelUDPIpSend.setText('145.51.19.172')
+        test_save.FieldLabelUDPPortSend.setText('90075')
+        test_save.FieldLabelUDPIPReceive.setText('1.0.0.127')
+        test_save.FieldLabelUDPPortRececeive.setText('4321')
+        test_save.FieldLabelTCPIPSend.setText('1.0.0.127')
+        test_save.FieldLabelTCPPortSend.setText('4321')
+        test_save.FieldLabelTCPIPReceive.setText('1.0.0.127')
+        test_save.FieldLabelTCPPortRececeive.setText('1234')
 
-        testSave.save()
+        test_save.save()
         config = ConfigParser.SafeConfigParser()
         config.read(".settings")
         FieldLabelServer = config.get('server', 'serverip')

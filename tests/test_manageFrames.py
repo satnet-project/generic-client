@@ -2,15 +2,12 @@
 import os
 import sys
 
-# Dependencies for the tests
 from mock import patch, Mock, MagicMock
-
 from twisted.trial.unittest import TestCase
 from twisted.protocols.amp import AMP
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
-
 from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification, FrameNotProcessed, ConnectionNotEnded
 

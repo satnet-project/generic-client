@@ -6,7 +6,6 @@ import sys
 from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransport
 from twisted.internet.protocol import Factory
-
 from twisted.protocols.amp import AMP
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),

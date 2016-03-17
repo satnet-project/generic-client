@@ -1,13 +1,11 @@
 # coding=utf-8
 import os
 import sys
-
-# Dependencies for the tests
 from mock import patch, MagicMock, Mock, PropertyMock
 
-from PyQt4.QtTest import QTest
-from PyQt4 import QtGui, QtCore
 
+from PySide.QtTest import QTest
+from PySide import QtGui, QtCore
 from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),

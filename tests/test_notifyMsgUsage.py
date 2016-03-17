@@ -4,9 +4,8 @@ import sys
 import pty
 import base64
 import subprocess
-
-
 from mock import patch
+
 from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransport
 from twisted.internet.protocol import Factory
@@ -18,7 +17,7 @@ from ampCommands import NotifyMsg
 from client_amp import ClientProtocol
 from gs_interface import GroundStationInterface
 from threads import Threads
-from PyQt4 import QtGui
+from PySide import QtGui
 from errors import SerialPortUnreachable
 
 """

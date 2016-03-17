@@ -7,7 +7,6 @@ from twisted.protocols.amp import AMP
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
-
 from gs_interface import GroundStationInterface
 from threads import Threads
 

@@ -4,6 +4,7 @@ import sys
 
 from os import path
 from mock import patch, Mock, MagicMock
+from twisted.trial.unittest import TestCase
 
 sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
 import misc
@@ -29,7 +30,7 @@ import misc
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-class TestReadDataFromTerminal(unittest.TestCase):
+class TestReadDataFromTerminal(TestCase):
 
     def setUp(self):
         pass
@@ -88,7 +89,8 @@ class TestReadDataFromTerminal(unittest.TestCase):
 
         return self.assertIs(arguments_dict['file'], '.settings')
 
-class TestSelectReadingArgumentsMethod(unittest.TestCase):
+
+class TestSelectReadingArgumentsMethod(TestCase):
 
     def setUp(self):
         pass

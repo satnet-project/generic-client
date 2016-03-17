@@ -30,7 +30,8 @@ install:
   - ls
   - python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
   - ls
-  - pip install dist/PySide-1.2.4-cp27-none-linux-x86_64.whl
+  - ls dist/
+  - pip install dist/PySide-1.2.4*
   - ls
 
 script:

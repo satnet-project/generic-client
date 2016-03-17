@@ -1,9 +1,11 @@
 sudo: false
 
 language: 'python'
+cache: pip
 
 branches:
   only:
+    - master
     - development
 
 python:
@@ -18,9 +20,10 @@ before_script:
   - sleep 3
 
 install:
-  - cd scripts
-  - bash ./setup.sh -travisCI
-  - cd ../tests
+  - pip install pyside
+  # - cd scripts
+  # - bash ./setup.sh -travisCI
+  # - cd ../tests
 #  - mkdir build && cd build
 #  - wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.zip
 #  - unzip sip-4.17.zip && cd sip-4.17

@@ -113,9 +113,7 @@ class GroundStationInterface(object):
                     + "\n")
 
         if os.path.exists(filename):
-            logging.debug("------------------------------------------- " +
-                          "Message saved to local file" +
-                          " -------------------------------------------")
+            logging.debug("Message saved to local file: %s" %(filename))
             return True
         else:
             raise IOFileError('Record file not created')
@@ -138,7 +136,8 @@ class GroundStationInterface(object):
         processed.
         @return:
         """
-        logging.debug('Protocol connected to the GS')
+        logging.debug("Protocol connected to the GS. GS instance %s"
+                      %(str(self)))
         self.AMP = AMP
 
     # Removes the reference to the protocol object (self.AMP). It shall
@@ -390,17 +389,18 @@ class OperativeKISSThread(KISSThread):
         self.queue = queue
         self.finished.connect(callback)
         self.serialSignal = serialSignal
+        self.CONNECTION_INFO = CONNECTION_INFO
 
         self.signal = QtCore.SIGNAL('signal')
-        self.init_interface(CONNECTION_INFO)
+        self.init_interface()
 
-    def init_interface(self, CONNECTION_INFO):
+    def init_interface(self):
         # Opening port
         import kiss
         import kiss.constants
 
-        self.kissTNC = kiss.KISS(CONNECTION_INFO['serialport'],
-                                 CONNECTION_INFO['baudrate'])
+        self.kissTNC = kiss.KISS(self.CONNECTION_INFO['serialport'],
+                                 self.CONNECTION_INFO['baudrate'])
         # TODO The logging level is actually set to ERROR because KISS tries
         # TODO to show the frames using the log standard Python method.
         # TODO This raises a codification error.
@@ -409,9 +409,9 @@ class OperativeKISSThread(KISSThread):
 
         try:
             self.kissTNC.start()
-            log.msg("Opening KISS socket ---> " + "Serial port: " +
-                    CONNECTION_INFO['serialport'] + " baudrate: " +
-                    str(CONNECTION_INFO['baudrate']))
+            logging.info("Opening KISS socket ---> " + "Serial port: " +
+                         self.CONNECTION_INFO['serialport'] + " baudrate: " +
+                         str(self.CONNECTION_INFO['baudrate']))
         except SerialException:
             raise SerialPortUnreachable("The port couldn't be open")
 
@@ -434,11 +434,12 @@ class OperativeKISSThread(KISSThread):
         @param frame:
         @return:
         """
-        log.msg("----------------------------------------------- " +
+        logging.info("----------------------------------------------- " +
                 "Message from Serial port" +
                 " -----------------------------------------------")
         self.finished.emit(frame[1:])
 
+    # TODO Check behaviour
     def stop(self):
         """ Stop thread method.
         Emits a log message follows by a del sentence which deletes the
@@ -447,9 +448,16 @@ class OperativeKISSThread(KISSThread):
 
         @return: Nothing,
         """
-        log.msg('Stopping serial port')
         del self.kissTNC
-        self.running = False
+
+        try:
+            logging.debug("Serial socket, %s, not closed" %(str(type(
+                self.kissTNC))))
+        except Exception as e:
+            logging.debug(e)
+            logging.info("Serial socket stopped.")
+            self.running = False
+            return True
 
     def send(self, message):
         """ Send message method.
@@ -463,4 +471,6 @@ class OperativeKISSThread(KISSThread):
             self.kissTNC.write(message)
             return True
         except AttributeError:
+            logging.error("The serial port %s is unreachable" %(
+                self.CONNECTION_INFO['serialport']))
             raise SerialPortUnreachable('The serial port is unreachable')

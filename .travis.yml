@@ -20,16 +20,16 @@ before_script:
   - sleep 3
 
 install:
-  - pip install pyside
-  # - cd scripts
-  # - bash ./setup.sh -travisCI
-  # - cd ../tests
-#  - mkdir build && cd build
-#  - wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.17/sip-4.17.zip
-#  - unzip sip-4.17.zip && cd sip-4.17
-#  - python configure.py --incdir="/home/travis/virtualenv/python2.7.9/lib/python2.7"
-#  - make
-#  - make install
+  - cd scripts
+  - bash ./setup.sh -travisCI
+  - cd ../tests
+  - mkdir build && cd build
+  - wget https://pypi.python.org/packages/source/P/PySide/PySide-1.2.4.tar.gz
+  - tar -xvzf PySide-1.2.4.tar.gz
+  - cd PySide-1.2.4.tar.gz
+  - python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4
+  - pip install dist/PySide-1.2.4-cp27-none-linux-x86_64.whl
+  - cd ../../tests
 #  - cd ../ && rm -r -f sip-4.17
 #  - wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
 #  - tar xvzf PyQt-x11-gpl-4.11.4.tar.gz

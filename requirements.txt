@@ -6,7 +6,6 @@ mock==1.3.0
 ndg-httpsclient==0.4.0
 pyOpenSSL==0.15.1
 pyserial==3.0.1
-pyside
 pytz==2015.7
 requests==2.9.1
 service-identity==14.0.0

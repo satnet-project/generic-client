@@ -19,7 +19,7 @@ from ampCommands import NotifyEvent, SendMsg, EndRemote
 import client_ui
 from errors import WrongFormatNotification, IOFileError
 from threads import MessagesThread, WriteStream
-from misc import checkarguments, get_utc_timestamp
+from misc import check_arguments, get_utc_timestamp
 from misc import get_data_local_file
 
 
@@ -452,7 +452,7 @@ if __name__ == '__main__':
 
     # TODO Create differente logger levels.
 
-    argumentsdict = checkarguments(sysargv_dict=argv)
+    argumentsdict = check_arguments(sysargv_dict=argv)
     stdout = WriteStream(textqueue)
     logging_level = argumentsdict['log_level']
     start_logging(level=logging_level)

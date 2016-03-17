@@ -49,47 +49,45 @@ class TestUserInterfaceInterfacesOperation(TestCase):
 
     app = QtGui.QApplication(sys.argv)
 
-    # TODO Complete description
-    def createSettingsFile(self):
-        """
+    def create_settings_file(self):
+        """ Create settings file.
+        Create a settings file for tests purposes.
 
-        @return:
+        @return: Nothing.
         """
-        testFile = open(".settings", "w")
-        testFile.write("[User]\n"
-                       "username = test-sc-user\n"
-                       "password = sgongarpass\n"
-                       "slot_id = -1\n"
-                       "connection = none\n"
-                       "\n"
-                       "[Serial]\n"
-                       "serialport = /dev/ttyUSB0\n"
-                       "baudrate = 500000\n"
-                       "\n"
-                       "[udp]\n"
-                       "udpipreceive = 127.0.0.1\n"
-                       "udpportreceive = 1234\n"
-                       "udpipsend = 172.19.51.145\n"
-                       "udpportsend = 57009\n"
-                       "\n"
-                       "[tcp]\n"
-                       "tcpipreceive = 127.0.0.1\n"
-                       "tcpportreceive = 4321\n"
-                       "tcpipsend = 127.0.0.1\n"
-                       "tcpportsend = 1234\n"
-                       "\n"
-                       "[server]\n"
-                       "serverip = 172.19.51.133\n"
-                       "serverport = 25345\n"
-                       "\n"
-                       "[Connection]\n"
-                       "reconnection = no\n"
-                       "parameters = yes\n"
-                       "\n"
-                       "[Client]\n"
-                       "name = Universidade de Vigo\n"
-                       "attempts = 10")
-        testFile.close()
+        test_file = open(".settings", "w")
+        test_file.write("[User]\n"
+                        "institution = Universidade de Vigo\n"
+                        "username = test-user-sc\n"
+                        "password = pass\n"
+                        "slot_id = -1\n"
+                        "connection = udp\n"
+                        "\n"
+                        "[Serial]\n"
+                        "serialport = /dev/ttyUSB0\n"
+                        "baudrate = 500000\n"
+                        "\n"
+                        "[udp]\n"
+                        "udpipreceive = 127.0.0.1\n"
+                        "udpportreceive = 57109\n"
+                        "udpipsend = 172.19.51.145\n"
+                        "udpportsend = 57009\n"
+                        "\n"
+                        "[tcp]\n"
+                        "tcpipreceive = 127.0.0.1\n"
+                        "tcpportreceive = 4321\n"
+                        "tcpipsend = 127.0.0.1\n"
+                        "tcpportsend = 1234\n"
+                        "\n"
+                        "[server]\n"
+                        "serverip = 127.0.0.1\n"
+                        "serverport = 25345\n"
+                        "\n"
+                        "[Connection]\n"
+                        "reconnection = yes\n"
+                        "parameters = no\n"
+                        "attempts = 10\n")
+        test_file.close()
 
     def setUp(self):
         self.argumentsdict = {'username': 'test-sc-user', 'udpipsend': '172.19.51.145', 'baudrate': '500000',

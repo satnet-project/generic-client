@@ -169,7 +169,7 @@ def read_arguments(arguments_dict):
         return settings_dict
 
 
-def checkarguments(sysargv_dict):
+def check_arguments(sysargv_dict):
     """ Checks arguments given by terminal.
     Compares the second value of the list given. If there is no value runs
     no_arguments function.

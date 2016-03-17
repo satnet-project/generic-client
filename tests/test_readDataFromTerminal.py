@@ -1,5 +1,4 @@
 # coding=utf-8
-import unittest
 import sys
 
 from os import path
@@ -46,7 +45,7 @@ class TestReadDataFromTerminal(TestCase):
 
         @return: A true boolean if there is no error.
         """
-        argumentsDict = misc.noArguments()
+        argumentsDict = misc.no_arguments()
 
         arguments = ['username', 'slot', 'connection', 'serialport', 'baudrate',
                      'udpipsend', 'udpportsend', 'udpipreceive', 'udpportreceive']
@@ -65,7 +64,7 @@ class TestReadDataFromTerminal(TestCase):
                     "2", "-c", "serial", "-s", "/dev/ttyS1",
                     "-b", "115200"]
         with patch.object(sys, 'argv', testargs):
-            argumentsDict = misc.readArguments(testargs)
+            argumentsDict = misc.read_arguments(testargs)
 
         descriptors = ['username', 'slot', 'baudrate', 'serialport',
                        'connection']
@@ -83,11 +82,12 @@ class TestReadDataFromTerminal(TestCase):
         @return: An assertIs method which checks the value of the dictionary
         created.
         """
-        testargs = ["client_amp.py", "-s", "-f", ".settings"]
+        testargs = ["client_amp.py", "-s", "-f", ".settings", "-l", "DEBUG"]
         with patch.object(sys, 'argv', testargs):
-            arguments_dict = misc.readSettings(testargs)
+            arguments_dict = misc.read_arguments(testargs)
 
-        return self.assertIs(arguments_dict['file'], '.settings')
+        return self.assertIs(arguments_dict['file'], '.settings'), \
+               self.assertIs(arguments_dict['log_level'], 'DEBUG')
 
 
 class TestSelectReadingArgumentsMethod(TestCase):
@@ -100,17 +100,18 @@ class TestSelectReadingArgumentsMethod(TestCase):
 
     # TODO Complete description
     def test_read_arguments_from_terminal(self):
+        """ Reads arguments by terminal test method.
+        Tries to read a
+
+        @return: An assertEqual statement
         """
+        misc.read_arguments = MagicMock(return_value=True)
 
-        @return:
-        """
-        misc.readArguments = MagicMock(return_value=True)
+        test_args = ["client_amp.py", "-g"]
+        with patch.object(sys, 'argv', test_args):
+            misc.check_arguments(test_args)
 
-        testargs = ["client_amp.py", "-g"]
-        with patch.object(sys, 'argv', testargs):
-            arguments_dict = misc.checkarguments(testargs)
-
-        return self.assertEqual(int(misc.readArguments.call_count), 1)
+        return self.assertEqual(int(misc.read_arguments.call_count), 1)
 
     # TODO Complete description
     def test_read_settings_from_terminal(self):
@@ -118,13 +119,13 @@ class TestSelectReadingArgumentsMethod(TestCase):
 
         @return:
         """
-        misc.readSettings = MagicMock(return_value=True)
+        misc.read_arguments = MagicMock(return_value=True)
 
-        testargs = ["client_amp.py", "-s"]
-        with patch.object(sys, 'argv', testargs):
-            arguments_dict = misc.checkarguments(testargs)
+        test_args = ["client_amp.py", "-s"]
+        with patch.object(sys, 'argv', test_args):
+            misc.read_arguments(test_args)
 
-        return self.assertEqual(misc.readSettings.call_count, 1)
+        return self.assertEqual(misc.read_arguments.call_count, 1)
 
     # TODO Complete description
     def test_option_not_valid(self):
@@ -132,9 +133,9 @@ class TestSelectReadingArgumentsMethod(TestCase):
 
         @return:
         """
-        testargs = ["client_amp.py", "-l"]
-        with patch.object(sys, 'argv', testargs):
-            arguments_dict = misc.checkarguments(testargs)
+        test_args = ["client_amp.py", "-l"]
+        with patch.object(sys, 'argv', test_args):
+            arguments_dict = misc.check_arguments(test_args)
 
         return self.assertIsNone(arguments_dict)
 
@@ -144,10 +145,10 @@ class TestSelectReadingArgumentsMethod(TestCase):
 
         @return:
         """
-        misc.noArguments = MagicMock(return_value=True)
+        misc.no_arguments = MagicMock(return_value=True)
 
-        testargs = ["client_amp.py"]
-        with patch.object(sys, 'argv', testargs):
-            arguments_dict = misc.checkarguments(testargs)
+        test_args = ["client_amp.py"]
+        with patch.object(sys, 'argv', test_args):
+            misc.check_arguments(test_args)
 
-        return self.assertEqual(misc.noArguments.call_count, 1)
+        return self.assertEqual(misc.no_arguments.call_count, 1)

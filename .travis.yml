@@ -25,28 +25,23 @@ install:
   - cd ../tests
   - mkdir build && cd build
   - git clone https://github.com/PySide/pyside-setup.git pyside-setup
-  - ls
   - cd pyside-setup
-  - ls
   - python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
-  - ls
-  - ls dist/
   - pip install dist/PySide-1.2.4*
-  - ls
 
 script:
 #  - cd tests
   - trial test_readDataFromFile
   - trial test_readDataFromTerminal
-  - trial test_notifyMsgUsage
-  - trial test_saveReceivedFrames
-  - trial test_connectionDown
-  - trial test_connectionEstablished
-  - trial test_manageFrames
-  - trial test_userInterface
+#  - trial test_notifyMsgUsage
+#  - trial test_saveReceivedFrames
+#  - trial test_connectionDown
+#  - trial test_connectionEstablished
+#  - trial test_manageFrames
+#  - trial test_userInterface
 #  - trial test_integrationConnection
-  - trial test_configurationWindowOperation
-  - coverage run test_*.py
+#  - trial test_configurationWindowOperation
+  - coverage run test_readDataFromFile.py
 
 after_success:
   - coverage combine

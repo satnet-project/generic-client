@@ -101,21 +101,27 @@ class TestNotifyMsgSendMessageBack(TestCase):
         threads.runKISSThreadReceive()
 
     def create_settings_file(self):
+        """ Create settings file.
+        Create a settings file for tests purposes.
+
+        @return: Nothing.
+        """
         test_file = open(".settings", "w")
         test_file.write("[User]\n"
-                        "username = test-sc-user\n"
-                        "password = sgongarpass\n"
+                        "institution = Universidade de Vigo\n"
+                        "username = test-user-sc\n"
+                        "password = pass\n"
                         "slot_id = -1\n"
-                        "connection = none\n"
+                        "connection = udp\n"
                         "\n"
                         "[Serial]\n"
                         "serialport = /dev/ttyUSB0\n"
                         "baudrate = 500000\n"
                         "\n"
                         "[udp]\n"
-                        "udpipreceive = 127\n"
-                        "udpportreceive = 1234\n"
-                        "udpipsend = 127\n"
+                        "udpipreceive = 127.0.0.1\n"
+                        "udpportreceive = 57109\n"
+                        "udpipsend = 172.19.51.145\n"
                         "udpportsend = 57009\n"
                         "\n"
                         "[tcp]\n"
@@ -125,16 +131,13 @@ class TestNotifyMsgSendMessageBack(TestCase):
                         "tcpportsend = 1234\n"
                         "\n"
                         "[server]\n"
-                        "serverip = 172.19.51.133\n"
+                        "serverip = 127.0.0.1\n"
                         "serverport = 25345\n"
                         "\n"
                         "[Connection]\n"
-                        "reconnection = no\n"
-                        "parameters = yes\n"
-                        "\n"
-                        "[Client]\n"
-                        "name = Universidade de Vigo\n"
-                        "attempts = 10")
+                        "reconnection = yes\n"
+                        "parameters = no\n"
+                        "attempts = 10\n")
         test_file.close()
 
     def create_virtual_serial_port(self):

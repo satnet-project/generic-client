@@ -131,10 +131,11 @@ fi
 if [ $1 == '-travisCI' ];
 then
 	echo ">>> [TravisCI] Installing generic client test modules..."
-	pip install -r "$project_path/requirements.txt"
     pip install coveralls
     pip install coverage
     pip install nose
+    pip install wheel
+	pip install -r "$project_path/requirements.txt"
 
     echo '>>> Keys installation...'
     [[ $_generate_keys == 'true' ]] && create_selfsigned_keys

@@ -24,20 +24,14 @@ install:
   - bash ./setup.sh -travisCI
   - cd ../tests
   - mkdir build && cd build
-  - wget https://pypi.python.org/packages/source/P/PySide/PySide-1.2.4.tar.gz
-  - tar -xvzf PySide-1.2.4.tar.gz
-  - cd PySide-1.2.4.tar.gz
-  - python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4
+  - git clone https://github.com/PySide/pyside-setup.git pyside-setup
+  - ls
+  - cd pyside-setup
+  - ls
+  - python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
+  - ls
   - pip install dist/PySide-1.2.4-cp27-none-linux-x86_64.whl
-  - cd ../../tests
-#  - cd ../ && rm -r -f sip-4.17
-#  - wget http://downloads.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-x11-gpl-4.11.4.tar.gz
-#  - tar xvzf PyQt-x11-gpl-4.11.4.tar.gz
-#  - cd PyQt-x11-gpl-4.11.4
-#  - python ./configure.py --confirm-license --no-designer-plugin -q /usr/bin/qmake-qt4 -e QtGui -e QtCore -e QtTest
-#  - make
-#  - make install
-#  - cd ../ && rm -r -f PyQt-x11-gpl-4.11.4 && cd ../../
+  - ls
 
 script:
 #  - cd tests

@@ -164,7 +164,7 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
         return self.assertTrue(self.gsi._updateLocalFile(self.correctFrame))
 
     # TODO Complete description
-    def test_groundstationInterfaceCallsEndRemoteRightAnswer(self):
+    def _test_groundstationInterfaceCallsEndRemoteRightAnswer(self):
         """
 
         @return:

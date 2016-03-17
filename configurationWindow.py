@@ -23,7 +23,7 @@ from errors import SettingsCorrupted
 __author__ = 's.gongoragarcia@gmail.com'
 
 # TODO Gets a "Segmentation fault (core dumped)" after opens this window.
-
+# TODO Improve errors logging
 class ConfigurationWindow(QtGui.QDialog):
     def __init__(self, settings=None):
         super(ConfigurationWindow, self).__init__()
@@ -44,11 +44,12 @@ class ConfigurationWindow(QtGui.QDialog):
             self.setMinimumSize(800, 300)
 
         # Read fields
-        try:
-            self.CONNECTION_INFO = misc.get_data_local_file('.settings')
-        except:
-            logging.error("Some fields are lost or corrupted")
-            raise SettingsCorrupted("Some fields are lost or corrupted")
+        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
+
+        if 'error' in self.CONNECTION_INFO:
+            logging.error("Some fields are lost")
+            raise SettingsCorrupted("The following fields are lost:",
+                                    self.CONNECTION_INFO['error'])
 
         self.setfields()
 

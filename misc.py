@@ -2,9 +2,10 @@
 import datetime
 import pytz
 import getopt
+from os import path, getcwd
 
 from twisted.python import log
-from errors import ArgumentsInvalid
+from errors import ArgumentsInvalid, IOFileError
 
 """
    Copyright 2016 Samuel Góngora García
@@ -201,33 +202,36 @@ def get_data_local_file(settingsfile):
     @param settingsfile: Settings file location.
     @return: A dictionary which contains the connection's data.
     """
+    if not path.isfile(settingsfile):
+        dir = getcwd()
+        setting_file_dir = dir + '/' + settingsfile
+        raise IOFileError("Settings file not present at %s"
+                          %(setting_file_dir))
+
     connect_info = {}
 
     from ConfigParser import ConfigParser
     config = ConfigParser()
     config.read(settingsfile)
 
-    connect_info['reconnection'] = config.get('Connection', 'reconnection')
-    connect_info['parameters'] = config.get('Connection', 'parameters')
-    connect_info['name'] = config.get('User', 'institution')
-    connect_info['attempts'] = config.get('Connection', 'attempts')
-    connect_info['username'] = config.get('User', 'username')
-    connect_info['connection'] = config.get('User', 'connection')
-    connect_info['serialport'] = config.get('Serial', 'serialport')
-    connect_info['baudrate'] = config.get('Serial', 'baudrate')
-    connect_info['udpipreceive'] = config.get('udp', 'udpipreceive')
-    connect_info['udpportreceive'] = int(config.get('udp', 'udpportreceive'))
-    connect_info['udpipsend'] = config.get('udp', 'udpipsend')
-    connect_info['udpportsend'] = config.get('udp', 'udpportsend')
-    connect_info['tcpipreceive'] = config.get('tcp', 'tcpipreceive')
-    connect_info['tcpportreceive'] = int(config.get('tcp', 'tcpportreceive'))
-    connect_info['tcpipsend'] = config.get('tcp', 'tcpipsend')
-    connect_info['tcpportsend'] = config.get('tcp', 'tcpportsend')
-    connect_info['serverip'] = config.get('server', 'serverip')
-    connect_info['serverport'] = int(config.get('server', 'serverport'))
+    field_name_list = ['reconnection', 'parameters', 'institution', 'attempts',
+                       'username', 'connection', 'serialport', 'baudrate',
+                       'udpipreceive', 'udpportreceive', 'udpipsend',
+                       'udpportsend', 'tcpipreceive', 'tcpportreceive',
+                       'tcpipsend', 'tcpportsend', 'serverip', 'serverport']
+    group_name_list = ['Connection', 'Connection', 'User', 'Connection',
+                       'User', 'User', 'Serial', 'Serial', 'udp', 'udp',
+                       'udp', 'udp', 'tcp', 'tcp', 'tcp', 'tcp', 'server',
+                       'server']
+
+    for i in range(len(field_name_list)):
+        try:
+            connect_info[field_name_list[i]] = config.get(group_name_list[i],
+                                                         field_name_list[i])
+        except:
+            connect_info = {'error': str(field_name_list[i])}
 
     return connect_info
-
 
 def set_data_local_file(settingsfile, connect_info):
     """ Sets data to local file.

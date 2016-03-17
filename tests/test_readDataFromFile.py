@@ -9,6 +9,7 @@ from exceptions import KeyError
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                 "..")))
 import misc
+from errors import IOFileError
 
 """
    Copyright 2016 Samuel Góngora García
@@ -99,8 +100,9 @@ class TestReadDataFromFile(TestCase):
         @return: An assertRaises method which checks that the function
         called raises a NoSectionError.
         """
-        return self.assertRaises(NoSectionError, misc.get_data_local_file,
-                                 'wrongFile')
+
+        return self.assertRaises(IOFileError, misc.get_data_local_file,
+                                 '.wrong_file')
 
     def test_load_right_key_from_right_file(self):
         """ Loads right key from settings file.

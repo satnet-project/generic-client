@@ -2,7 +2,6 @@
 import os
 import sys
 
-# Dependencies for the tests
 from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransport
 from twisted.internet.protocol import Factory
@@ -10,7 +9,6 @@ from twisted.protocols.amp import AMP
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
-
 import client_amp
 from gs_interface import GroundStationInterface
 from errors import WrongFormatNotification
@@ -60,16 +58,18 @@ class TestClientProtocolSaveFrame(TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
         threads = object
 
-        self.sp = client_amp.ClientProtocol(CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(CONNECTION_INFO, gsi, threads,
+                                            '.settings')
         self.sp.factory = MockFactory()
         self.transport = StringTransport()
         self.sp.makeConnection(self.transport)
 
         self.transport.protocol = self.sp
 
-        self.correctFrame = ("00:82:a0:00:00:53:45:52:50:2d:42:30:91:1d:1b:03:" +
-                             "8d:0b:5c:03:02:28:01:9c:01:ab:02:4c:02:98:01:da:" +
-                             "02:40:00:00:00:10:0a:46:58:10:00:c4:9d:cb:a2:21:39")
+        self.correctFrame = ("00:82:a0:00:00:53:45:52:50:2d:42:30:91:1d:" +
+                             "1b:03:8d:0b:5c:03:02:28:01:9c:01:ab:02:4c:" +
+                             "02:98:01:da:02:40:00:00:00:10:0a:46:58:10:" +
+                             "00:c4:9d:cb:a2:21:39")
 
         self.correctFrame = bytearray(self.correctFrame)
         self.wrongFrame = 9

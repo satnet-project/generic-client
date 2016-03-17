@@ -57,7 +57,7 @@ class TestClientProtocolReceiveFrame(TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
         threads = object
 
-        self.sp = ClientProtocol(CONNECTION_INFO, gsi, threads)
+        self.sp = ClientProtocol(CONNECTION_INFO, gsi, threads, '.settings')
         self.sp.factory = MockFactory()
         self.transport = StringTransport()
         self.sp.makeConnection(self.transport)
@@ -186,7 +186,8 @@ class TestNotifyMsgSendMessageBack(TestCase):
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
+                                 '.settings')
         self.CONNECTION_INFO['connection'] = 'serial'
         self.mocked_open_interface_kiss(threads)
 
@@ -214,7 +215,8 @@ class TestNotifyMsgSendMessageBack(TestCase):
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
+                                 '.settings')
         self.CONNECTION_INFO['connection'] = 'serial'
         self.mocked_open_interface_kiss(threads)
 
@@ -236,7 +238,8 @@ class TestNotifyMsgSendMessageBack(TestCase):
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
+                                 '.settings')
         self.CONNECTION_INFO['connection'] = 'udp'
 
         udpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correct_frame)
@@ -256,7 +259,8 @@ class TestNotifyMsgSendMessageBack(TestCase):
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
+                                 '.settings')
         self.CONNECTION_INFO['connection'] = 'udp'
 
         udpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correct_frame)
@@ -275,7 +279,8 @@ class TestNotifyMsgSendMessageBack(TestCase):
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
+                                 '.settings')
         self.CONNECTION_INFO['connection'] = 'tcp'
 
         tcpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correct_frame)
@@ -295,7 +300,8 @@ class TestNotifyMsgSendMessageBack(TestCase):
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
-        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads)
+        self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
+                                 '.settings')
         self.CONNECTION_INFO['connection'] = 'none'
 
         noneconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correct_frame)

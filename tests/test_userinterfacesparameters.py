@@ -2,11 +2,11 @@
 import os
 import sys
 from mock import patch, MagicMock, Mock, PropertyMock
+from unittest import TestCase, main
 
 
 from PySide.QtTest import QTest
 from PySide import QtGui, QtCore
-from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
@@ -176,3 +176,6 @@ class TestUserInterfaceParametersOperation(TestCase):
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
         testUI.UpdateFields()
         return self.assertTrue(get_data_local_file.called)
+
+if __name__ == "__main__":
+    main()

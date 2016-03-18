@@ -46,19 +46,19 @@ script:
   - trial test_userinterfaceclosewindow
 #  - trial test_integrationConnection
   - trial test_configurationWindowOperation
-  - coverage run test_readDataFromFile.py
-  - coverage run test_readDataFromTerminal.py
-  - coverage run test_notifyMsgUsage.py
-  - coverage run test_saveReceivedFrames.py
-  - coverage run test_connectionDown.py
-  - coverage run test_connectionEstablished.py
-  - coverage run test_manageFrames.py
-  - coverage run test_userinterfacesoperation.py
-  - coverage run test_userinterfacesparameters.py
-  - coverage run test_userinterfacesconnection.py
-  - coverage run test_userinterfacedisconnection.py
-  - coverage run test_userinterfaceclosewindow.py
-  - coverage run test_configurationWindowOperation.py
+  - coverage run -p test_readDataFromFile.py
+  - coverage run -p test_readDataFromTerminal.py
+  - coverage run -p test_notifyMsgUsage.py
+  - coverage run -p test_saveReceivedFrames.py
+  - coverage run -p test_connectionDown.py
+  - coverage run -p test_connectionEstablished.py
+  - coverage run -p test_manageFrames.py
+  - coverage run -p test_userinterfacesoperation.py
+  - coverage run -p test_userinterfacesparameters.py
+  - coverage run -p test_userinterfacesconnection.py
+  - coverage run -p test_userinterfacedisconnection.py
+  - coverage run -p test_userinterfaceclosewindow.py
+  - coverage run -p test_configurationWindowOperation.py
 
 after_success:
   - coverage combine

@@ -1,8 +1,8 @@
 # coding=utf-8
 import os
 import sys
+from unittest import TestCase, main
 
-from twisted.trial.unittest import TestCase
 from ConfigParser import NoSectionError
 from exceptions import KeyError
 
@@ -124,3 +124,6 @@ class TestReadDataFromFile(TestCase):
         """
         argumentsDict = misc.get_data_local_file('.settings')
         return self.assertRaises(KeyError, lambda: argumentsDict['wrongKey'])
+
+if __name__ == "__main__":
+    main()

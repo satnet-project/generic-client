@@ -1,10 +1,9 @@
 # coding=utf-8
 import os
 import sys
+from unittest import TestCase, main
 
-# Dependencies for the tests
 from mock import patch
-from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransportWithDisconnection
 from twisted.internet.protocol import Factory
 
@@ -103,5 +102,8 @@ class TestClientProtocolConnectionMade(TestCase):
         self.sp.makeConnection(self.transport)
         return self.assertTrue(connectProtocol.called),\
                self.assertTrue(user_login.called)
+
+if __name__ == "__main__":
+    main()
 
 

@@ -1,8 +1,8 @@
 # coding=utf-8
 import os
 import sys
+from unittest import TestCase, main
 
-from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransport
 from twisted.internet.protocol import Factory
 from twisted.protocols.amp import AMP
@@ -93,3 +93,6 @@ class TestClientProtocolSaveFrame(TestCase):
         """
         return self.assertRaises(WrongFormatNotification,
                                  self.sp.saveReceivedFrames, self.wrongFrame)
+
+if __name__ == "__main__":
+    main()

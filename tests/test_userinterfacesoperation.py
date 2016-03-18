@@ -2,11 +2,11 @@
 import os
 import sys
 from mock import patch, MagicMock, Mock, PropertyMock
+from unittest import TestCase, main
 
 
 from PySide.QtTest import QTest
 from PySide import QtGui, QtCore
-from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
@@ -267,3 +267,6 @@ class TestUserInterfaceInterfacesOperation(TestCase):
         return self.assertTrue(stopUDPThreadReceive.called),\
                self.assertIs(testUI.connection, 'udp'), \
                self.assertFalse(testUI.stopInterfaceButton.isEnabled())
+
+if __name__ == "__main__":
+    main()

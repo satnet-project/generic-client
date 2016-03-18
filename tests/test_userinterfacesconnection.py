@@ -2,16 +2,16 @@
 import os
 import sys
 from mock import patch
-
+from unittest import TestCase, main
 
 from PySide.QtTest import QTest
 from PySide import QtGui, QtCore
-from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
 from client_ui import SatNetUI
 from client_amp import Client
+
 
 """
    Copyright 2016 Samuel Góngora García
@@ -167,3 +167,6 @@ class TestUserInterfaceConnectionsOperation(TestCase):
         return self.assertFalse(testUI.AutomaticReconnection.isChecked()), \
                self.assertEquals(testUI.CONNECTION_INFO['reconnection'],
                                  'no')
+
+if __name__ == "__main__":
+    main()

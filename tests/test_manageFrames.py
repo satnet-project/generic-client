@@ -1,9 +1,10 @@
 # coding=utf-8
 import os
 import sys
+from unittest import TestCase, main
 
 from mock import patch, Mock, MagicMock
-from twisted.trial.unittest import TestCase
+#from twisted.trial.unittest import TestCase
 from twisted.protocols.amp import AMP
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -202,3 +203,7 @@ class TestGroundStationInterfaceFramesManagement(TestCase):
         """
         self.gsi.disconnectProtocol()
         return self.assertIsNone(self.gsi.AMP)
+
+
+if __name__ == "__main__":
+    main()

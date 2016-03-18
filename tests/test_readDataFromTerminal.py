@@ -1,9 +1,9 @@
 # coding=utf-8
 import sys
-
+from unittest import TestCase, main
 from os import path
+
 from mock import patch, Mock, MagicMock
-from twisted.trial.unittest import TestCase
 
 sys.path.append(path.abspath(path.join(path.dirname(__file__), "..")))
 import misc
@@ -152,3 +152,6 @@ class TestSelectReadingArgumentsMethod(TestCase):
             misc.check_arguments(test_args)
 
         return self.assertEqual(misc.no_arguments.call_count, 1)
+
+if __name__ == "__main__":
+    main()

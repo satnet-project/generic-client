@@ -3,10 +3,10 @@ import os
 import sys
 from mock import patch, MagicMock, Mock, PropertyMock
 
-
+from unittest import TestCase, main
 from PySide.QtTest import QTest
 from PySide import QtGui, QtCore
-from twisted.trial.unittest import TestCase
+
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
@@ -151,3 +151,5 @@ class TestUserInterfaceDisconnectionsOperation(TestCase):
                self.assertFalse(testUI.ButtonCancel.isEnabled())
 
 
+if __name__ == "__main__":
+    main()

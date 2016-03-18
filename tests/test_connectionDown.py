@@ -1,11 +1,9 @@
 # coding=utf-8
 import os
 import sys
-
-# Dependencies for the tests
 from mock import patch
+from unittest import TestCase, main
 
-from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransportWithDisconnection
 from twisted.internet.protocol import Factory
 
@@ -170,3 +168,5 @@ class TestClientProtocolReconnectionAttemps(TestCase):
         self.sp.end_connection()
         return self.assertTrue(callRemote.called)
 
+if __name__ == "__main__":
+    main()

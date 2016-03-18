@@ -3,10 +3,9 @@ import os
 import sys
 from mock import patch, MagicMock, Mock, PropertyMock
 
-
+from unittest import TestCase, main
 from PySide.QtTest import QTest
 from PySide import QtGui, QtCore
-from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
@@ -162,3 +161,6 @@ class TestUserInterfaceCloseWindow(TestCase):
         eventmock.ignore = MagicMock(return_value=True)
         testUI.closeEvent(event=eventmock)
         return self.assertTrue(eventmock.ignore.called)
+
+if __name__ == "__main__":
+    main()

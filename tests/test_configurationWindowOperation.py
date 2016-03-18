@@ -2,7 +2,7 @@
 import os
 import sys
 import ConfigParser
-from unittest import TestCase
+from unittest import TestCase, main
 
 
 from mock import patch
@@ -259,3 +259,6 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         testWindowConfiguration = ConfigurationWindow()
         testWindowConfiguration.closeWindow()
         return self.assertEqual(int(close.call_count), 1)
+
+if __name__ == "__main__":
+    main()

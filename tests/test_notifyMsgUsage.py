@@ -5,8 +5,8 @@ import pty
 import base64
 import subprocess
 from mock import patch
+from unittest import TestCase, main
 
-from twisted.trial.unittest import TestCase
 from twisted.test.proto_helpers import StringTransport
 from twisted.internet.protocol import Factory
 from twisted.protocols.amp import AMP
@@ -308,3 +308,6 @@ class TestNotifyMsgSendMessageBack(TestCase):
 
         return self.assertTrue(noneconnectionresponse['bResult']), \
                self.assertTrue(saveReceivedFrames.called)
+
+if __name__ == "__main__":
+    main()

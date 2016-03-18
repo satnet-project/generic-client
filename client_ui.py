@@ -1,7 +1,6 @@
 # coding=utf-8
-import os
-from os import getcwd
-import time
+from os import getcwd, environ
+from time import strftime
 import logging
 
 from PySide import QtGui, QtCore
@@ -37,7 +36,7 @@ class SatNetUI(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
 
         self.setFont(QtGui.QFont('Verdana', 11))
-        self.enviromentDesktop = os.environ.get('DESKTOP_SESSION')
+        self.enviromentDesktop = environ.get('DESKTOP_SESSION')
 
         self.connection = ''
         self.checkarguments(argumentsdict)
@@ -45,12 +44,12 @@ class SatNetUI(QtGui.QWidget):
         self.UpdateFields()
 
         self.initUI()
-        self.initButtons()
+        self.init_buttons()
         self.initFields()
         self.setParameters()
         self.initLogo()
         self.initConfiguration()
-        self.initConsole()
+        self.init_console()
 
         self.dialogTextBrowser = ConfigurationWindow(self.settingsfile)
 
@@ -113,7 +112,7 @@ class SatNetUI(QtGui.QWidget):
             logging.info("No parameters configuration found." +
                          " Using default parameter - Yes")
 
-    def initButtons(self):
+    def init_buttons(self):
         """
 
         @return: None
@@ -249,7 +248,7 @@ class SatNetUI(QtGui.QWidget):
         LabelLogo = QtGui.QLabel(self)
         LabelLogo.move(20, 450)
 
-        pic = QtGui.QPixmap(os.getcwd() + "/logo.png")
+        pic = QtGui.QPixmap(getcwd() + "/logo.png")
 
         LabelLogo.setPixmap(pic)
         LabelLogo.show()
@@ -268,7 +267,7 @@ class SatNetUI(QtGui.QWidget):
         elif self.CONNECTION_INFO['parameters'] == 'no':
             self.LoadDefaultSettings.setChecked(False)
 
-    def initConsole(self):
+    def init_console(self):
         """
 
         @return: None.
@@ -462,7 +461,7 @@ class SatNetUI(QtGui.QWidget):
             self.ButtonCancel.setEnabled(True)
 
         filename = ("log-" + self.CONNECTION_INFO['institution'] +
-                    "-" + time.strftime("%Y.%m.%d") + ".csv")
+                    "-" + strftime("%Y.%m.%d") + ".csv")
         with open(filename, "a+") as f:
             f.write(text)
 

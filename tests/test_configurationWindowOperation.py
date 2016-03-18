@@ -2,11 +2,13 @@
 import os
 import sys
 import ConfigParser
+from unittest import TestCase
+
 
 from mock import patch
 from PySide.QtTest import QTest
 from PySide import QtGui, QtCore
-from twisted.trial.unittest import TestCase
+# from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))

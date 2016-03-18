@@ -11,7 +11,7 @@ baudrate = 500000
 
 [udp]
 udpipreceive = 127.0.0.1
-udpportreceive = 57109
+udpportreceive = 57108
 udpipsend = 172.19.51.145
 udpportsend = 57009
 

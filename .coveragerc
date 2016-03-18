@@ -1,3 +1,2 @@
 [report]
-include = /home/travis/build/satnet-project/client_amp.py
-omit = /home/travis/virtualenv/*
+omit = /home/travis/virtualenv/*, /home/travis/build/satnet-project/tests/*

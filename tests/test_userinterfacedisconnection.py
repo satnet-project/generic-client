@@ -17,25 +17,7 @@ import misc
 from gs_interface import GroundStationInterface, KISSThread
 from configurationWindow import ConfigurationWindow
 
-
-"""
-   Copyright 2016 Samuel Góngora García
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-       http://www.apache.org/licenses/LICENSE-2.0
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-:Author:
-    Samuel Góngora García (s.gongoragarcia@gmail.com)
-"""
-__author__ = 's.gongoragarcia@gmail.com'
-
-
-class TestUserInterfaceParametersOperation(TestCase):
+class TestUserInterfaceDisconnectionsOperation(TestCase):
 
     # TODO Complete description
     @patch('__main__.ConfigurationWindow')
@@ -112,66 +94,42 @@ class TestUserInterfaceParametersOperation(TestCase):
     # TODO Complete description
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
-    @patch.object(SatNetUI, 'UpdateFields')
+    @patch.object(SatNetUI, 'CloseConnection')
     @patch.object(SatNetUI, 'setParameters', return_value=True)
-    @patch.object(SatNetUI, 'initConfiguration', return_value=True)
-    def test_parameters_loaded_when_button_click(self, createconnection,
-                                                 initLogo, UpdateFields,
-                                                 setParameters,
-                                                 initConfiguration):
+    def test_closeConnectionWhenButtonClicked(self, createconnection,
+                                              initLogo, CloseConnection,
+                                              setArguments):
         """
 
         @param createconnection:
         @param initLogo:
-        @param UpdateFields:
+        @param CloseConnection:
         @return:
         """
         self.create_settings_file()
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
-        QTest.mouseClick(testUI.ButtonLoad, QtCore.Qt.LeftButton)
-        return self.assertTrue(UpdateFields.called)
+        QTest.mouseClick(testUI.ButtonCancel, QtCore.Qt.LeftButton)
+        return self.assertTrue(CloseConnection.called)
 
     # TODO Complete description
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
-    @patch.object(SatNetUI, 'SetConfiguration')
+    @patch.object(GroundStationInterface, 'clear_slots')
     @patch.object(SatNetUI, 'setParameters', return_value=True)
-    def test_configuration_opens_when_button_click(self, createconnection,
-                                                   initLogo, SetConfiguration,
-                                                   setArguments):
+    def test_methodsAreCallWhenUserClosesConnection(self, createconnection,
+                                                    initLogo, clear_slots,
+                                                    setArguments):
         """
 
         @param createconnection:
         @param initLogo:
-        @param SetConfiguration:
+        @param clear_slots:
         @return:
         """
         self.create_settings_file()
         testUI = SatNetUI(argumentsdict=self.argumentsdict)
-        QTest.mouseClick(testUI.ButtonConfiguration, QtCore.Qt.LeftButton)
-        return self.assertTrue(SetConfiguration.called)
+        testUI.CloseConnection()
+        return self.assertTrue(clear_slots.called), self.assertTrue(testUI.ButtonNew.isEnabled()), \
+               self.assertFalse(testUI.ButtonCancel.isEnabled())
 
-    # TODO Complete description
-    @patch.object(Client, 'createconnection', return_value=True)
-    @patch.object(SatNetUI, 'initLogo', return_value=True)
-    @patch.object(SatNetUI, 'initButtons', return_value=True)
-    @patch.object(SatNetUI, 'setParameters', return_value=True)
-    @patch.object(misc, 'get_data_local_file')
-    def _test_parameters_loaded_when_update_fields_Called(self,
-                                                         createconnection,
-                                                         initLogo, initButtons,
-                                                         setParameters,
-                                                         get_data_local_file,):
-        """
 
-        @param createconnection:
-        @param initLogo:
-        @param initButtons:
-        @param setParameters:
-        @param get_data_local_file:
-        @return:
-        """
-        self.create_settings_file()
-        testUI = SatNetUI(argumentsdict=self.argumentsdict)
-        testUI.UpdateFields()
-        return self.assertTrue(get_data_local_file.called)

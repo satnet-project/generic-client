@@ -59,7 +59,8 @@ class TestClientProtocolConnectionDown(TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
         threads = object
 
-        self.sp = client_amp.ClientProtocol(CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(CONNECTION_INFO, gsi, threads,
+                                            '.settings')
         self.sp.factory = MockFactory()
         self.transport = StringTransportWithDisconnection()
         self.sp.makeConnection(self.transport)
@@ -122,7 +123,8 @@ class TestClientProtocolReconnectionAttemps(TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
         threads = object
 
-        self.sp = client_amp.ClientProtocol(CONNECTION_INFO, gsi, threads)
+        self.sp = client_amp.ClientProtocol(CONNECTION_INFO, gsi, threads,
+                                            '.settings')
         self.sp.factory = MockFactory()
         self.transport = StringTransportWithDisconnection()
         self.sp.makeConnection(self.transport)

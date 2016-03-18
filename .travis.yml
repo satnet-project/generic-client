@@ -30,19 +30,21 @@ install:
   - python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
   - pip install dist/PySide-1.2.4*
   - cd ../
+  - ls
+  - pwd
 
 script:
 #  - cd tests
-  - trial test_readDataFromFile
-  - trial test_readDataFromTerminal
+  - trial test_readDataFromFile.py
+  - trial test_readDataFromTerminal.py
 #  - trial test_notifyMsgUsage
-  - trial test_saveReceivedFrames
+  - trial test_saveReceivedFrames.py
 #  - trial test_connectionDown
 #  - trial test_connectionEstablished
-  - trial test_manageFrames
+  - trial test_manageFrames.py
 #  - trial test_userInterface
 #  - trial test_integrationConnection
-  - trial test_configurationWindowOperation
+  - trial test_configurationWindowOperation.py
   - coverage run test_readDataFromFile.py
   - coverage run test_readDataFromTerminal.py
 

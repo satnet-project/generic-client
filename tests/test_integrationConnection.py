@@ -1,6 +1,6 @@
 # coding=utf-8
 import sys
-from os import path
+from os import path, remove
 
 from mock import Mock, MagicMock, patch
 from twisted.python import log
@@ -212,11 +212,12 @@ class TestConnectionProcessIntegrated(TestCase):
                                 'udpportreceive': 57008, 'serverport': 25345,
                                 'reconnection': 'no', 'udpportsend': '57009',
                                 'tcpipreceive': '127.0.0.1'}
+        self.create_settings_file()
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, 'Vigo', AMP)
         self.threads = Threads(self.CONNECTION_INFO, self.gsi)
 
-        self.serverDisconnected = defer.Deferred()
-        self.serverPort = self._listenServer(self.serverDisconnected)
+        self.server_disconnected = defer.Deferred()
+        self.serverPort = self._listenServer(self.server_disconnected)
         connected = defer.Deferred()
         self.clientDisconnected = defer.Deferred()
         self.clientConnection = self._connectClient(connected, self.clientDisconnected)
@@ -243,10 +244,11 @@ class TestConnectionProcessIntegrated(TestCase):
         return reactor.connectSSL('127.0.0.1', 1234, self.factory, CtxFactory())
 
     def tearDown(self):
+        remove('.settings')
         d = defer.maybeDeferred(self.serverPort.stopListening)
         self.clientConnection.disconnect()
         return defer.gatherResults([d, self.clientDisconnected,
-                                    self.serverDisconnected])
+                                    self.server_disconnected])
 
     # FIXME Fix test and complete description
     def _test_loginRightUsernameRightPasswordRightConnection(self):
@@ -260,7 +262,7 @@ class TestConnectionProcessIntegrated(TestCase):
         return d
 
     # FIXME Fix test and complete description
-    def _test_loginWrongUsernameRightPasswordRightConnection(self):
+    def test_loginWrongUsernameRightPasswordRightConnection(self):
         """
 
         @return:
@@ -271,7 +273,7 @@ class TestConnectionProcessIntegrated(TestCase):
         return d
 
     # FIXME Fix test and complete description
-    def test_wrongUsernamestartRemoteFailed(self):
+    def _test_wrong_user_start_remote_failed(self):
         """
 
         @return:

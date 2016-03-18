@@ -67,7 +67,7 @@ class ClientProtocol(AMP):
         self.user_login()
         self.gsi.connectProtocol(self)
         logging.info("Connection sucessful.")
-        logging.debug("Protocol instance %s" %(str(self)))
+        logging.debug("Protocol instance %s" % (str(self)))
 
     def connectionLost(self, reason):
         """ Connection lost method.
@@ -78,7 +78,7 @@ class ClientProtocol(AMP):
         """
         logging.info("Connection lost.")
         logging.debug("Message from %s. Lost connection. Reason %s"
-                      %(self, str(reason)))
+                      % (self, str(reason)))
 
     def connectionFailed(self, reason):
         """ Connection failed method.
@@ -89,7 +89,7 @@ class ClientProtocol(AMP):
         """
         logging.info("Connection failed.")
         logging.debug("Message from %s. Failed connection. Reason %s"
-                      %(self, str(reason)))
+                      % (self, str(reason)))
 
     # TODO Catch possible exception!
     @inlineCallbacks
@@ -118,7 +118,7 @@ class ClientProtocol(AMP):
         elif res['bAuthenticated'] is False:
             logging.debug("Not authenticated")
         else:
-            logging.debug(("Authenticated"))
+            logging.debug("Authenticated")
 
     def vNotifyMsg(self, sMsg):
         """ Notify message from SatNet protocol.
@@ -138,7 +138,7 @@ class ClientProtocol(AMP):
         if self.CONNECTION_INFO['connection'] == 'serial':
             frameprocessed = list(sMsg)
             frameprocessed = ":".join("{:02x}".format(c)
-                                  for c in frameprocessed)
+                                      for c in frameprocessed)
             sMsg = str(sMsg)
 
             # logging.debug(frameprocessed)
@@ -177,7 +177,7 @@ class ClientProtocol(AMP):
             frameprocessed = list(frame)
         except TypeError:
             logging.error("The frame has an unexpect format"
-                          "Expected bytearray. Found %s" %(str(type(frame))))
+                          "Expected bytearray. Found %s" % (str(type(frame))))
             raise WrongFormatNotification('The frame has an unexpected format')
 
         frameprocessed = ":".join("{:02x}".format(c)
@@ -228,10 +228,10 @@ class ClientProtocol(AMP):
 
         if path.exists(filename):
             logging.debug("Message received saved to local file: %s"
-                          %(str(filename)))
+                          % (str(filename)))
             return True
         else:
-            logging.error("Record file %s not created" %(str(filename)))
+            logging.error("Record file %s not created" % (str(filename)))
             raise IOFileError("Record file not created")
 
     def vNotifyEvent(self, iEvent, sDetails):
@@ -279,7 +279,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         @param addr:
         @return: ClientProtocol instance
         """
-        logging.debug("Building client protocol at %s" % addr )
+        logging.debug("Building client protocol at %s" % addr)
         self.resetDelay()
 
         return ClientProtocol(self.CONNECTION_INFO, self.gsi,
@@ -300,7 +300,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
             self.continueTrying = None
 
         logging.debug("Message from %s. Lost connection. Reason %s"
-                      %(self, (str(reason))))
+                      % (self, (str(reason))))
         ReconnectingClientFactory.clientConnectionLost(self,
                                                        connector,
                                                        reason)
@@ -320,7 +320,7 @@ class ClientReconnectFactory(ReconnectingClientFactory):
         elif CONNECTION_INFO['reconnection'] == 'no':
             self.continueTrying = None
 
-        logging.debug('Connection failed. Reason: %s' %(str(reason)))
+        logging.debug('Connection failed. Reason: %s' % (str(reason)))
         ReconnectingClientFactory.clientConnectionFailed(self,
                                                          connector,
                                                          reason)
@@ -391,7 +391,7 @@ class Client(object):
         if test is False:
             if not reactor.running:
                 reactor.run(installSignalHandlers=0)
-                logging.debug("Reactor %s started." %(str(reactor)))
+                logging.debug("Reactor %s started." % (str(reactor)))
 
         return True
 
@@ -403,7 +403,7 @@ class Client(object):
         """
         from twisted.internet import reactor
         if reactor.running:
-            logging.debug("Reactor %s destroyed." %(str(reactor)))
+            logging.debug("Reactor %s destroyed." % (str(reactor)))
             reactor.stop()
         logging.debug("Reactor don't running.")
         logging.shutdown()
@@ -447,10 +447,7 @@ def start_logging(level=None):
 
 if __name__ == '__main__':
     textqueue = Queue()
-    # TODO Actually only standard messages are logged.
-    # TODO Should we register standard error too?
-
-    # TODO Create differente logger levels.
+    # TODO Create configuration file for logging levels
 
     argumentsdict = check_arguments(sysargv_dict=argv)
     stdout = WriteStream(textqueue)

@@ -35,19 +35,25 @@ install:
 
 script:
 #  - cd tests
-  - trial test_readDataFromFile.py
-  - trial test_readDataFromTerminal.py
+  - trial test_readDataFromFile
+  - trial test_readDataFromTerminal
 #  - trial test_notifyMsgUsage
-  - trial test_saveReceivedFrames.py
+  - trial test_saveReceivedFrames
 #  - trial test_connectionDown
 #  - trial test_connectionEstablished
-  - trial test_manageFrames.py
+  - trial test_manageFrames
   - trial test_userinterfacesoperation
   - trial test_userinterfacesparameters
+  - trial test_userinterfacesconnection
 #  - trial test_integrationConnection
-  - trial test_configurationWindowOperation.py
+  - trial test_configurationWindowOperation
   - coverage run test_readDataFromFile.py
   - coverage run test_readDataFromTerminal.py
+  - coverage run test_saveReceivedFrames.py
+  - coverage run test_manageFrames.py
+  - coverage run test_userinterfacesoperation.py
+  - coverage run test_userinterfacesparameters.py
+  - coverage run test_userinterfacesconnection.py
 
 after_success:
   - coverage combine

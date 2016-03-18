@@ -65,7 +65,6 @@ class SatNetUI(QtGui.QWidget):
 
         self.setWindowIcon(QtGui.QIcon('icon.png'))
 
-
     def NewConnection(self, test=False):
         """ New connection method.
         Create a new connection by loading the connection parameters
@@ -88,7 +87,6 @@ class SatNetUI(QtGui.QWidget):
 
         if self.connection == '':
             self.openInterface()
-
 
         return client_amp.Client(self.CONNECTION_INFO, self.gsi,
                                  self.threads).setconnection(test,
@@ -293,7 +291,7 @@ class SatNetUI(QtGui.QWidget):
 
         try:
             if argumentsdict['username'] != "":
-                self.settingsfile= '.settings'
+                self.settingsfile = '.settings'
                 set_data_local_file('.settings', argumentsdict)
                 self.UpdateFields()
                 logging.info("Arguments given by terminal.")
@@ -302,7 +300,7 @@ class SatNetUI(QtGui.QWidget):
                 logging.info("No arguments given by terminal, using "
                              "configuration file.")
         except KeyError:
-            self.settingsfile =  argumentsdict['file']
+            self.settingsfile = argumentsdict['file']
 
     # Set parameters from CONNECTION_INFO dict.
     # TODO Merge!
@@ -335,8 +333,7 @@ class SatNetUI(QtGui.QWidget):
         self.CONNECTION_INFO = get_data_local_file(self.settingsfile)
 
         settingsfile = str(getcwd()) + '/' + str(self.settingsfile)
-        logging.info("Parameters loaded from %s." %(settingsfile))
-
+        logging.info("Parameters loaded from %s." % (settingsfile))
 
     @QtCore.Slot()
     def SetConfiguration(self):
@@ -411,10 +408,10 @@ class SatNetUI(QtGui.QWidget):
         logging.info("")
         logging.info("Example for serial config:")
         logging.info("python client_amp.py -g -n crespo -p cre.spo -t 2 "
-                    "-c serial -s /dev/ttyS1 -b 115200")
+                     "-c serial -s /dev/ttyS1 -b 115200")
         logging.info("Example for udp config:")
         logging.info("python client_amp.py -g -n crespo -p cre.spo -t 2 -c "
-                    "udp -i 127.0.0.1 -u 5001")
+                     "udp -i 127.0.0.1 -u 5001")
         logging.info("")
         logging.info("[User]")
         logging.info("username: test-sc-user")
@@ -469,15 +466,6 @@ class SatNetUI(QtGui.QWidget):
         with open(filename, "a+") as f:
             f.write(text)
 
-
-    def sigint_handler(self, *args):
-        """
-        import  sys
-        sys.stderr.write('\r')
-        # self.closeEvent()
-        """
-        logging.info("adios!")
-
     def closeEvent(self, event):
         """
 
@@ -494,6 +482,7 @@ class SatNetUI(QtGui.QWidget):
         if self.reply == QtGui.QMessageBox.Yes:
             self.stopInterface()
             self.gsi.clear_slots()
-            client_amp.Client(self.CONNECTION_INFO, self.gsi, self.threads).destroyconnection()
+            client_amp.Client(self.CONNECTION_INFO,
+                              self.gsi, self.threads).destroyconnection()
         elif self.reply == QtGui.QMessageBox.No:
             event.ignore()

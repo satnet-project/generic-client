@@ -109,15 +109,14 @@ class GroundStationInterface(object):
         filename = self.GS + "-" + time.strftime("%Y.%m.%d") + ".csv"
 
         with open(filename, "a+") as f:
-            f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S ")) + frameprocessed
-                    + "\n")
+            f.write(str(time.strftime("%Y.%m.%d-%H:%M:%S ")) +
+                    frameprocessed + "\n")
 
         if os.path.exists(filename):
-            logging.debug("Message saved to local file: %s" %(filename))
+            logging.debug("Message saved to local file: %s" % (filename))
             return True
         else:
             raise IOFileError('Record file not created')
-
 
     def clear_slots(self):
         try:
@@ -125,9 +124,10 @@ class GroundStationInterface(object):
             self.disconnectProtocol()
             return True
         except:
+            # FIXME Only must raises an error if the connection was
+            # FIXME unestablished.
+            # FIXME raise ConnectionNotEnded('EndRemote call not completed')
             logging.debug("Connection not established")
-            # FIX-ME Only must raises an error if the connection was unestablished.
-            # raise ConnectionNotEnded('EndRemote call not completed')
 
     def connectProtocol(self, AMP):
         """
@@ -137,7 +137,7 @@ class GroundStationInterface(object):
         @return:
         """
         logging.debug("Protocol connected to the GS. GS instance %s"
-                      %(str(self)))
+                      % (str(self)))
         self.AMP = AMP
 
     # Removes the reference to the protocol object (self.AMP). It shall
@@ -180,10 +180,10 @@ class TCPThread(QtCore.QThread):
         self.doWork()
 
     def stop(self):
-        log.msg('Stopping TCPSocket' +
-                "..................................." +
-                ".................................." +
-                "..................................")
+        logging.info("Stopping TCPSocket" +
+                     "..................................." +
+                     ".................................." +
+                     "..................................")
         self.TCPSocket.close()
         self.running = False
 
@@ -230,31 +230,31 @@ class OperativeTCPThread(TCPThread):
 
         from socket import socket, AF_INET, SOCK_STREAM
         try:
-            log.msg("Opening TCP socket" + "...................." +
-                    "..........................................." +
-                    ".........................................")
+            logging.info("Opening TCP socket" + "...................." +
+                         "..........................................." +
+                         ".........................................")
 
             self.TCPSocket = socket(AF_INET, SOCK_STREAM)
         except Exception as e:
-            log.err('Error opening TCP socket')
-            log.err(e)
+            logging.error('Error opening TCP socket')
+            logging.error(e)
 
         try:
             self.TCPSocket.bind(server_address)
         except Exception as e:
-            log.err('Error starting TCP protocol')
-            log.err(e)
+            logging.error('Error starting TCP protocol')
+            logging.error(e)
 
-        log.msg('Listening on ' + str(self.CONNECTION_INFO['tcpip']) +
-                " port: " + str(self.CONNECTION_INFO['tcpport']))
+        logging.debug("Listening on " + str(self.CONNECTION_INFO['tcpip']) +
+                      " port: " + str(self.CONNECTION_INFO['tcpport']))
         try:
             self.running = True
             self.TCPSocket.listen(1)
             self.doWork(self.TCPSocket)
 
         except Exception as e:
-            log.err('Error Listening TCP protocol')
-            log.err(e)
+            logging.error('Error Listening TCP protocol')
+            logging.error(e)
 
     def doWork(self):
         if self.TCPSignal:
@@ -264,17 +264,16 @@ class OperativeTCPThread(TCPThread):
                     frame = con.recv(1024)
                     self.catchValue(frame, address)
                 except Exception as e:
-                    log.err('ErrorOperative TCP protocol')
-                    log.err(e)
+                    logging.error('ErrorOperative TCP protocol')
+                    logging.error(e)
 
     def catchValue(self, frame, address):
-        log.msg("----------------------------- " +
-                "Message from TCP socket" +
-                " -----------------------------")
-        log.msg("------------------ Received from ip: " +
-                str(address[0]) +
-                " port: " +
-                str(address[1]) + " ------------------")
+        logging.info("----------------------------- " +
+                     "Message from TCP socket" +
+                     " -----------------------------")
+        logging.debug("------------------ Received from ip: " +
+                      str(address[0]) + " port: " +
+                      str(address[1]) + " ------------------")
 
 
 class OperativeUDPThreadReceive(UDPThread):
@@ -298,7 +297,7 @@ class OperativeUDPThreadReceive(UDPThread):
                           int(self.CONNECTION_INFO['udpportreceive']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
-        from socket import SOL_SOCKET, SO_REUSEADDR, SHUT_RD
+        from socket import SOL_SOCKET, SO_REUSEADDR
         try:
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
             if str(self.CONNECTION_INFO['udpipreceive']) == '':
@@ -335,7 +334,7 @@ class OperativeUDPThreadReceive(UDPThread):
         del self.UDPSocket
 
         try:
-            logging.debug("UDP socket, %s ,not closed" %(str(type(
+            logging.debug("UDP socket, %s ,not closed" % (str(type(
                           self.UDPSocket))))
         except AttributeError:
             logging.info("UDPSocket receive stopped.")
@@ -372,7 +371,7 @@ class OperativeUDPThreadSend():
         del self.UDPSocket
 
         try:
-            logging.debug("UDP socket, %s ,not closed" %(str(type(
+            logging.debug("UDP socket, %s ,not closed" % (str(type(
                           self.UDPSocket))))
         except AttributeError:
             logging.info("UDPSocket send stopped.")
@@ -415,7 +414,6 @@ class OperativeKISSThread(KISSThread):
         except SerialException:
             raise SerialPortUnreachable("The port couldn't be open")
 
-
     def doWork(self):
         """ Work thread method.
 
@@ -435,8 +433,8 @@ class OperativeKISSThread(KISSThread):
         @return:
         """
         logging.info("----------------------------------------------- " +
-                "Message from Serial port" +
-                " -----------------------------------------------")
+                     "Message from Serial port" +
+                     " -----------------------------------------------")
         self.finished.emit(frame[1:])
 
     # TODO Check behaviour
@@ -451,7 +449,7 @@ class OperativeKISSThread(KISSThread):
         del self.kissTNC
 
         try:
-            logging.debug("Serial socket, %s, not closed" %(str(type(
+            logging.debug("Serial socket, %s, not closed" % (str(type(
                 self.kissTNC))))
         except Exception as e:
             logging.debug(e)
@@ -471,6 +469,6 @@ class OperativeKISSThread(KISSThread):
             self.kissTNC.write(message)
             return True
         except AttributeError:
-            logging.error("The serial port %s is unreachable" %(
+            logging.error("The serial port %s is unreachable" % (
                 self.CONNECTION_INFO['serialport']))
             raise SerialPortUnreachable('The serial port is unreachable')

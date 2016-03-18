@@ -42,7 +42,8 @@ script:
 #  - trial test_connectionDown
 #  - trial test_connectionEstablished
   - trial test_manageFrames.py
-#  - trial test_userInterface
+  - trial test_userinterfacesoperation
+  - trial test_userinterfacesparameters
 #  - trial test_integrationConnection
   - trial test_configurationWindowOperation.py
   - coverage run test_readDataFromFile.py

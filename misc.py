@@ -248,16 +248,23 @@ def set_data_local_file(settingsfile, connect_info):
     config = SafeConfigParser()
     config.read(settingsfile)
 
-    if connect_info['reconnection'] != old_connect_info['reconnection']:
-        config.set('Connection', 'reconnection',
-                   str(connect_info['reconnection']))
-        with open(settingsfile, 'wb') as configfile:
-            config.write(configfile)
+    field_name_list = ['reconnection', 'parameters', 'institution', 'attempts',
+                       'username', 'connection', 'serialport', 'baudrate',
+                       'udpipreceive', 'udpportreceive', 'udpipsend',
+                       'udpportsend', 'tcpipreceive', 'tcpportreceive',
+                       'tcpipsend', 'tcpportsend', 'serverip', 'serverport']
+    group_name_list = ['Connection', 'Connection', 'User', 'Connection',
+                       'User', 'User', 'Serial', 'Serial', 'udp', 'udp',
+                       'udp', 'udp', 'tcp', 'tcp', 'tcp', 'tcp', 'server',
+                       'server']
 
-    if connect_info['parameters'] != old_connect_info['parameters']:
-        config.set('Connection', 'parameters',
-                   str(connect_info['parameters']))
-        with open(settingsfile, 'wb') as configfile:
-            config.write(configfile)
+
+    for i in range(len(field_name_list)):
+        field_name = str(field_name_list[i])
+        group_name = str(group_name_list[i])
+        if connect_info[field_name] != old_connect_info[field_name]:
+            config.set(group_name, field_name, str(connect_info[field_name]))
+            with open(settingsfile, 'wb') as configfile:
+                config.write(configfile)
 
     return True

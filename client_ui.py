@@ -43,7 +43,6 @@ class SatNetUI(QtGui.QWidget):
         self.checkarguments(argumentsdict)
 
         self.UpdateFields()
-        print self.CONNECTION_INFO
 
         self.initUI()
         self.initButtons()
@@ -291,9 +290,12 @@ class SatNetUI(QtGui.QWidget):
         @param argumentsdict:
         @return:
         """
+
         try:
             if argumentsdict['username'] != "":
-                self.settingsfile = '.settings'
+                self.settingsfile= '.settings'
+                set_data_local_file('.settings', argumentsdict)
+                self.UpdateFields()
                 logging.info("Arguments given by terminal.")
             if argumentsdict['username'] == '':
                 self.settingsfile = '.settings'
@@ -437,6 +439,7 @@ class SatNetUI(QtGui.QWidget):
         centerPoint = QtGui.QApplication.desktop().screenGeometry(
             screen).center()
         frameGm.moveCenter(centerPoint)
+        frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
     @QtCore.Slot(str)
@@ -465,6 +468,15 @@ class SatNetUI(QtGui.QWidget):
                     "-" + time.strftime("%Y.%m.%d") + ".csv")
         with open(filename, "a+") as f:
             f.write(text)
+
+
+    def sigint_handler(self, *args):
+        """
+        import  sys
+        sys.stderr.write('\r')
+        # self.closeEvent()
+        """
+        logging.info("adios!")
 
     def closeEvent(self, event):
         """

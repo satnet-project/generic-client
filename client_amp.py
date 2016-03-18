@@ -2,7 +2,7 @@
 from sys import argv, stdout, exit
 from base64 import b64encode, b64decode
 from Queue import Queue
-import os
+from os import path
 import logging.config
 from time import strftime, gmtime
 
@@ -226,7 +226,7 @@ class ClientProtocol(AMP):
             f.write(str(strftime("%Y.%m.%d-%H:%M:%S")) + ' ' +
                     frameprocessed + "\n")
 
-        if os.path.exists(filename):
+        if path.exists(filename):
             logging.debug("Message received saved to local file: %s"
                           %(str(filename)))
             return True

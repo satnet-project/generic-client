@@ -154,12 +154,13 @@ class TestUserInterfaceParametersOperation(TestCase):
     # TODO Complete description
     @patch.object(Client, 'createconnection', return_value=True)
     @patch.object(SatNetUI, 'initLogo', return_value=True)
-    @patch.object(SatNetUI, 'initButtons', return_value=True)
+    @patch.object(SatNetUI, 'init_buttons', return_value=True)
     @patch.object(SatNetUI, 'setParameters', return_value=True)
     @patch.object(misc, 'get_data_local_file')
     def _test_parameters_loaded_when_update_fields_Called(self,
                                                          createconnection,
-                                                         initLogo, initButtons,
+                                                         initLogo,
+                                                         init_buttons,
                                                          setParameters,
                                                          get_data_local_file,):
         """

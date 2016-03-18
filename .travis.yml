@@ -42,7 +42,7 @@ script:
   - trial test_userinterfacesoperation
   - trial test_userinterfacesparameters
   - trial test_userinterfacesconnection
-  - trial test_userinterfacesdisconnection
+  - trial test_userinterfacedisconnection
   - trial test_userinterfaceclosewindow
 #  - trial test_integrationConnection
   - trial test_configurationWindowOperation
@@ -56,7 +56,7 @@ script:
   - coverage run test_userinterfacesoperation.py
   - coverage run test_userinterfacesparameters.py
   - coverage run test_userinterfacesconnection.py
-  - coverage run test_userinterfacesdisconnection.py
+  - coverage run test_userinterfacedisconnection.py
   - coverage run test_userinterfaceclosewindow.py
   - coverage run test_configurationWindowOperation.py
 

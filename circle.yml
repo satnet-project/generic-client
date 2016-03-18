@@ -13,12 +13,16 @@ test:
   override:
     - cd tests/ && trial test_readDataFromFile
     - cd tests/ && trial test_readDataFromTerminal
-#    - cd tests/ && trial test_notifyMsgUsage
+    - cd tests/ && trial test_notifyMsgUsage
     - cd tests/ && trial test_saveReceivedFrames
-#    - cd tests/ && trial test_connectionDown
-#    - cd tests/ && trial test_connectionEstablished
+    - cd tests/ && trial test_connectionDown
+    - cd tests/ && trial test_connectionEstablished
     - cd tests/ && trial test_manageFrames
     - cd tests/ && trial test_userinterfacesparameters
     - cd tests/ && trial test_userinterfacesoperation
+    - cd tests/ && trial test_userinterfacesparameters
+    - cd tests/ && trial test_userinterfacesconnection
+    - cd tests/ && trial test_userinterfacedisconnection
+    - cd tests/ && trial test_userinterfaceclosewindow
 #    - cd tests/ && trial test_integrationConnection
     - cd tests/ && trial test_configurationWindowOperation

@@ -146,6 +146,18 @@ then
 	echo ">>> [CircleCI] Installing generic client test modules..."
 	pip install -r "$project_path/requirements.txt"
 
+	cd ../tests
+	mkdir build && cd build
+	git clone https://github.com/PySide/pyside-setup.git pyside-setup
+	cd pyside-setup
+
+	python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
+	source "$venv_dir/bin/activate"
+	pip install dist/PySide-1.2.4*
+    cd ../../
+    ls
+    pwd
+
 	echo '>>> Keys installation...'
 	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
 

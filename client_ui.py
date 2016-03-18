@@ -42,6 +42,9 @@ class SatNetUI(QtGui.QWidget):
         self.connection = ''
         self.checkarguments(argumentsdict)
 
+        self.UpdateFields()
+        print self.CONNECTION_INFO
+
         self.initUI()
         self.initButtons()
         self.initFields()
@@ -102,7 +105,7 @@ class SatNetUI(QtGui.QWidget):
 
         self.setFixedSize(1300, 800)
         self.setWindowTitle("SatNet client - %s" %
-                            (self.CONNECTION_INFO['name']))
+                            (self.CONNECTION_INFO['institution']))
 
         if self.CONNECTION_INFO['parameters'] == 'yes':
             self.CONNECTION_INFO = {}
@@ -278,6 +281,8 @@ class SatNetUI(QtGui.QWidget):
         self.console.resize(950, 780)
         self.console.setFont(QtGui.QFont('Helvetica', 12))
 
+    # FIXME If some information are passed by terminal arguments this script
+    # FIXME tries to draw it but the UI aren't build yet.
     def checkarguments(self, argumentsdict):
         """ Set arguments method.
         Check the arguments given in the argumentsdict. According these
@@ -288,10 +293,8 @@ class SatNetUI(QtGui.QWidget):
         """
         try:
             if argumentsdict['username'] != "":
-                self.LabelUsername.setText(argumentsdict['username'])
-            if argumentsdict['connection'] != "":
-                index = self.LabelConnection.findText(argumentsdict['connection'])
-                self.LabelConnection.setCurrentIndex(index)
+                self.settingsfile = '.settings'
+                logging.info("Arguments given by terminal.")
             if argumentsdict['username'] == '':
                 self.settingsfile = '.settings'
                 logging.info("No arguments given by terminal, using "
@@ -302,6 +305,7 @@ class SatNetUI(QtGui.QWidget):
     # Set parameters from CONNECTION_INFO dict.
     # TODO Merge!
     def setParameters(self):
+        self.UpdateFields()
         self.FieldLabelAttemps.setText(self.CONNECTION_INFO['attempts'])
         self.LabelUsername.setText(self.CONNECTION_INFO['username'])
 
@@ -457,7 +461,7 @@ class SatNetUI(QtGui.QWidget):
             self.ButtonNew.setEnabled(False)
             self.ButtonCancel.setEnabled(True)
 
-        filename = ("log-" + self.CONNECTION_INFO['name'] +
+        filename = ("log-" + self.CONNECTION_INFO['institution'] +
                     "-" + time.strftime("%Y.%m.%d") + ".csv")
         with open(filename, "a+") as f:
             f.write(text)

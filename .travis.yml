@@ -29,7 +29,7 @@ install:
   - cd pyside-setup
   - python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
   - pip install dist/PySide-1.2.4*
-  - cd ../
+  - cd ../..
   - ls
   - pwd
 

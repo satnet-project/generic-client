@@ -36,6 +36,11 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 
 class TestUserInterfaceInterfacesOperation(TestCase):
+    """
+    This class checks the calls to the threads initialization methods.
+    The calls are located at SatNetUI class and the initilization methods can
+    be found at threads module.
+    """
 
     app = QtGui.QApplication(sys.argv)
 
@@ -130,7 +135,8 @@ class TestUserInterfaceInterfacesOperation(TestCase):
         testUI.LabelConnection.currentText = MagicMock(return_value='serial')
         testUI.openInterface()
         return self.assertTrue(runKISSThreadReceive.called), \
-               self.assertEqual(int(testUI.CONNECTION_INFO['baudrate']), 600000)
+               self.assertEqual(int(testUI.CONNECTION_INFO['baudrate']),
+                                600000)
 
     # TODO Complete description
     @patch.object(Client, 'createconnection', return_value=True)
@@ -155,7 +161,8 @@ class TestUserInterfaceInterfacesOperation(TestCase):
         testUI.LabelConnection.currentText = MagicMock(return_value='serial')
         testUI.openInterface()
         return self.assertTrue(runKISSThreadReceive.called), \
-               self.assertEqual(int(testUI.CONNECTION_INFO['baudrate']), 500000)
+               self.assertEqual(int(testUI.CONNECTION_INFO['baudrate']),
+                                500000)
 
 
     # TODO Complete description

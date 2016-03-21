@@ -161,8 +161,8 @@ class UDPThread(QtCore.QThread):
         self.running = True
         try:
             self.doWork()
-        except:
-            pass
+        except Exception as e:
+            logging.error(e)
 
     def doWork(self):
         return True

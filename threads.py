@@ -46,7 +46,8 @@ class Threads(object):
         self.workerUDPThreadReceive = OperativeUDPThreadReceive(
             self.udp_queue, self.sendData, self.UDPSignal, self.CONNECTION_INFO
         )
-        self.workerUDPThreadReceive.start()
+        result = self.workerUDPThreadReceive.start()
+        return result
 
     def stopUDPThreadReceive(self):
         return self.workerUDPThreadReceive.stop()

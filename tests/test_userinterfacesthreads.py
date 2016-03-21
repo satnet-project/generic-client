@@ -35,17 +35,12 @@ from client_amp import ClientProtocol
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-class TestUserInterfaceInterfacesOperation(TestCase):
-
-
-
-    @patch('__main__.OperativeUDPThreadReceive')
-    def mockclientamp(OperativeUDPThreadReceive):
-        """
-
-        :return:
-        """
-        return True
+class TestUserInterfaceInterfacesThreads(TestCase):
+    """
+    This class checks the calls to the threads definition methods.
+    The start/stop methods are located at Threads class.
+    The definitions can be found at gs_interface module.
+    """
 
     app = QtGui.QApplication(sys.argv)
 
@@ -124,7 +119,7 @@ class TestUserInterfaceInterfacesOperation(TestCase):
 
         :return:
         """
-        #OperativeUDPThreadReceive = Mock()
+        OperativeUDPThreadReceive = MagicMock(return_value=True)
 
         AMP = MagicMock(return_value=True)
         #OperativeUDPThreadReceive = MagicMock(return_value=True)
@@ -132,26 +127,11 @@ class TestUserInterfaceInterfacesOperation(TestCase):
         connect_info = get_data_local_file('.settings')
         gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
 
-        with patch('__main__.OperativeUDPThreadReceive') as MockClass:
-            instance = MockClass.return_value
-            instance.method.return_value = True
-            test_threads = Threads(connect_info, gsi)
+        test_threads = Threads(connect_info, gsi)
 
+        return self.assertEqual(test_threads.runUDPThreadReceive(), None)
 
-            test_threads.runUDPThreadReceive()
-
-        # print OperativeUDPThreadReceive.call_count
-
-
-        # test_threads.stopUDPThreadReceive()
-
-        # print OperativeUDPThreadReceive.call_count
-
-        """
-        return self.assertIsInstance(test_threads.workerUDPThreadReceive,
-                                     OperativeUDPThreadReceive)
-        """
-
+    # TODO Complete description
     def test_udp_class_thread_send_created(self):
         """
 
@@ -167,6 +147,46 @@ class TestUserInterfaceInterfacesOperation(TestCase):
 
         return self.assertIsInstance(test_threads.workerUDPThreadSend,
                                      OperativeUDPThreadSend)
+
+    def _test_udp_send_message_udp_available(self):
+        AMP = MagicMock(return_value=True)
+        self.create_settings_file()
+        connect_info = get_data_local_file('.settings')
+        gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
+        test_threads = Threads(connect_info, gsi)
+        test_threads.runUDPThreadReceive()
+
+        message = 'This is a test message'
+
+
+    def test_udp_send_message_udp_not_available(self):
+        """
+
+        :return:
+        """
+        AMP = MagicMock(return_value=True)
+        self.create_settings_file()
+        connect_info = get_data_local_file('.settings')
+        gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
+        test_threads = Threads(connect_info, gsi)
+
+        message = 'This is a test message'
+        result = test_threads.UDPThreadSend(message)
+
+        return self.assertFalse(result)
+
+
+    # FIXME Needs a patch method for OperativeKISSThreadReceive
+    # FIXME or a mocked serial port.
+    def _test_kiss_class_thread_created(self):
+        AMP = MagicMock(return_value=True)
+        self.create_settings_file()
+        connect_info = get_data_local_file('.settings')
+        gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
+        test_threads = Threads(connect_info, gsi)
+
+        print test_threads.runKISSThreadReceive()
+
 
 
 if __name__ == "__main__":

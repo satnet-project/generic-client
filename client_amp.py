@@ -219,7 +219,7 @@ class ClientProtocol(AMP):
                                   for c in frameprocessed)
 
         filename = ("Rec-frames-" +
-                    self.CONNECTION_INFO['name'] +
+                    self.CONNECTION_INFO['institution'] +
                     "-" + strftime("%Y.%m.%d") + ".csv")
 
         with open(filename, "a+") as f:

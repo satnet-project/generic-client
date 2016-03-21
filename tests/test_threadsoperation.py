@@ -1,18 +1,13 @@
 # coding=utf-8
 import os
 import sys
+from mock import patch, MagicMock
 from unittest import TestCase, main
-
-from twisted.test.proto_helpers import StringTransport
-from twisted.internet.protocol import Factory
-from twisted.protocols.amp import AMP
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
-import client_amp
-from gs_interface import GroundStationInterface
-from errors import WrongFormatNotification
-from misc import get_data_local_file
+from gs_interface import UDPThread, KISSThread
+from errors import UDPSocketUnreachable, SerialPortUnreachable
 
 
 """
@@ -32,14 +27,9 @@ from misc import get_data_local_file
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-class MockFactory(Factory):
-    """
+class TestThreadsOperationParentClasses(TestCase):
 
-    """
-    pass
-
-
-class TestClientProtocolSaveFrame(TestCase):
+    # app = QtGui.QApplication(sys.argv)
 
     # TODO Complete description
     def create_settings_file(self):
@@ -85,49 +75,54 @@ class TestClientProtocolSaveFrame(TestCase):
     def setUp(self):
         self.create_settings_file()
 
-        connect_info = get_data_local_file('.settings')
-        connect_info['password'] = 'password'
-
-        GS = 'VigoTest'
-
-        gsi = GroundStationInterface(connect_info, GS, AMP)
-        threads = object
-
-        self.sp = client_amp.ClientProtocol(connect_info, gsi, threads,
-                                            '.settings')
-        self.sp.factory = MockFactory()
-        self.transport = StringTransport()
-        self.sp.makeConnection(self.transport)
-
-        self.transport.protocol = self.sp
-
-        self.correctFrame = ("00:82:a0:00:00:53:45:52:50:2d:42:30:91:1d:" +
-                             "1b:03:8d:0b:5c:03:02:28:01:9c:01:ab:02:4c:" +
-                             "02:98:01:da:02:40:00:00:00:10:0a:46:58:10:" +
-                             "00:c4:9d:cb:a2:21:39")
-
-        self.correctFrame = bytearray(self.correctFrame)
-        self.wrongFrame = 9
-
     def tearDown(self):
         os.remove('.settings')
 
-    # TODO Complete description
-    def test_client_saves_right_frame(self):
-        """ Client saves a good frame.
-
-        @return:
+    @patch.object(UDPThread, 'doWork')
+    def test_init_udp_thread_run_called_ok(self, doWork):
         """
-        return self.assertTrue(self.sp.saveReceivedFrames(self.correctFrame))
 
-    # TODO Complete description
-    def test_client_saves_wrong_frame(self):
-        """ Client saves a bad formated frame.
-
-        @return:
+        :param doWork:
+        :return:
         """
-        return self.assertRaises(WrongFormatNotification,
-                                 self.sp.saveReceivedFrames, self.wrongFrame)
+        test_threads = UDPThread()
+        test_threads.run()
+
+        return self.assertIs(int(doWork.call_count), 1)
+
+    @patch.object(UDPThread, 'doWork', side_effect=Exception)
+    def test_init_udp_thread_run_called_error(self, doWork):
+        """
+
+        :param doWork:
+        :return:
+        """
+        test_threads = UDPThread()
+
+        return self.assertRaises(UDPSocketUnreachable, test_threads.run)
+
+    @patch.object(KISSThread, 'doWork')
+    def test_init_kiss_thread_run_called_ok(self, doWork):
+        """
+
+        :param doWork:
+        :return:
+        """
+        test_threads = KISSThread()
+        test_threads.run()
+
+        return self.assertIs(int(doWork.call_count), 1)
+
+    @patch.object(KISSThread, 'doWork', side_effect=Exception)
+    def test_init_kiss_thread_run_called_error(self, doWork):
+        """
+
+        :param doWork:
+        :return:
+        """
+        test_threads = KISSThread()
+
+        return self.assertRaises(SerialPortUnreachable, test_threads.run)
 
 if __name__ == "__main__":
     main()

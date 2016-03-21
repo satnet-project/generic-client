@@ -107,6 +107,14 @@ class SerialPortUnreachable(Exception):
     """
 
 
+class UDPSocketUnreachable(Exception):
+
+    """
+    One of the following situations may raise this error:
+        1. The UDP thread couldn't be open.
+    """
+
+
 class ArgumentsInvalid(Exception):
 
     """

@@ -26,4 +26,5 @@ test:
     - cd tests/ && trial test_userinterfacedisconnection
     - cd tests/ && trial test_userinterfaceclosewindow
     - cd tests/ && trial test_userinterfacesthreads
+    - cd tests/ && trial test_threadsoperation
     - cd tests/ && trial test_configurationWindowOperation

@@ -45,6 +45,7 @@ script:
   - trial test_userinterfacedisconnection
   - trial test_userinterfaceclosewindow
   - trial test_userinterfacesthreads
+  - trial test_threadsoperation
   - trial test_configurationWindowOperation
   - coverage run -p test_readDataFromFile.py
   - coverage run -p test_readDataFromTerminal.py
@@ -59,6 +60,7 @@ script:
   - coverage run -p test_userinterfacedisconnection.py
   - coverage run -p test_userinterfaceclosewindow.py
   - coverage run -p test_userinterfacesthreads.py
+  - coverage run -p test_threadsoperation.py
   - coverage run -p test_configurationWindowOperation.py
 
 after_success:

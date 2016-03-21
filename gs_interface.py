@@ -9,6 +9,7 @@ from serial.serialutil import SerialException
 
 from errors import WrongFormatNotification, FrameNotProcessed
 from errors import ConnectionNotEnded, IOFileError, SerialPortUnreachable
+from errors import UDPSocketUnreachable
 
 """
    Copyright 2014, 2015, 2016 Xabier Crespo Álvarez
@@ -158,11 +159,13 @@ class UDPThread(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
-        self.running = True
         try:
+            self.running = True
             self.doWork()
+        # TODO Now raises when any Exception occurs. Delimitate errors.
         except Exception as e:
             logging.error(e)
+            raise UDPSocketUnreachable
 
     def doWork(self):
         return True
@@ -201,11 +204,13 @@ class KISSThread(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
 
     def run(self):
-        self.running = True
         try:
+            self.running = True
             self.doWork()
-        except:
-            pass
+        # TODO Now raises when any Exception occurs. Delimitate errors.
+        except Exception as e:
+            logging.error(e)
+            raise SerialPortUnreachable
 
     def doWork(self):
         return True

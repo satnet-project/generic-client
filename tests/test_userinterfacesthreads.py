@@ -9,13 +9,10 @@ from PySide import QtGui
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
-from client_ui import SatNetUI
-from client_amp import Client
 from threads import Threads
 from misc import get_data_local_file
 from gs_interface import GroundStationInterface, OperativeUDPThreadReceive
 from gs_interface import OperativeUDPThreadSend
-from client_amp import ClientProtocol
 
 
 """
@@ -85,30 +82,7 @@ class TestUserInterfaceInterfacesThreads(TestCase):
         test_file.close()
 
     def setUp(self):
-        self.arguments_dict = {'username': 'test-sc-user',
-                              'udpipsend': '172.19.51.145',
-                              'baudrate': '600000',
-                              'institution': 'Universidade de Vigo',
-                              'parameters': 'yes', 'tcpportsend': '1234',
-                              'tcpipsend': '127.0.0.1',
-                              'udpipreceive': '127.0.0.1', 'attempts': '10',
-                              'serverip': '172.19.51.133',
-                              'serialport': '/dev/ttyUSB0',
-                              'tcpportreceive': 4321,
-                              'connection': 'none', 'udpportreceive': 1234,
-                              'serverport': 25345, 'reconnection': 'no',
-                              'udpportsend': '57009',
-                              'tcpipreceive': '127.0.0.1'}
-
-        self.arguments_dict_empty = {'username': '', 'udpipsend': '',
-                                     'baudrate': '', 'institution': '',
-                                     'parameters': '', 'tcpportsend': '',
-                                     'tcpipsend': '', 'udpipreceive': '',
-                                     'attempts': '', 'serverip': '',
-                                     'serialport': '', 'tcpportreceive': '',
-                                     'connection': '', 'udpportreceive': '',
-                                     'serverport': '', 'reconnection': '',
-                                     'udpportsend': '', 'tcpipreceive': ''}
+        pass
 
     def tearDown(self):
         os.remove('.settings')
@@ -175,6 +149,11 @@ class TestUserInterfaceInterfacesThreads(TestCase):
 
         return self.assertFalse(result)
 
+    def test_udp_stop_thread_udp_socket_active(self):
+        pass
+
+    def test_udp_stop_thread_udp_socket_inactive(self):
+        pass
 
     # FIXME Needs a patch method for OperativeKISSThreadReceive
     # FIXME or a mocked serial port.
@@ -187,6 +166,36 @@ class TestUserInterfaceInterfacesThreads(TestCase):
 
         print test_threads.runKISSThreadReceive()
 
+    def test_kiss_send_message_serial_available(self):
+        pass
+
+    def test_kiss_send_message_serial_unavailable(self):
+        pass
+
+    def test_kiss_stop_serial_available(self):
+        pass
+
+    def test_kiss_stop_serial_unavailable(self):
+        pass
+
+    # TODO The following tests will be implemented in TCP phase.
+    def _test_tcp_class_thread_receive_created(self):
+        pass
+
+    def _test_tcp_class_thread_send_created(self):
+        pass
+
+    def _test_tcp_send_message_udp_available(self):
+        pass
+
+    def _test_tcp_send_message_udp_not_available(self):
+        pass
+
+    def _test_tcp_stop_thread_udp_socket_active(self):
+        pass
+
+    def _test_tcp_stop_thread_udp_socket_inactive(self):
+        pass
 
 
 if __name__ == "__main__":

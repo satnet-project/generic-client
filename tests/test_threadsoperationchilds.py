@@ -29,6 +29,8 @@ from misc import get_data_local_file
 __author__ = 's.gongoragarcia@gmail.com'
 
 
+settings_file_test = '.settings'
+
 class TestThreadsOperationChildClasses(TestCase):
 
     def callback(self, frame):
@@ -41,7 +43,7 @@ class TestThreadsOperationChildClasses(TestCase):
 
         @return: Nothing.
         """
-        test_file = open(".settings", "w")
+        test_file = open(settings_file_test, "w")
         test_file.write("[User]\n"
                         "institution = Universidade de Vigo\n"
                         "username = test-user-sc\n"
@@ -79,7 +81,7 @@ class TestThreadsOperationChildClasses(TestCase):
         self.create_settings_file()
 
     def tearDown(self):
-        os.remove('.settings')
+        os.remove(settings_file_test)
 
     @patch.object(OperativeUDPThreadReceive, 'finished',
                   return_value=True)
@@ -93,9 +95,9 @@ class TestThreadsOperationChildClasses(TestCase):
         frame = ''
         callback = self.callback(frame)
         UDPSignal = True
-        connect_info = get_data_local_file('.settings')
+        connect_info = get_data_local_file(settings_file_test)
         test_threads = OperativeUDPThreadReceive(queue, callback, UDPSignal,
-                                                 connect_info)
+                                                 settings_file_test)
         test_threads.doWork()
 
     @patch.object(OperativeUDPThreadReceive, 'finished',
@@ -111,14 +113,13 @@ class TestThreadsOperationChildClasses(TestCase):
         frame = ''
         callback = self.callback(frame)
         UDPSignal = True
-        connect_info = get_data_local_file('.settings')
         test_threads = OperativeUDPThreadReceive(queue, callback, UDPSignal,
-                                                 connect_info)
+                                                 settings_file_test)
         test_threads.doWork()
 
     @patch.object(OperativeUDPThreadReceive, 'finished',
                   return_value=True)
-    def _test_udp_thread_receive_catch_value_ok(self, finished):
+    def test_udp_thread_receive_catch_value_ok(self, finished):
         """
 
         :return:
@@ -127,9 +128,8 @@ class TestThreadsOperationChildClasses(TestCase):
         frame = ''
         callback = self.callback(frame)
         UDPSignal = True
-        connect_info = get_data_local_file('.settings')
         test_threads = OperativeUDPThreadReceive(queue, callback, UDPSignal,
-                                                 connect_info)
+                                                 settings_file_test)
 
         test_frame = 'This is a test frame'
         test_address = ['localhost', 57008]
@@ -137,7 +137,7 @@ class TestThreadsOperationChildClasses(TestCase):
         test_threads.catchValue(test_frame, test_address)
 
     @patch.object(OperativeUDPThreadReceive, 'finished')
-    def _test_udp_thread_receive_catch_value_raise_exception(self, finished):
+    def test_udp_thread_receive_catch_value_raise_exception(self, finished):
         """
 
         :return:
@@ -147,9 +147,8 @@ class TestThreadsOperationChildClasses(TestCase):
         frame = ''
         callback = self.callback(frame)
         UDPSignal = True
-        connect_info = get_data_local_file('.settings')
         test_threads = OperativeUDPThreadReceive(queue, callback, UDPSignal,
-                                                 connect_info)
+                                                 settings_file_test)
 
         test_frame = 'This is a test frame'
         test_address = ['localhost', 57008]
@@ -158,7 +157,7 @@ class TestThreadsOperationChildClasses(TestCase):
                                                         test_address))
 
     @patch.object(OperativeUDPThreadReceive, 'finished')
-    def _test_stop_receive_udp_ok(self, finished):
+    def test_stop_receive_udp_ok(self, finished):
         """
 
         :param finished:
@@ -169,9 +168,8 @@ class TestThreadsOperationChildClasses(TestCase):
         frame = ''
         callback = self.callback(frame)
         UDPSignal = True
-        connect_info = get_data_local_file('.settings')
         test_threads = OperativeUDPThreadReceive(queue, callback, UDPSignal,
-                                                 connect_info)
+                                                 settings_file_test)
 
         test_threads.UDPSocket = Mock()
         test_threads.UDPSocket.close = MagicMock(return_value=True)
@@ -188,13 +186,11 @@ class TestThreadsOperationChildClasses(TestCase):
 
         :return:
         """
-        connect_info = get_data_local_file('.settings')
-        test_threads = OperativeUDPThreadSend(connect_info)
+        test_threads = OperativeUDPThreadSend(settings_file_test)
 
         test_frame = 'This is a test frame'
-        test_address = ['localhost', 57008]
 
-        print test_threads.send(test_frame)
+        return self.assertTrue(test_threads.send(test_frame))
 
 if __name__ == "__main__":
     main()

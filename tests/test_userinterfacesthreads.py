@@ -32,6 +32,8 @@ from gs_interface import OperativeUDPThreadSend
 __author__ = 's.gongoragarcia@gmail.com'
 
 
+settings_test_file = '.settings'
+
 class TestUserInterfaceInterfacesThreads(TestCase):
     """
     This class checks the calls to the threads definition methods.
@@ -47,7 +49,7 @@ class TestUserInterfaceInterfacesThreads(TestCase):
 
         @return: Nothing.
         """
-        test_file = open(".settings", "w")
+        test_file = open(settings_test_file, "w")
         test_file.write("[User]\n"
                         "institution = Universidade de Vigo\n"
                         "username = test-user-sc\n"
@@ -85,7 +87,7 @@ class TestUserInterfaceInterfacesThreads(TestCase):
         pass
 
     def tearDown(self):
-        os.remove('.settings')
+        os.remove(settings_test_file)
 
     # TODO Complete description
     def _test_udp_class_thread_receive_created(self):
@@ -96,12 +98,11 @@ class TestUserInterfaceInterfacesThreads(TestCase):
         OperativeUDPThreadReceive = MagicMock(return_value=True)
 
         AMP = MagicMock(return_value=True)
-        #OperativeUDPThreadReceive = MagicMock(return_value=True)
         self.create_settings_file()
-        connect_info = get_data_local_file('.settings')
+        connect_info = get_data_local_file(settings_test_file)
         gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
 
-        test_threads = Threads(connect_info, gsi)
+        test_threads = Threads(settings_test_file, gsi)
 
         return self.assertEqual(test_threads.runUDPThreadReceive(), None)
 
@@ -113,9 +114,9 @@ class TestUserInterfaceInterfacesThreads(TestCase):
         """
         AMP = MagicMock(return_value=True)
         self.create_settings_file()
-        connect_info = get_data_local_file('.settings')
+        connect_info = get_data_local_file(settings_test_file)
         gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
-        test_threads = Threads(connect_info, gsi)
+        test_threads = Threads(settings_test_file, gsi)
 
         test_threads.runUDPThreadSend()
 
@@ -125,9 +126,9 @@ class TestUserInterfaceInterfacesThreads(TestCase):
     def _test_udp_send_message_udp_available(self):
         AMP = MagicMock(return_value=True)
         self.create_settings_file()
-        connect_info = get_data_local_file('.settings')
+        connect_info = get_data_local_file(settings_test_file)
         gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
-        test_threads = Threads(connect_info, gsi)
+        test_threads = Threads(settings_test_file, gsi)
         test_threads.runUDPThreadReceive()
 
         message = 'This is a test message'
@@ -140,9 +141,9 @@ class TestUserInterfaceInterfacesThreads(TestCase):
         """
         AMP = MagicMock(return_value=True)
         self.create_settings_file()
-        connect_info = get_data_local_file('.settings')
+        connect_info = get_data_local_file(settings_test_file)
         gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
-        test_threads = Threads(connect_info, gsi)
+        test_threads = Threads(settings_test_file, gsi)
 
         message = 'This is a test message'
         result = test_threads.UDPThreadSend(message)
@@ -160,9 +161,9 @@ class TestUserInterfaceInterfacesThreads(TestCase):
     def _test_kiss_class_thread_created(self):
         AMP = MagicMock(return_value=True)
         self.create_settings_file()
-        connect_info = get_data_local_file('.settings')
+        connect_info = get_data_local_file(settings_test_file)
         gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
-        test_threads = Threads(connect_info, gsi)
+        test_threads = Threads(settings_test_file, gsi)
 
         print test_threads.runKISSThreadReceive()
 

@@ -23,6 +23,8 @@ from ampCommands import Login, StartRemote
 from errors import SlotErrorNotification
 
 
+settings_test_file = '.settings'
+
 class MockServerFactory(Factory):
     active_protocols = {'xabi':'xabiprotocol'}
     active_connections = {}
@@ -163,7 +165,7 @@ class TestConnectionProcessIntegrated(TestCase):
 
         @return: Nothing.
         """
-        test_file = open(".settings", "w")
+        test_file = open(settings_test_file, "w")
         test_file.write("[User]\n"
                         "institution = Universidade de Vigo\n"
                         "username = test-user-sc\n"
@@ -214,7 +216,7 @@ class TestConnectionProcessIntegrated(TestCase):
                                 'tcpipreceive': '127.0.0.1'}
         self.create_settings_file()
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, 'Vigo', AMP)
-        self.threads = Threads(self.CONNECTION_INFO, self.gsi)
+        self.threads = Threads(settings_test_file, self.gsi)
 
         self.server_disconnected = defer.Deferred()
         self.serverPort = self._listenServer(self.server_disconnected)

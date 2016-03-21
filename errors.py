@@ -79,6 +79,7 @@ class FrameNotProcessed(Exception):
     """
     One of the following situations may raise this error:
         1. Some error processing the frames
+        2. UDP socket doesn't emit frame.
     """
 
 

@@ -318,20 +318,27 @@ class OperativeUDPThreadReceive(UDPThread):
         self.UDPSocket.bind(server_address)
 
         if self.UDPSignal:
+            print "dentro"
             while True:
                 frame, address = self.UDPSocket.recvfrom(4096)
-                self.catchValue(frame, address)
+                if not self.catchValue(frame, address):
+                    raise FrameNotProcessed
 
     def catchValue(self, frame, address):
-        logging.info("--------------------------------------------- " +
-                     "Message from UDP socket" + " -----------------" +
-                     "----------------------------")
-        logging.debug("--------------------------------" +
-                      " Received from ip: " + str(address[0]) +
-                      " port: " + str(address[1]) + " --------------" +
-                      "------------------")
+        try:
+            logging.info("--------------------------------------------- " +
+                         "Message from UDP socket" + " -----------------" +
+                         "----------------------------")
+            logging.debug("--------------------------------" +
+                          " Received from ip: " + str(address[0]) +
+                          " port: " + str(address[1]) + " --------------" +
+                          "------------------")
+            self.finished.emit(frame)
+            return True
 
-        self.finished.emit(frame)
+        except Exception as e:
+            logging.error(e)
+            return False
 
     def stop(self):
         self.UDPSocket.close()

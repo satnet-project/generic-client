@@ -46,6 +46,7 @@ script:
   - trial test_userinterfaceclosewindow
   - trial test_userinterfacesthreads
   - trial test_threadsoperation
+  - trial test_threadsoperationchilds
   - trial test_configurationWindowOperation
   - coverage run -p test_readDataFromFile.py
   - coverage run -p test_readDataFromTerminal.py
@@ -61,6 +62,7 @@ script:
   - coverage run -p test_userinterfaceclosewindow.py
   - coverage run -p test_userinterfacesthreads.py
   - coverage run -p test_threadsoperation.py
+  - coverage run -p test_threadsoperationchilds.py
   - coverage run -p test_configurationWindowOperation.py
 
 after_success:

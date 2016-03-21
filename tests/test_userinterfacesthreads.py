@@ -149,10 +149,10 @@ class TestUserInterfaceInterfacesThreads(TestCase):
 
         return self.assertFalse(result)
 
-    def test_udp_stop_thread_udp_socket_active(self):
+    def _test_udp_stop_thread_udp_socket_active(self):
         pass
 
-    def test_udp_stop_thread_udp_socket_inactive(self):
+    def _test_udp_stop_thread_udp_socket_inactive(self):
         pass
 
     # FIXME Needs a patch method for OperativeKISSThreadReceive
@@ -166,16 +166,16 @@ class TestUserInterfaceInterfacesThreads(TestCase):
 
         print test_threads.runKISSThreadReceive()
 
-    def test_kiss_send_message_serial_available(self):
+    def _test_kiss_send_message_serial_available(self):
         pass
 
-    def test_kiss_send_message_serial_unavailable(self):
+    def _test_kiss_send_message_serial_unavailable(self):
         pass
 
-    def test_kiss_stop_serial_available(self):
+    def _test_kiss_stop_serial_available(self):
         pass
 
-    def test_kiss_stop_serial_unavailable(self):
+    def _test_kiss_stop_serial_unavailable(self):
         pass
 
     # TODO The following tests will be implemented in TCP phase.

@@ -1,8 +1,8 @@
 [![Circle CI](https://circleci.com/gh/satnet-project/generic-client.svg?style=shield)](https://circleci.com/gh/satnet-project/generic-client)
-[![Build Status](https://travis-ci.org/satnet-project/generic-client.svg?branch=master)](https://travis-ci.org/satnet-project/generic-client)
-[![Coverage Status](https://coveralls.io/repos/satnet-project/generic-client/badge.svg?branch=master&service=github)](https://coveralls.io/github/satnet-project/generic-client?branch=master)
+[![Build Status](https://travis-ci.org/satnet-project/generic-client.svg?branch=development)](https://travis-ci.org/satnet-project/generic-client)
+[![Coverage Status](https://coveralls.io/repos/satnet-project/generic-client/badge.svg?branch=development&service=github)](https://coveralls.io/github/satnet-project/generic-client?branch=development)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/1caf79ea85544f778b148db2ce4c5ec3)](https://www.codacy.com/app/s-gongoragarcia/generic-client)
-[![Code Health](https://landscape.io/github/satnet-project/generic-client/master/landscape.svg?style=flat)](https://landscape.io/github/satnet-project/generic-client/master)
+[![Code Health](https://landscape.io/github/satnet-project/generic-client/development/landscape.svg?style=flat)](https://landscape.io/github/satnet-project/generic-client/development)
 
 ### Generic client for SATNet project.
 

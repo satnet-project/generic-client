@@ -1,14 +1,13 @@
 # coding=utf-8
 import os
 import sys
-from mock import patch, MagicMock
+from mock import patch, MagicMock, Mock
 from unittest import TestCase, main
 import Queue
 
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
-from gs_interface import OperativeUDPThreadReceive
+from gs_interface import OperativeUDPThreadReceive, OperativeUDPThreadSend
 from errors import UDPSocketUnreachable, SerialPortUnreachable
 from misc import get_data_local_file
 
@@ -84,7 +83,7 @@ class TestThreadsOperationChildClasses(TestCase):
 
     @patch.object(OperativeUDPThreadReceive, 'finished',
                   return_value=True)
-    def _test_init_udp_thread_run_called_ok(self, finished):
+    def _test_init_udp_thread_receive_run_called_ok(self, finished):
         """
 
         :param finished:
@@ -99,10 +98,10 @@ class TestThreadsOperationChildClasses(TestCase):
                                                  connect_info)
         test_threads.doWork()
 
-
     @patch.object(OperativeUDPThreadReceive, 'finished',
                   return_value=True)
-    def _test_init_udp_thread_run_called_raise_exception(self, finished):
+    def _test_init_udp_thread_receive_run_called_raise_exception(self,
+                                                                finished):
         """
 
         :param doWork:
@@ -119,7 +118,7 @@ class TestThreadsOperationChildClasses(TestCase):
 
     @patch.object(OperativeUDPThreadReceive, 'finished',
                   return_value=True)
-    def test_udp_thread_catch_value_ok(self, finished):
+    def _test_udp_thread_receive_catch_value_ok(self, finished):
         """
 
         :return:
@@ -138,7 +137,7 @@ class TestThreadsOperationChildClasses(TestCase):
         test_threads.catchValue(test_frame, test_address)
 
     @patch.object(OperativeUDPThreadReceive, 'finished')
-    def test_udp_thread_catch_value_raise_exception(self, finished):
+    def _test_udp_thread_receive_catch_value_raise_exception(self, finished):
         """
 
         :return:
@@ -158,6 +157,44 @@ class TestThreadsOperationChildClasses(TestCase):
         return self.assertFalse(test_threads.catchValue(test_frame,
                                                         test_address))
 
+    @patch.object(OperativeUDPThreadReceive, 'finished')
+    def _test_stop_receive_udp_ok(self, finished):
+        """
+
+        :param finished:
+        :return:
+        """
+        finished.emit = MagicMock(side_effect=Exception)
+        queue = Queue
+        frame = ''
+        callback = self.callback(frame)
+        UDPSignal = True
+        connect_info = get_data_local_file('.settings')
+        test_threads = OperativeUDPThreadReceive(queue, callback, UDPSignal,
+                                                 connect_info)
+
+        test_threads.UDPSocket = Mock()
+        test_threads.UDPSocket.close = MagicMock(return_value=True)
+
+        return self.assertTrue(test_threads.stop()), \
+               self.assertFalse(test_threads.running)
+
+    # TODO Implement
+    def _test_stop_receive_udp_not_ok(self):
+        pass
+
+    def test_udp_thread_send_ok(self):
+        """
+
+        :return:
+        """
+        connect_info = get_data_local_file('.settings')
+        test_threads = OperativeUDPThreadSend(connect_info)
+
+        test_frame = 'This is a test frame'
+        test_address = ['localhost', 57008]
+
+        print test_threads.send(test_frame)
 
 if __name__ == "__main__":
     main()

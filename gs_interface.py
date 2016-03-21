@@ -10,6 +10,7 @@ from serial.serialutil import SerialException
 from errors import WrongFormatNotification, FrameNotProcessed
 from errors import ConnectionNotEnded, IOFileError, SerialPortUnreachable
 from errors import UDPSocketUnreachable
+from misc import get_data_local_file
 
 """
    Copyright 2014, 2015, 2016 Xabier Crespo Álvarez
@@ -284,13 +285,13 @@ class OperativeTCPThread(TCPThread):
 class OperativeUDPThreadReceive(UDPThread):
     finished = QtCore.Signal(object)
 
-    def __init__(self, queue, callback, UDPSignal, CONNECTION_INFO,
+    def __init__(self, queue, callback, UDPSignal, settings_file,
                  parent=None):
         UDPThread.__init__(self, parent)
         self.queue = queue
         self.finished.connect(callback)
         self.UDPSignal = UDPSignal
-        self.CONNECTION_INFO = CONNECTION_INFO
+        self.CONNECTION_INFO = get_data_local_file(settings_file)
 
     def doWork(self):
         if str(self.CONNECTION_INFO['udpipreceive']) == 'localhost':
@@ -318,7 +319,6 @@ class OperativeUDPThreadReceive(UDPThread):
         self.UDPSocket.bind(server_address)
 
         if self.UDPSignal:
-            print "dentro"
             while True:
                 frame, address = self.UDPSocket.recvfrom(4096)
                 if not self.catchValue(frame, address):
@@ -356,27 +356,32 @@ class OperativeUDPThreadReceive(UDPThread):
 
 class OperativeUDPThreadSend():
 
-    def __init__(self, CONNECTION_INFO):
-        if str(CONNECTION_INFO['udpipsend']) == 'localhost':
-            CONNECTION_INFO['udpipsend'] = ''
-        if str(CONNECTION_INFO['udpipsend']) == '127.0.0.1':
-            CONNECTION_INFO['udpipsend'] = ''
+    def __init__(self, settings_file):
+        connect_info = get_data_local_file(settings_file)
+        if str(connect_info['udpipsend']) == 'localhost':
+            connect_info['udpipsend'] = ''
+        if str(connect_info['udpipsend']) == '127.0.0.1':
+            connect_info['udpipsend'] = ''
 
-        self.server_address = (str(CONNECTION_INFO['udpipsend']),
-                               int(CONNECTION_INFO['udpportsend']))
+        self.server_address = (str(connect_info['udpipsend']),
+                               int(connect_info['udpportsend']))
 
         from socket import socket, AF_INET, SOCK_DGRAM
         try:
             self.UDPSocket = socket(AF_INET, SOCK_DGRAM)
             logging.info("                                         Writing "
-                         "on " + CONNECTION_INFO['udpipsend'] + " port: " +
-                         str(CONNECTION_INFO['udpportsend']))
+                         "on " + connect_info['udpipsend'] + " port: " +
+                         str(connect_info['udpportsend']))
         except Exception as e:
             logging.error('Error opening UPD socket')
             logging.error(e)
 
     def send(self, message):
-        self.UDPSocket.sendto(message, self.server_address)
+        if self.UDPSocket.sendto(message,
+                                 self.server_address) == int(len(message)):
+            return True
+        else:
+            raise FrameNotProcessed
 
     def stop(self):
         self.UDPSocket.close()

@@ -4,11 +4,9 @@ import sys
 import ConfigParser
 from unittest import TestCase, main
 
-
 from mock import patch
 from PySide.QtTest import QTest
 from PySide import QtGui, QtCore
-# from twisted.trial.unittest import TestCase
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
@@ -32,6 +30,7 @@ from errors import SettingsCorrupted
 """
 __author__ = 's.gongoragarcia@gmail.com'
 
+settings_test_file = '.settings'
 
 class TestUserConfigurationInterfaceOperation(TestCase):
 
@@ -43,7 +42,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
 
         @return:
         """
-        test_file = open(".settings", "w")
+        test_file = open(settings_test_file, "w")
         test_file.write("[User]\n"
                         "institution = Universidade de Vigo\n"
                         "username = test-user-sc\n"
@@ -81,7 +80,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
 
         @return:
         """
-        test_file = open(".settings", "w")
+        test_file = open(settings_test_file, "w")
         test_file.write("[User]\n"
                         "institution = Universidade de Vigo\n"
                         "username = test-user-sc\n"
@@ -123,7 +122,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         Between each test the settings configuration file must be remove.
         @return: Nothing.
         """
-        os.remove('.settings')
+        os.remove(settings_test_file)
 
     # TODO How-to assert a text?
     def test_open_window_with_wrong_settings_file(self):
@@ -132,7 +131,8 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         @return: assertIs statement.
         """
         self.create_wrong_settings_file()
-        return self.assertRaises(SettingsCorrupted, ConfigurationWindow)
+        return self.assertRaises(SettingsCorrupted, ConfigurationWindow,
+                                 settings_test_file)
 
     def test_read_configuration_file(self):
         """ Reads configuration file.
@@ -143,7 +143,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         saved are correct.
         """
         self.create_settings_file()
-        test_save = ConfigurationWindow()
+        test_save = ConfigurationWindow(settings_test_file)
 
         self.assertEqual(str(test_save.FieldLabelServer.text()),
                          '127.0.0.5')
@@ -176,7 +176,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         @return: a bunch of assertEqual statements.
         """
         self.create_settings_file()
-        test_save = ConfigurationWindow()
+        test_save = ConfigurationWindow(settings_test_file)
         test_save.FieldLabelServer.setText('133.51.19.172')
         test_save.FieldLabelPort.setText('54352')
         test_save.FieldLabelUDPIpSend.setText('145.51.19.172')
@@ -190,7 +190,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
 
         test_save.save()
         config = ConfigParser.SafeConfigParser()
-        config.read(".settings")
+        config.read(settings_test_file)
         field_label_server = config.get('server', 'serverip')
         field_label_port = config.get('server', 'serverport')
         field_label_UDP_IP_send = config.get('udp', 'udpipsend')
@@ -224,7 +224,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         @return: A assertEqual statement which checks if closeWindow is called.
         """
         self.create_settings_file()
-        testOperation = ConfigurationWindow()
+        testOperation = ConfigurationWindow(settings_test_file)
         closebutton = testOperation.buttonBox.button(
             QtGui.QDialogButtonBox.Close)
         QTest.mouseClick(closebutton, QtCore.Qt.LeftButton)
@@ -240,7 +240,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         @return: a assertEqual statement which checks if save is called.
         """
         self.create_settings_file()
-        testOperation = ConfigurationWindow()
+        testOperation = ConfigurationWindow(settings_test_file)
         savebutton = testOperation.buttonBox.button(
             QtGui.QDialogButtonBox.Save)
         QTest.mouseClick(savebutton, QtCore.Qt.LeftButton)
@@ -256,7 +256,7 @@ class TestUserConfigurationInterfaceOperation(TestCase):
         called.
         """
         self.create_settings_file()
-        testWindowConfiguration = ConfigurationWindow()
+        testWindowConfiguration = ConfigurationWindow(settings_test_file)
         testWindowConfiguration.closeWindow()
         return self.assertEqual(int(close.call_count), 1)
 

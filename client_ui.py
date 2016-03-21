@@ -56,7 +56,7 @@ class SatNetUI(QtGui.QWidget):
         self.gsi = GroundStationInterface(self.CONNECTION_INFO, "Vigo",
                                           client_amp.ClientProtocol)
 
-        self.threads = Threads(self.CONNECTION_INFO, self.gsi)
+        self.threads = Threads(self.settingsfile, self.gsi)
 
         # Initialize the reactor parameters needed for the pyqt enviroment
         client_amp.Client(self.CONNECTION_INFO, self.gsi,

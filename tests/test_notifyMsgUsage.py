@@ -37,6 +37,8 @@ from errors import SerialPortUnreachable
 __author__ = 's.gongoragarcia@gmail.com'
 
 
+settings_file_test = '.settings'
+
 class MockFactory(Factory):
     pass
 
@@ -57,7 +59,8 @@ class TestClientProtocolReceiveFrame(TestCase):
         gsi = GroundStationInterface(CONNECTION_INFO, GS, AMP)
         threads = object
 
-        self.sp = ClientProtocol(CONNECTION_INFO, gsi, threads, '.settings')
+        self.sp = ClientProtocol(CONNECTION_INFO, gsi, threads,
+                                 settings_file_test)
         self.sp.factory = MockFactory()
         self.transport = StringTransport()
         self.sp.makeConnection(self.transport)
@@ -172,7 +175,7 @@ class TestNotifyMsgSendMessageBack(TestCase):
         Between each test the settings configuration file must be remove.
         @return: Nothing.
         """
-        os.remove('.settings')
+        os.remove(settings_file_test)
 
     # FIXME Altought pty opens a serial port the connection it can't be open
     # FIXME http://stackoverflow.com/questions/2291772/virtual-serial-device-in-python
@@ -187,7 +190,7 @@ class TestNotifyMsgSendMessageBack(TestCase):
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
         self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
-                                 '.settings')
+                                 settings_file_test)
         self.CONNECTION_INFO['connection'] = 'serial'
         self.mocked_open_interface_kiss(threads)
 
@@ -216,7 +219,7 @@ class TestNotifyMsgSendMessageBack(TestCase):
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
         self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
-                                 '.settings')
+                                 settings_file_test)
         self.CONNECTION_INFO['connection'] = 'serial'
         self.mocked_open_interface_kiss(threads)
 
@@ -239,7 +242,7 @@ class TestNotifyMsgSendMessageBack(TestCase):
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
         self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
-                                 '.settings')
+                                 settings_file_test)
         self.CONNECTION_INFO['connection'] = 'udp'
 
         udpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correct_frame)
@@ -260,7 +263,7 @@ class TestNotifyMsgSendMessageBack(TestCase):
         self.create_settings_file()
         threads = Threads(self.CONNECTION_INFO, gsi)
         self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
-                                 '.settings')
+                                 settings_file_test)
         self.CONNECTION_INFO['connection'] = 'udp'
 
         udpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correct_frame)
@@ -278,9 +281,9 @@ class TestNotifyMsgSendMessageBack(TestCase):
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
         self.create_settings_file()
-        threads = Threads(self.CONNECTION_INFO, gsi)
+        threads = Threads(settings_file_test, gsi)
         self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
-                                 '.settings')
+                                 settings_file_test)
         self.CONNECTION_INFO['connection'] = 'tcp'
 
         tcpconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correct_frame)
@@ -299,9 +302,9 @@ class TestNotifyMsgSendMessageBack(TestCase):
         GS = 'VigoTest'
         gsi = GroundStationInterface(self.CONNECTION_INFO, GS, AMP)
         self.create_settings_file()
-        threads = Threads(self.CONNECTION_INFO, gsi)
+        threads = Threads(settings_file_test, gsi)
         self.sp = ClientProtocol(self.CONNECTION_INFO, gsi, threads,
-                                 '.settings')
+                                 settings_file_test)
         self.CONNECTION_INFO['connection'] = 'none'
 
         noneconnectionresponse = self.sp.vNotifyMsg(sMsg=self.correct_frame)

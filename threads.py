@@ -1,13 +1,13 @@
 # coding=utf-8
 from Queue import Queue
 import logging
-import misc
 
 from PySide import QtCore
 
 from gs_interface import GroundStationInterface, OperativeUDPThreadReceive
 from gs_interface import OperativeUDPThreadSend
 from gs_interface import OperativeTCPThread, OperativeKISSThread
+from misc import get_data_local_file
 
 
 """
@@ -31,20 +31,20 @@ class Threads(object):
 
     workerUDPThreadSend = None
 
-    def __init__(self, CONNECTION_INFO, gsi):
+    def __init__(self, settings_file, gsi):
         self.UDPSignal = True
         self.serialSignal = True
         self.TCPSignal = True
         self.tcp_queue = Queue()
         self.udp_queue = Queue()
         self.serial_queue = Queue()
-        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
+        self.settings_file = settings_file
+        self.CONNECTION_INFO = get_data_local_file(self.settings_file)
         self.gsi = gsi
 
     def runUDPThreadReceive(self):
-        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
         self.workerUDPThreadReceive = OperativeUDPThreadReceive(
-            self.udp_queue, self.sendData, self.UDPSignal, self.CONNECTION_INFO
+            self.udp_queue, self.sendData, self.UDPSignal, self.settings_file
         )
         result = self.workerUDPThreadReceive.start()
         return result
@@ -53,8 +53,7 @@ class Threads(object):
         return self.workerUDPThreadReceive.stop()
 
     def runUDPThreadSend(self):
-        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
-        self.workerUDPThreadSend = OperativeUDPThreadSend(self.CONNECTION_INFO)
+        self.workerUDPThreadSend = OperativeUDPThreadSend(self.settings_file)
 
     def UDPThreadSend(self, message):
         """ UDP send method.
@@ -74,7 +73,7 @@ class Threads(object):
             return True
 
     def runKISSThreadReceive(self):
-        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
+        self.CONNECTION_INFO = get_data_local_file(self.settings_file)
         self.workerKISSThread = OperativeKISSThread(self.serial_queue,
                                                     self.sendData,
                                                     self.serialSignal,
@@ -89,7 +88,7 @@ class Threads(object):
 
     # TODO Method to be implemented.
     def runTCPThreadReceive(self):
-        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
+        self.CONNECTION_INFO = get_data_local_file(self.settings_file)
         self.workerTCPThread = OperativeTCPThread(self.tcp_queue,
                                                   self.sendData,
                                                   self.TCPSignal,

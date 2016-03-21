@@ -44,12 +44,12 @@ class ConfigurationWindow(QtGui.QDialog):
             self.setMinimumSize(800, 300)
 
         # Read fields
-        self.CONNECTION_INFO = misc.get_data_local_file('.settings')
+        self.connect_info = misc.get_data_local_file(self.settings_file)
 
-        if 'error' in self.CONNECTION_INFO:
+        if 'error' in self.connect_info:
             logging.error("Some fields are lost")
             raise SettingsCorrupted("The following fields are lost:",
-                                    self.CONNECTION_INFO['error'])
+                                    self.connect_info['error'])
 
         self.setfields()
 
@@ -59,18 +59,18 @@ class ConfigurationWindow(QtGui.QDialog):
         self.FieldLabelTCPPortRececeive.setEnabled(False)
 
     def setfields(self):
-        self.FieldLabelServer.setText(self.CONNECTION_INFO['serverip'])
-        self.FieldLabelPort.setText(str(self.CONNECTION_INFO['serverport']))
-        self.FieldLabelUDPIpSend.setText(self.CONNECTION_INFO['udpipsend'])
-        self.FieldLabelUDPPortSend.setText(self.CONNECTION_INFO['udpportsend'])
-        self.FieldLabelUDPIPReceive.setText(self.CONNECTION_INFO['udpipreceive'])
-        self.FieldLabelUDPPortRececeive.setText(str(self.CONNECTION_INFO['udpportreceive']))
-        self.FieldLabelTCPIPSend.setText(self.CONNECTION_INFO['tcpipsend'])
-        self.FieldLabelTCPPortSend.setText(self.CONNECTION_INFO['tcpportsend'])
-        self.FieldLabelTCPIPReceive.setText(self.CONNECTION_INFO['tcpipreceive'])
-        self.FieldLabelTCPPortRececeive.setText(str(self.CONNECTION_INFO['tcpportreceive']))
-        self.FieldLabelSerialPort.setText(self.CONNECTION_INFO['serialport'])
-        self.FieldLabelSerialBaudRate.setText(self.CONNECTION_INFO['baudrate'])
+        self.FieldLabelServer.setText(self.connect_info['serverip'])
+        self.FieldLabelPort.setText(str(self.connect_info['serverport']))
+        self.FieldLabelUDPIpSend.setText(self.connect_info['udpipsend'])
+        self.FieldLabelUDPPortSend.setText(self.connect_info['udpportsend'])
+        self.FieldLabelUDPIPReceive.setText(self.connect_info['udpipreceive'])
+        self.FieldLabelUDPPortRececeive.setText(str(self.connect_info['udpportreceive']))
+        self.FieldLabelTCPIPSend.setText(self.connect_info['tcpipsend'])
+        self.FieldLabelTCPPortSend.setText(self.connect_info['tcpportsend'])
+        self.FieldLabelTCPIPReceive.setText(self.connect_info['tcpipreceive'])
+        self.FieldLabelTCPPortRececeive.setText(str(self.connect_info['tcpportreceive']))
+        self.FieldLabelSerialPort.setText(self.connect_info['serialport'])
+        self.FieldLabelSerialBaudRate.setText(self.connect_info['baudrate'])
 
     def serverInterface(self):
         """
@@ -228,10 +228,10 @@ class ConfigurationWindow(QtGui.QDialog):
 
     def save(self):
         config = ConfigParser.SafeConfigParser()
-        config.read(".settings")
+        config.read(self.settings_file)
 
-        self.CONNECTION_INFO = misc.get_data_local_file(
-            settingsfile='.settings')
+        self.connect_info = misc.get_data_local_file(
+            settingsfile=self.settings_file)
 
         server = self.FieldLabelServer.text()
         port = self.FieldLabelPort.text()
@@ -244,43 +244,43 @@ class ConfigurationWindow(QtGui.QDialog):
         tcpipreceive = self.FieldLabelTCPIPReceive.text()
         tcpportreceive = self.FieldLabelTCPPortRececeive.text()
 
-        if self.CONNECTION_INFO['serverip'] != server:
+        if self.connect_info['serverip'] != server:
             config.set('server', 'serverip', str(server))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if self.CONNECTION_INFO['serverport'] != port:
+        if self.connect_info['serverport'] != port:
             config.set('server', 'serverport', str(port))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if self.CONNECTION_INFO['udpipsend'] != udpipsend:
+        if self.connect_info['udpipsend'] != udpipsend:
             config.set('udp', 'udpipsend', str(udpipsend))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if self.CONNECTION_INFO['udpportsend'] != udpportsend:
+        if self.connect_info['udpportsend'] != udpportsend:
             config.set('udp', 'udpportsend', str(udpportsend))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if self.CONNECTION_INFO['udpipreceive'] != udpipreceive:
+        if self.connect_info['udpipreceive'] != udpipreceive:
             config.set('udp', 'udpipreceive', str(udpipreceive))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if self.CONNECTION_INFO['udpportreceive'] != udpportreceive:
+        if self.connect_info['udpportreceive'] != udpportreceive:
             config.set('udp', 'udpportreceive', str(udpportreceive))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if self.CONNECTION_INFO['tcpipsend'] != tcpipsend:
+        if self.connect_info['tcpipsend'] != tcpipsend:
             config.set('tcp', 'tcpipsend', str(tcpipsend))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if self.CONNECTION_INFO['tcpportsend'] != tcpportsend:
+        if self.connect_info['tcpportsend'] != tcpportsend:
             config.set('tcp', 'tcpportsend', str(tcpportsend))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if self.CONNECTION_INFO['tcpipreceive'] != tcpipreceive:
+        if self.connect_info['tcpipreceive'] != tcpipreceive:
             config.set('tcp', 'tcpipreceive', str(tcpipreceive))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)
-        if self.CONNECTION_INFO['tcpportreceive'] != tcpportreceive:
+        if self.connect_info['tcpportreceive'] != tcpportreceive:
             config.set('tcp', 'tcpportreceive', str(tcpportreceive))
             with open('.settings', 'wb') as configfile:
                 config.write(configfile)

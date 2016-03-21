@@ -1,16 +1,21 @@
 # coding=utf-8
 import os
-from sys import path, argv
+import sys
 from mock import patch, MagicMock, Mock
-
 from unittest import TestCase, main
+
+
 from PySide import QtGui
 
-path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              "..")))
 from client_ui import SatNetUI
 from client_amp import Client
-from gs_interface import GroundStationInterface
+from threads import Threads
+from misc import get_data_local_file
+from gs_interface import GroundStationInterface, OperativeUDPThreadReceive
+from gs_interface import OperativeUDPThreadSend
+from client_amp import ClientProtocol
 
 
 """
@@ -30,9 +35,19 @@ from gs_interface import GroundStationInterface
 __author__ = 's.gongoragarcia@gmail.com'
 
 
-class TestUserInterfaceCloseWindow(TestCase):
+class TestUserInterfaceInterfacesOperation(TestCase):
 
-    app = QtGui.QApplication(argv)
+
+
+    @patch('__main__.OperativeUDPThreadReceive')
+    def mockclientamp(OperativeUDPThreadReceive):
+        """
+
+        :return:
+        """
+        return True
+
+    app = QtGui.QApplication(sys.argv)
 
     def create_settings_file(self):
         """ Create settings file.
@@ -75,80 +90,84 @@ class TestUserInterfaceCloseWindow(TestCase):
         test_file.close()
 
     def setUp(self):
-        self.argumentsdict = {'username': 'test-sc-user',
+        self.arguments_dict = {'username': 'test-sc-user',
                               'udpipsend': '172.19.51.145',
-                              'baudrate': '500000',
+                              'baudrate': '600000',
                               'institution': 'Universidade de Vigo',
                               'parameters': 'yes', 'tcpportsend': '1234',
                               'tcpipsend': '127.0.0.1',
                               'udpipreceive': '127.0.0.1', 'attempts': '10',
                               'serverip': '172.19.51.133',
                               'serialport': '/dev/ttyUSB0',
-                              'tcpportreceive': 4321, 'connection': 'none',
-                              'udpportreceive': 1234, 'serverport': 25345,
-                              'reconnection': 'no', 'udpportsend': '57009',
+                              'tcpportreceive': 4321,
+                              'connection': 'none', 'udpportreceive': 1234,
+                              'serverport': 25345, 'reconnection': 'no',
+                              'udpportsend': '57009',
                               'tcpipreceive': '127.0.0.1'}
+
+        self.arguments_dict_empty = {'username': '', 'udpipsend': '',
+                                     'baudrate': '', 'institution': '',
+                                     'parameters': '', 'tcpportsend': '',
+                                     'tcpipsend': '', 'udpipreceive': '',
+                                     'attempts': '', 'serverip': '',
+                                     'serialport': '', 'tcpportreceive': '',
+                                     'connection': '', 'udpportreceive': '',
+                                     'serverport': '', 'reconnection': '',
+                                     'udpportsend': '', 'tcpipreceive': ''}
 
     def tearDown(self):
         os.remove('.settings')
 
     # TODO Complete description
-    @patch.object(QtGui.QMessageBox, 'question',
-                  return_value=QtGui.QMessageBox.Yes)
-    @patch.object(SatNetUI, 'initLogo', return_value=True)
-    @patch.object(Client, 'createconnection', return_value=True)
-    @patch.object(GroundStationInterface, 'clear_slots')
-    @patch.object(Client, 'destroyconnection')
-    @patch.object(SatNetUI, 'setParameters', return_value=True)
-    def test_methods_call_when_user_closes_window(self, question, initLogo,
-                                                  createconnection,
-                                                  clear_slots,
-                                                  destroyconnection,
-                                                  setArguments):
-        """ Methods are called when user closes the main window
-        Checks if the disconnection methods are call when user closes the main
-        window.
-        Some methods have been patched to avoid problems.
-        :param question:
-        :param initLogo: A patched method which returns True.
-        :param createconnection: A patched method which returns True.
-        :param clear_slots: A patched method.
-        :param destroyconnection: A patched method.
-        :param setArguments: A patched method which returns True.
-        :return: A series of statements that check everything went well.
-        """
-        self.create_settings_file()
-        testUI = SatNetUI(argumentsdict=self.argumentsdict)
-        eventmock = Mock
-        eventmock.ignore = MagicMock(return_value=True)
-        testUI.closeEvent(event=eventmock)
-        return self.assertTrue(clear_slots.called),\
-               self.assertTrue(destroyconnection.called),\
-               self.assertIsNot(eventmock.ignore, True)
-
-    # TODO Complete description
-    @patch.object(QtGui.QMessageBox, 'question',
-                  return_value=QtGui.QMessageBox.No)
-    @patch.object(SatNetUI, 'initLogo', return_value=True)
-    @patch.object(Client, 'createconnection', return_value=True)
-    @patch.object(SatNetUI, 'setParameters', return_value=True)
-    def test_user_cancels_window_closing(self, question, initLogo,
-                                         createconnection,
-                                         setArguments):
+    def _test_udp_class_thread_receive_created(self):
         """
 
-        :param question:
-        :param initLogo:
-        :param createconnection:
-        :param setArguments:
         :return:
         """
+        #OperativeUDPThreadReceive = Mock()
+
+        AMP = MagicMock(return_value=True)
+        #OperativeUDPThreadReceive = MagicMock(return_value=True)
         self.create_settings_file()
-        testUI = SatNetUI(argumentsdict=self.argumentsdict)
-        eventmock = Mock
-        eventmock.ignore = MagicMock(return_value=True)
-        testUI.closeEvent(event=eventmock)
-        return self.assertTrue(eventmock.ignore.called)
+        connect_info = get_data_local_file('.settings')
+        gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
+
+        with patch('__main__.OperativeUDPThreadReceive') as MockClass:
+            instance = MockClass.return_value
+            instance.method.return_value = True
+            test_threads = Threads(connect_info, gsi)
+
+
+            test_threads.runUDPThreadReceive()
+
+        # print OperativeUDPThreadReceive.call_count
+
+
+        # test_threads.stopUDPThreadReceive()
+
+        # print OperativeUDPThreadReceive.call_count
+
+        """
+        return self.assertIsInstance(test_threads.workerUDPThreadReceive,
+                                     OperativeUDPThreadReceive)
+        """
+
+    def test_udp_class_thread_send_created(self):
+        """
+
+        :return:
+        """
+        AMP = MagicMock(return_value=True)
+        self.create_settings_file()
+        connect_info = get_data_local_file('.settings')
+        gsi = GroundStationInterface(connect_info, 'Vigo', AMP)
+        test_threads = Threads(connect_info, gsi)
+
+        test_threads.runUDPThreadSend()
+
+        return self.assertIsInstance(test_threads.workerUDPThreadSend,
+                                     OperativeUDPThreadSend)
+
 
 if __name__ == "__main__":
     main()

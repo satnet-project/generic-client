@@ -44,7 +44,7 @@ script:
   - trial test_userinterfacesconnection
   - trial test_userinterfacedisconnection
   - trial test_userinterfaceclosewindow
-#  - trial test_integrationConnection
+  - trial test_userinterfacesthreads
   - trial test_configurationWindowOperation
   - coverage run -p test_readDataFromFile.py
   - coverage run -p test_readDataFromTerminal.py
@@ -58,9 +58,10 @@ script:
   - coverage run -p test_userinterfacesconnection.py
   - coverage run -p test_userinterfacedisconnection.py
   - coverage run -p test_userinterfaceclosewindow.py
+  - coverage run -p test_userinterfacesthreads.py
   - coverage run -p test_configurationWindowOperation.py
 
 after_success:
   - coverage combine
-#  - coverage report --omit '/home/travis/virtualenv/*'
+  - coverage report --omit '/home/travis/virtualenv/*'
   - coveralls --rcfile='/home/travis/build/satnet-project/generic-client/.coveragerc'

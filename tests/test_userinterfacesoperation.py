@@ -37,17 +37,6 @@ __author__ = 's.gongoragarcia@gmail.com'
 
 class TestUserInterfaceInterfacesOperation(TestCase):
 
-    # TODO Complete description
-    @patch('__main__.ConfigurationWindow')
-    def mockconfigurationwindow(ConfigurationWindow):
-        """
-
-        @return:
-        """
-        ConfigurationWindow.return_value = True
-        return ConfigurationWindow
-
-
     app = QtGui.QApplication(sys.argv)
 
     def create_settings_file(self):

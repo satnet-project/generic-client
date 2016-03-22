@@ -392,7 +392,6 @@ class OperativeUDPThreadSend():
                           self.UDPSocket))))
         except AttributeError:
             logging.info("UDPSocket send stopped.")
-            self.running = False
             return True
 
 

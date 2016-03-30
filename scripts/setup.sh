@@ -75,7 +75,8 @@ function install_venv()
     	echo ">>> Creating virtual environment..."
     	virtualenv --python=python2.7 $venv_dir
     	source "$venv_dir/bin/activate"
-	    pip install -r "$project_path/requirements.txt"
+    	pip install --no-index --find-links="$project_path/wheelhouse/" -r "$project_path/requirements.txt"
+	    # pip install -r "$project_path/requirements-test.txt"
 	    deactivate
 
 	} && {

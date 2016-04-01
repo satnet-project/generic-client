@@ -118,7 +118,7 @@ then
 	sudo usermod -a -G dialout $currentUser 
 
 	echo '>>> Installing packages'
-	[[ $_install_packages == 'true' ]] && install_packages	
+	# [[ $_install_packages == 'true' ]] && install_packages	
 
 	echo '>>> Installing virtualenv'
 	[[ $_install_venv == 'true' ]] && install_venv
@@ -132,11 +132,15 @@ fi
 if [ $1 == '-travisCI' ];
 then
 	echo ">>> [TravisCI] Installing generic client test modules..."
+    
     pip install coveralls
     pip install coverage
     pip install nose
     pip install wheel
-	pip install -r "$project_path/requirements.txt"
+	# pip install -r "$project_path/requirements.txt"
+
+    pip install --no-index --find-links="$project_path/wheelhouse/" -r "$project_path/requirements.txt"
+
 
     echo '>>> Keys installation...'
     [[ $_generate_keys == 'true' ]] && create_selfsigned_keys
@@ -145,20 +149,23 @@ fi
 if [ $1 == '-circleCI' ];
 then
 	echo ">>> [CircleCI] Installing generic client test modules..."
-	pip install -r "$project_path/requirements.txt"
-
-	cd ../tests
-	mkdir build && cd build
-	git clone https://github.com/PySide/pyside-setup.git pyside-setup
-	cd pyside-setup
-
-	python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
-	source "$venv_dir/bin/activate"
-	pip install dist/PySide-1.2.4*
-    cd ../../
+	#pip install -r "$project_path/requirements.txt"
     ls
     pwd
+    pip install --no-index --find-links="$project_path/wheelhouse/" -r "$project_path/requirements.txt"
 
+	# cd ../tests
+	# mkdir build && cd build
+	#  git clone https://github.com/PySide/pyside-setup.git pyside-setup
+	#  cd pyside-setup
+
+	# python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
+	# source "$venv_dir/bin/activate"
+	# pip install dist/PySide-1.2.4*
+    # cd ../../
+    
+    ls
+    pwd
 	echo '>>> Keys installation...'
 	[[ $_generate_keys == 'true' ]] && create_selfsigned_keys
 

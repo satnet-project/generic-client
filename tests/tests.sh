@@ -1,0 +1,17 @@
+#!/bin/bash
+trial test_readDataFromFile
+trial test_readDataFromTerminal
+trial test_notifyMsgUsage
+trial test_saveReceivedFrames
+trial test_connectionDown
+trial test_connectionEstablished
+trial test_manageFrames
+trial test_userinterfacesoperation
+trial test_userinterfacesparameters
+trial test_userinterfacesconnection
+trial test_userinterfacedisconnection
+trial test_userinterfaceclosewindow
+trial test_userinterfacesthreads
+trial test_threadsoperation
+trial test_threadsoperationchilds
+trial test_configurationWindowOperation

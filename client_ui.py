@@ -287,7 +287,6 @@ class SatNetUI(QtGui.QWidget):
         @param argumentsdict:
         @return:
         """
-
         try:
             if argumentsdict['username'] != "":
                 self.settingsfile = '.settings'

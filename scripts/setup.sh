@@ -137,8 +137,6 @@ then
     pip install coverage
     pip install nose
     pip install wheel
-	# pip install -r "$project_path/requirements.txt"
-
     pip install --no-index --find-links="$project_path/wheelhouse/" -r "$project_path/requirements.txt"
 
 

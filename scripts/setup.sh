@@ -137,8 +137,9 @@ then
     pip install coverage
     pip install nose
     pip install wheel
+    echo "antes"
     pip install --no-index --find-links="$project_path/wheelhouse/" -r "$project_path/requirements.txt"
-
+    echo "despues"
 
     echo '>>> Keys installation...'
     [[ $_generate_keys == 'true' ]] && create_selfsigned_keys

@@ -23,13 +23,13 @@ install:
   - cd scripts
   - bash ./setup.sh -travisCI
   - cd ../tests
-  - mkdir build
-  - cd build
-  - git clone https://github.com/PySide/pyside-setup.git pyside-setup
-  - cd pyside-setup
-  - python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
-  - pip install dist/PySide-1.2.4*
-  - cd ../..
+#  - mkdir build
+#  - cd build
+#  - git clone https://github.com/PySide/pyside-setup.git pyside-setup
+#  - cd pyside-setup
+#  - python setup.py bdist_wheel --qmake=/usr/bin/qmake-qt4 --version=1.2.4
+#  - pip install dist/PySide-1.2.4*
+#  - cd ../..
 
 script:
   - trial test_readDataFromFile

@@ -13,9 +13,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
 from client_ui import SatNetUI
 from client_amp import Client
 from threads import Threads
-import misc
-from gs_interface import GroundStationInterface, KISSThread
-from configurationWindow import ConfigurationWindow
 
 
 """

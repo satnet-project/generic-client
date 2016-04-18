@@ -180,3 +180,12 @@ then
 	echo ">>> Removing old virtualenv"
 	[[ $_install_venv == 'true' ]] && remove_venv
 fi
+
+if [ $1 == 'create' ];
+then
+	virtualenv $venv_dir
+	source "$venv_dir/bin/activate"
+	python -m pip install --upgrade pip
+	pip install wheel
+	pip wheel --wheel-dir="$project_path/wheelhouse_linux_64/" -r "$project_path/requirements.txt"
+fi

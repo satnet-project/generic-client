@@ -117,8 +117,10 @@ then
 	currentUser=$(whoami)
 	sudo usermod -a -G dialout $currentUser 
 
-	echo '>>> Installing packages'
+	#  echo '>>> Installing packages'
 	# [[ $_install_packages == 'true' ]] && install_packages	
+
+    sudo apt install virtualenv
 
 	echo '>>> Installing virtualenv'
 	[[ $_install_venv == 'true' ]] && install_venv

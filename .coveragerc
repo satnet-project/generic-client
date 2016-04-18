@@ -1,2 +1,2 @@
 [report]
-omit = /home/travis/virtualenv/*, /home/travis/build/satnet-project/tests/*
+omit = /home/travis/virtualenv/*
